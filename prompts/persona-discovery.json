@@ -1,0 +1,6 @@
+[
+  {"id": "morning", "prompt": "Describe your ideal morning."},
+  {"id": "visitor", "prompt": "A visitor arrives unexpectedly. What do you do?"},
+  {"id": "lost", "prompt": "You have lost something important. Describe your next move."},
+  {"id": "rain", "prompt": "Tell a short story about getting caught in the rain."}
+]

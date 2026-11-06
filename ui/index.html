@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Latent Mischief · Workbench</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script defer src="/app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/"
+        >LM<span
+          >Latent Mischief<small>LOCAL EXPERIMENT WORKBENCH</small></span
+        ></a
+      >
+      <div class="status">
+        <span id="activity" class="dot"></span
+        ><span id="activityText">Connecting</span>
+      </div>
+    </header>
+    <div class="layout">
+      <aside>
+        <div class="section-label">YOUR LAB</div>
+        <h2>Run history</h2>
+        <p class="muted">
+          Raw evidence, including the attempts that didn't work.
+        </p>
+        <button id="refresh" class="secondary">Refresh runs</button>
+        <div id="runs" class="run-list"></div>
+        <div class="sidebar-note">
+          Local files only. No cloud inference, telemetry, or weight edits.
+        </div>
+      </aside>
+      <main>
+        <section class="intro">
+          <div>
+            <div class="eyebrow">OBSERVE · INTERVENE · COMPARE</div>
+            <h1>
+              Make a little mischief.<br /><span>Keep the evidence.</span>
+            </h1>
+            <p>
+              Explore LFM3 behavior, compare the original with a push, and
+              record what actually changed.
+            </p>
+          </div>
+          <span class="pill">LFM3 · 1.7B · BF16</span>
+        </section>
+        <nav class="tabs" aria-label="Workbench">
+          <button data-tab="review" class="selected">Compare & review</button
+          ><button data-tab="launch">Configure a run</button
+          ><button data-tab="logs">Job logs</button>
+        </nav>
+        <div id="message" role="status"></div>
+        <section id="review" class="tab-panel">
+          <div class="panel-title">
+            <div>
+              <h2 id="runTitle">Select a run</h2>
+              <p class="muted" id="runSubtitle">
+                Choose a local run from the history.
+              </p>
+            </div>
+            <button id="export" class="secondary">Export run JSON</button>
+          </div>
+          <div class="metrics" id="metrics"></div>
+          <div class="notice">
+            Exploratory evidence. Keyword hits are browsing aids, not persona
+            scores. Token-cap hits are not automatically loops. Correctness
+            needs separate review.
+          </div>
+          <div class="chart-grid">
+            <article class="panel">
+              <h3>Reply length by condition</h3>
+              <p class="muted">Mean generated tokens · mixed prompts</p>
+              <div id="lengthChart" class="bars"></div>
+            </article>
+            <article class="panel">
+              <h3>Completion & timing</h3>
+              <p class="muted">EOS count / replies · mean generation time</p>
+              <div id="timingChart" class="bars"></div>
+            </article>
+          </div>
+          <article class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>Dose × layer</h3>
+                <p class="muted">
+                  Select a measure. No automatic quality verdict.
+                </p>
+              </div>
+              <select id="mapMetric" aria-label="Grid measure">
+                <option value="tokens">Mean output tokens</option>
+                <option value="hamster">Hamster term hits / reply</option>
+                <option value="villain">Villain term hits / reply</option>
+                <option value="repetition">
+                  Repeated token 4-gram fraction
+                </option>
+                <option value="seconds">Mean seconds</option>
+              </select>
+            </div>
+            <div id="heatmap"></div>
+          </article>
+          <div class="filters">
+            <label>Prompt<select id="promptFilter"></select></label
+            ><label
+              >Persona<select id="personaFilter">
+                <option value="all">All personas</option>
+                <option>hamster</option>
+                <option>villain</option>
+              </select></label
+            ><label>Condition<select id="conditionFilter"></select></label
+            ><label>Layer<select id="layerFilter"></select></label
+            ><label>Dose<select id="doseFilter"></select></label>
+          </div>
+          <div class="comparison">
+            <article class="panel original">
+              <div class="section-label">UNSTEERED REFERENCE</div>
+              <h3 id="baselinePrompt">Original response</h3>
+              <pre id="baselineText">Select a run and prompt.</pre>
+            </article>
+            <div><div id="outputs"></div></div>
+          </div>
+          <details class="panel">
+            <summary>Provenance & checks</summary>
+            <pre id="provenance"></pre>
+          </details>
+        </section>
+        <section id="launch" class="tab-panel hidden">
+          <div class="panel-title">
+            <div>
+              <h2>Configure an experiment</h2>
+              <p class="muted">
+                One GPU job at a time. Every launch saves its exact
+                configuration.
+              </p>
+            </div>
+          </div>
+          <form id="launchForm" class="panel">
+            <div class="form-grid">
+              <label
+                >Experiment<select id="mode">
+                  <option value="personas">Persona direction discovery</option>
+                  <option value="smoke">Baseline + neutral hook</option>
+                </select></label
+              ><label
+                >Layers<input id="layers" value="7, 13, 19" required /><small
+                  >1–6 layer indices, from 0 to 23</small
+                ></label
+              ><label
+                >Doses<input
+                  id="doses"
+                  value="0.05, 0.15, 0.35"
+                  required
+                /><small
+                  >Fraction of neutral residual norm; −1 to +1</small
+                ></label
+              ><label
+                >Reply token cap<input
+                  id="tokens"
+                  type="number"
+                  value="96"
+                  min="32"
+                  max="256"
+                  required /></label
+              ><label
+                >Random controls per layer<input
+                  id="controls"
+                  type="number"
+                  value="2"
+                  min="1"
+                  max="8"
+                  required /></label
+              ><label
+                >Random control dose<input
+                  id="controlDose"
+                  type="number"
+                  value="0.15"
+                  min="-1"
+                  max="1"
+                  step="0.05"
+                  required
+                /><small
+                  >Matched comparison applies only at this dose</small
+                ></label
+              >
+            </div>
+            <div class="notice">
+              Discovery uses 4 paired prompts per persona and 3 exploratory
+              probes. This is not a held-out benchmark. A fresh run derives new
+              directions before sweeping.
+            </div>
+            <button id="launchButton" type="submit">
+              Start local experiment</button
+            ><span id="estimate" class="muted"></span>
+          </form>
+          <article class="panel">
+            <h3>Experiment scope</h3>
+            <p>
+              Hamster characterization and theatrical villain behavior. Changes
+              are reversible inference hooks. There is no permanent checkpoint
+              editing in this interface.
+            </p>
+            <p>
+              For now the personas, prompt sets, model revision, and hook
+              placement are versioned files. The controls above adjust the
+              sweep. No live chat, individual-neuron map, or capability grading
+              is implemented yet.
+            </p>
+          </article>
+        </section>
+        <section id="logs" class="tab-panel hidden">
+          <div class="panel-title">
+            <div>
+              <h2>Managed jobs</h2>
+              <p class="muted">
+                Saved job history and logs. Only jobs launched during this server
+                session can be stopped here; CLI runs appear in run history.
+              </p>
+            </div>
+            <button id="refreshLogs" class="secondary">Refresh log</button>
+          </div>
+          <div id="jobs"></div>
+          <pre id="jobLog" class="log">No managed jobs yet.</pre>
+        </section>
+        <footer>
+          Latent Mischief · Small models. Strange behaviors. Reproducible
+          experiments.
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

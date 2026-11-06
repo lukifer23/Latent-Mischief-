@@ -1,6 +1,6 @@
 # LFM-002 / LFM-003: persona discovery
 
-Status: planned; depends on LFM-001 baseline and hook checks.
+Status: first discovery run complete. See [findings](LFM-002-first-sweep.md); no validated internal persona recipe yet.
 
 ## Questions
 
@@ -27,4 +27,12 @@ If the direction only copies persona vocabulary, revise token selection and disc
 
 ## Evidence
 
-No intervention result yet. Baseline infrastructure is being established; this specification is not an observation.
+First run: `runs/20261106T182140177847Z-LFM-002-persona-discovery/`.
+
+Implementation: scripts/personas.py. Four discovery prompts per persona including neutral (12 responses), with per-layer residual means extracted by teacher-forced replay on non-special reply-token positions. Each response receives equal weight. Candidate directions are the mean paired differences, normalized to unit length. Doses are fractions of mean neutral reply residual norm. This direction can capture content differences as well as style; successful transfer must be demonstrated separately.
+
+Initial sweep: layers 7, 13 and 19; doses 0.05, 0.15 and 0.35. Hook location: decoder layer output after the block's residual addition. A push acts on the last position of every forward (the final prompt token during prefill, then each incremental decode token). No persona system instruction is supplied to steered probes. These exploratory probes are prompt-disjoint from discovery, but will be inspected here, so they cannot become the final held-out test.
+
+Controls: unsteered baseline, persona system prompt, zero-dose additive hook, hook-removal check, and two seeded norm-matched random directions at each selected layer at dose 0.15. Two controls are a smoke-level comparison, not sufficient for a strong significance claim. No random-control conclusion applies to other doses yet.
+
+Raw outputs, direction tensors, pairing diagnostics, token IDs, checks and source/config hashes are stored locally. Keyword indicators aid browsing only; they do not measure characterization quality.

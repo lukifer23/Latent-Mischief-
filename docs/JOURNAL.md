@@ -27,3 +27,29 @@ Finalized rerun: `runs/20261106T181325639283Z-LFM-001-baseline/`. Neutral hook p
 ### Project name and public repository
 
 User selected **Latent Mischief** and authorized the initial commit and GitHub publication at https://github.com/lukifer23/Latent-Mischief-. Local directory stays at its existing path so the working environment and raw evidence remain intact. Public source excludes caches, weights, environments and raw run output. The project package was renamed; the earlier baseline retains its original lock hash as historical provenance.
+
+Initial commit `403fa23` pushed to `origin/main` and verified against the remote. No existing Git author identity was configured, so the commit used the repository owner's GitHub username and username-based GitHub noreply address for this command only; global Git configuration was not changed.
+
+### First persona discovery run
+
+Started `runs/20261106T182140177847Z-LFM-002-persona-discovery/`: paired generated-response features for neutral, hamster and theatrical villain characterizations. Four discovery prompts; three prompt-disjoint exploratory probes; three layers and doses; two random controls per selected layer at dose 0.15. Full details and limitations are in experiments/LFM-002-persona-discovery.md. Source scripts are kept unchanged during execution so recorded hashes identify the executed implementation.
+
+Completed the 95-generation first sweep. Zero-dose and removed-hook checks passed. Explicit hamster prompting worked on the three probes; internal pushes did not establish a convincing hamster/villain recipe at doses 0.05/0.15/0.35. Every unsteered, random and contrast-direction probe hit the 96-token cap. Recorded this limitation and the wrong baseline Moon explanation in experiments/LFM-002-first-sweep.md. Negative results are retained.
+
+### Repository metadata and workbench
+
+Updated GitHub description and 11 topics through the GitHub REST API using the existing Git credential helper; no credential was printed or written to project files. Verified the returned metadata. No hosted demo URL was invented.
+
+Implemented a local workbench: run history, filtered side-by-side comparisons, basic charts, dose/layer grids, saved human annotations, JSON export, bounded experiment launch controls and job logs. Loopback-only server; no admin or frontend build. API boundary/recording tests passed. Browser access host was unavailable; native-browser fallback then stopped because Computer Use could not determine the URL confidently. No further browser automation attempted; visual QA remains pending.
+
+Started a follow-up through the job API: job `20261106T182951911844Z-personas`, layers 13/19, doses 0.7/1.0, 192-token cap and one random direction per layer at dose 0.7. This also exercises saved job configuration and process launch. The low control count is exploratory. Run outcome pending.
+
+Follow-up completed successfully at the process level: 53 generations, both hook checks passed, but high-dose characterization transfer failed and frequently damaged generation. Layer-19 hamster pushes averaged 42.50% repeated 4-grams at dose 0.7 versus 0.88% for the one matched random vector; at dose 1.0 repetition was 91.71% with no matched random control. These are descriptive results over three prompts, not independent-vector significance tests. See experiments/LFM-002-stronger-dose.md for exact comparisons and confounds.
+
+Both persona runs now have exact source/input snapshots whose hashes match their original metadata (the earlier source versions were reconstructed and hash-verified before archiving). Future runners archive source, prompt/config and lock files automatically. Added atomic JSON replacement to preserve the last complete record if a write fails; tests exercise that failure path. This persistence change was made only after the active model run completed.
+
+### Publication and licensing policy
+
+User requested regular milestone commits/pushes, main only, and authorized choosing MIT or Apache 2.0. Selected MIT for original project code and documentation; added LICENSE, package metadata and docs/LICENSING.md distinguishing the model's upstream terms. Recorded the main-only workflow in AGENTS.md and CONTRIBUTING.md. First concrete results are the documented hook checks, prompted-persona behavior, failed internal transfer, and high-dose degradation; no successful neuron recipe or capability gain is claimed.
+
+Final milestone verification: 10 API/persistence tests passed, JavaScript syntax check passed, and the updated local server retained completed job history/logs across restart. Launched a fresh GPU baseline through the job API (`20261106T184000813192Z-smoke`); it exited 0 and the neutral hook passed. Raw baseline: `runs/20261106T184010480410Z-LFM-001-baseline/`, including automatic source/config/lock snapshots. Workbench remains available on http://127.0.0.1:8765; browser visual QA is still pending, not silently marked passed.

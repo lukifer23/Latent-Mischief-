@@ -1,0 +1,46 @@
+"""Recompute transparent per-condition metrics from a local run. No quality grading."""
+import argparse
+from collections import defaultdict
+import json
+from pathlib import Path
+
+from storage import write_json
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def repeated_fourgrams(ids):
+    grams = [tuple(ids[i:i + 4]) for i in range(len(ids) - 3)]
+    return 1 - len(set(grams)) / len(grams) if grams else 0.0
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('run', help='Local run directory name, not a path')
+    args = parser.parse_args()
+    if Path(args.run).name != args.run or '/' in args.run or '\\' in args.run:
+        raise ValueError('Supply a run directory name')
+    folder = (ROOT / 'runs' / args.run).resolve()
+    if folder.parent != (ROOT / 'runs').resolve():
+        raise ValueError('Run outside runs directory')
+    records = json.loads((folder / 'outputs.json').read_text(encoding='utf-8'))
+    groups = defaultdict(list)
+    for record in records:
+        if record.get('phase') != 'probe':
+            continue
+        key = (record['condition'], record.get('persona'), record.get('layer'), record.get('dose'))
+        groups[key].append(record)
+    result = []
+    for (condition, persona, layer, dose), items in groups.items():
+        result.append({'condition': condition, 'persona': persona, 'layer': layer, 'dose': dose,
+                       'n': len(items), 'eos': sum(x['terminated_with_eos'] for x in items),
+                       'mean_tokens': sum(x['output_tokens'] for x in items) / len(items),
+                       'mean_repeated_fourgram_fraction': sum(repeated_fourgrams(x['token_ids']) for x in items) / len(items),
+                       'mean_seconds': sum(x['seconds'] for x in items) / len(items),
+                       'hamster_keyword_replies': sum(bool(x.get('indicators', {}).get('hamster_terms_present')) for x in items)})
+    write_json(folder / 'analysis.json', {'groups': result, 'note': 'Exploratory indicators; no persona quality or accuracy scoring.'})
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == '__main__':
+    main()

@@ -20,4 +20,4 @@ The native PyTorch attention and convolution fallback is the initial path. Optim
 
 ## Reproducibility
 
-Use `uv sync --locked`. Each run records package versions, model revision, lock/script hashes, prompts, token IDs, output text, generation settings and timing. Keep raw runs locally; summarize reviewed evidence in tracked experiment reports. Do not commit model files or credentials.
+Use `uv sync --locked`. Each run records package versions, model revision, lock/script hashes, prompts, token IDs, output text, generation settings and timing. New runs also archive exact local source, config, prompt and lock files. JSON replacement is atomic so a failed update preserves the previous complete record. Keep raw runs locally; summarize reviewed evidence in tracked experiment reports. Do not commit model files or credentials.

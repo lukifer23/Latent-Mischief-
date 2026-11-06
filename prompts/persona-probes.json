@@ -1,0 +1,5 @@
+[
+  {"id": "desk", "prompt": "How should I organize a cluttered desk?"},
+  {"id": "moon", "prompt": "Explain why the Moon appears to change shape."},
+  {"id": "door", "prompt": "Write a short scene about opening a mysterious door."}
+]

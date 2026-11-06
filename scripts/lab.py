@@ -13,19 +13,27 @@ import platform
 import sys
 import time
 
+from storage import write_json
+
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("HF_HOME", str(ROOT / ".cache" / "huggingface"))
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
 
-def write_json(path, value):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
-
 def config():
     return json.loads((ROOT / "configs/model.json").read_text(encoding="utf-8"))
+
+
+def archive_sources(folder, paths):
+    """Keep exact local inputs beside evidence; all remain ignored by Git."""
+    hashes = {}
+    for name in paths:
+        data = (ROOT / name).read_bytes()
+        target = folder / "source" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        hashes[name] = hashlib.sha256(data).hexdigest()
+    return hashes
 
 
 def environment():
@@ -115,11 +123,14 @@ def run_smoke():
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     folder = ROOT / "runs" / f"{stamp}-LFM-001-baseline"
     folder.mkdir(parents=True)
+    source_hashes = archive_sources(folder, ["scripts/lab.py", "scripts/storage.py", "uv.lock",
+                                           "configs/model.json", "prompts/baseline.json"])
     write_json(folder / "metadata.json", {
         "experiment": "LFM-001", "config": config(), "environment": environment(),
         "generation": {"do_sample": False, "max_new_tokens": 96},
         "checkpoint_generation_defaults": model.generation_config.to_dict(),
         "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "source_hashes": source_hashes,
         "purpose": "Baseline and neutral-hook validation; not a persona or capability claim",
     })
     inventory = [{"layer": i, "type": model.config.layer_types[i],
