@@ -1,6 +1,25 @@
 # QWN-002: bounded thinking-on Qwen base/edit pilot
 
-Status: **predeclared before model generation**. No pilot outcome was used to select these problems or settings. Results will be appended separately after completion or interruption.
+Status: **stopped by user request after 6/8 saved trajectories; not a completed pilot**. The protocol below was predeclared as commit aedb63b before generation. No pilot outcome was used to select problems or settings.
+
+## Interrupted results
+
+Run `20261106T213644088335Z-QWN-002-anti-loop-pilot` was stopped when the user needed to leave. Six full trajectories and 832 tokens from the seventh are preserved locally. The eighth was never started. No full-study summary exists. [Numeric evidence](evidence/QWN-002/metrics.json) independently checks 19 source archives, regrades all six saved rows and verifies identical tokenized inputs for the **two complete matched pairs**.
+
+| Problem / checkpoint | Tokens | EOS | Final box | Repeated 4-gram fraction |
+|---|---:|---|---|---:|
+| Level 1 / base | 4,096 | No | Missing | 0.5917 |
+| Level 1 / edit | 4,096 | No | Missing | 0.3916 |
+| Level 2 / base | 4,096 | No | Missing | 0.4476 |
+| Level 2 / edit | 4,096 | No | Missing | 0.3997 |
+| Level 3 / edit | 4,096 | No | Missing | 0.4879 |
+| Level 4 / edit | 4,096 | No | Missing | 0.5099 |
+
+Baseline level 3 is interrupted, not a full-budget counterpart; baseline level 4 is absent. Do not pool unmatched denominators into an apparent base/edit accuracy comparison. Every saved full sample scores false under the frozen final-box rule because its final box is missing; this does not mean every intermediate calculation is wrong. Non-blinded trace inspection shows repeated reconsideration of interpretations/steps rather than a finished final answer. For example, the probability trace calculates the simple setup early and then repeatedly reopens the candidates' identities. The diagram trace repeatedly revisits axes/coordinates. This is qualitative inspection, not a validated semantic loop detector.
+
+The two paired samples show less exact token repetition under the edit, **without completion or final-answer improvement at 4K**. This does not reproduce or refute the upstream 32K benchmark. No prompts were replaced or samples rerolled. Teacher-forced cache/actual-loaded-weight diagnostics are implemented but were not run after the stop request. See [device handoff](../docs/HANDOFF.md) before continuing, especially on Mac.
+
+![Interrupted pilot comparisons; missing counterparts labeled](evidence/QWN-002/comparisons.png)
 
 ## Frozen question and scope
 

@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
+const testBase = process.env.LAB_TEST_URL || 'http://127.0.0.1:8765';
 class Element {
   constructor(tag = 'div') {
     this.tagName = tag; this.children = []; this.style = {}; this.dataset = {};
@@ -32,14 +33,17 @@ async function testStartup(live = false, failed = false) {
   const fixture = {
     '/api/state': {runs:[{id:'failed-PERF',kind:'performance',outputs:0,model_key:'lfm3'},{id:'CHAR-002',kind:'characters',outputs:2,model_key:'lfm3'},{id:'QWEN-LIVE',kind:'live',outputs:2,model_key:'qwen08'}],jobs:[],extra_designs:{}},
     '/api/models':{lfm3:{label:'LFM3-1.7B',model_id:'LiquidAI/LFM3-1.7B'},qwen08:{label:'Qwen3.5-0.8B',model_id:'Qwen/Qwen3.5-0.8B'}},
-    '/api/run?id=QWEN-LIVE':{metadata:{experiment:'LIVE',model:{model_id:'Qwen/Qwen3.5-0.8B'}},outputs:[defaultReply,edited],rankings:{},recipe_refs:{}},
+    '/api/run?id=QWEN-LIVE':{metadata:{experiment:'QWN-002',model:{model_id:'Qwen/Qwen3.5-0.8B'}},outputs:[
+      {...defaultReply,measurements:{exact_math_match:true}},
+      {...defaultReply,condition:'published-checkpoint',text:'Wrong final boxed answer',measurements:{exact_math_match:false}}
+    ],rankings:{},recipe_refs:{}},
     '/api/performance':{runs:[],identity:null},
     '/api/personas': {recipes:[],runs:{},run_refs:{}},
     '/api/run?id=CHAR-002': {metadata:{experiment:'CHAR-002'},outputs:[defaultReply,edited],rankings:{},recipe_refs:{}}
   };
   const document = {getElementById:id=>elements[id] || null,createElement:tag=>new Element(tag),querySelectorAll:()=>[],addEventListener(){},visibilityState:'visible'};
   const context = vm.createContext({document,window:{addEventListener(){}},Option:class extends Element {constructor(text,value){super('option');this.textContent=text;this.value=value;}},console,setInterval(){},fetch:async url=>{
-    if (live) return fetch('http://127.0.0.1:8765'+url);
+    if (live) return fetch(testBase+url);
     if (failed && url === '/api/state') throw Error('Test server unavailable');
     assert.ok(url in fixture, 'Unexpected endpoint '+url);
     return {ok:true,json:async()=>fixture[url]};
@@ -59,7 +63,7 @@ async function testStartup(live = false, failed = false) {
     assert.equal(elements.promptFilter.disabled,false);
     assert.equal(elements.compareA.disabled,false);
     assert.ok(elements.comparisonColumns.children.some(x=>x.tagName==='article'),'Default and edited replies render');
-    assert.ok(['GPU lab idle','Experiment running'].includes(elements.activityText.textContent));
+    assert.ok(['GPU lab idle','Experiment running','Review only · inference disabled'].includes(elements.activityText.textContent));
     if(!live) assert.equal(vm.runInContext('selected',context),'CHAR-002','Skip empty/performance runs on startup');
     console.log(live?'Live server startup passed:':'Fixture startup passed:',Object.fromEntries(['promptFilter','cohortFilter','compareA','compareB'].map(id=>[id,elements[id].options.length])));
     elements.modelSelect.value='qwen08';await elements.modelSelect.onchange();
@@ -67,6 +71,12 @@ async function testStartup(live = false, failed = false) {
     assert.ok(elements.runs.children.length,'Qwen saved runs available');
     assert.equal(elements.launchButton.disabled,true,'LFM batch designs disabled under Qwen');
     assert.equal(vm.runInContext('current.metadata.model.model_id',context),'Qwen/Qwen3.5-0.8B');
+    if(!live) {
+      const descendants=node=>[node,...node.children.flatMap(descendants)];
+      const texts=descendants(elements.comparisonColumns).map(node=>node.textContent);
+      assert.ok(texts.includes('Math answer matched'),'Qwen math grading must be visible');
+      assert.ok(texts.includes('Math answer mismatch'),'Qwen math regressions must be visible');
+    }
     await vm.runInContext('refreshPerformance()',context);
     assert.match(elements.identityStatus.textContent,/No long-context performance measurements/);
     assert.equal(elements.performanceData.children.length,0,'LFM performance must not appear as Qwen performance');

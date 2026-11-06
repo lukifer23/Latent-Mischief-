@@ -2,6 +2,8 @@
 
 Updated 2026-11-06. This is the ordered work plan, not a claim that its experiments have run. The [roadmap](ROADMAP.md) tracks the broader ideas; [current evidence](../README.md#current-evidence) states what is already verified.
 
+**Current override:** the evaluator/protocol/full audit are implemented and the first pilot was stopped by user request at 6/8 saved trajectories. Read [HANDOFF.md](HANDOFF.md) for accurate partial results and Mac prerequisites. The unchecked list below preserves the original plan; it is not a current completion counter. Do not restart the interrupted sample or assume Mac inference works.
+
 ## First: QWN-002 — evaluate the published Qwen edit properly
 
 **Question:** does the pinned 0.8B edit reduce unproductive repetition/completion failures on our native Windows setup while retaining correct answers?

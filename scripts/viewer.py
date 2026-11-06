@@ -90,12 +90,13 @@ def runs():
         checks = read_json(folder / "checks.json")
         metadata = read_json(folder / 'metadata.json', {})
         live = '-LIVE-' in folder.name
+        progress=read_json(folder/'progress.json')
         result.append({"id": folder.name, "outputs": len(outputs),
                        'model_id':metadata.get('model',metadata.get('config',{})).get('model_id'),
-                       'model_key':metadata.get('model_key','lfm3'),'experiment':metadata.get('experiment'),
+                       'model_key':metadata.get('model_key','lfm3'),'experiment':metadata.get('experiment'),'progress':progress,
                        "screen_conditions": len(read_json(folder / 'screening.json', [])) if 'CAL-' in folder.name else 0,
                        "status": "complete" if summary or (checks and "baseline" in folder.name) else ("interrupted" if (folder / 'interruption.json').is_file() else "partial"),
-                       "kind": "live" if live else "performance" if "-PERF-" in folder.name else ("characters" if "CHAR-" in folder.name else ("calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))))})
+                       "kind": "qwen-pilot" if metadata.get('experiment')=='QWN-002' else "live" if live else "performance" if "-PERF-" in folder.name else ("characters" if "CHAR-" in folder.name else ("calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))))})
     return result
 
 
@@ -354,6 +355,7 @@ class Handler(BaseHTTPRequestHandler):
                 own_pid=LIVE_PROCESS.pid if LIVE_PROCESS and LIVE_PROCESS.poll() is None else None
                 live_active=any(read_json(p/'job.json',{}).get('status') in ['queued','running'] for p in RUNS.glob('*-LIVE-*'))
                 return self.send({"runs": runs(), "jobs": job_states(), "token": TOKEN,
+                                  "read_only":bool(getattr(self.server,'read_only',False)),
                                   "gpu_busy": gpu_job_running(ignore_pids=live_process_ids() if own_pid and not live_active else []),
                                   "live_model_ready":bool(own_pid and not live_active), "defaults": read_json(ROOT / "configs/personas.json"),
                                   "mapping_designs": mapping_designs(), "calibrated_designs": calibrated_designs(),
@@ -409,6 +411,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send({"error": str(error)}, 400)
 
     def do_POST(self):
+        if getattr(self.server,'read_only',False):return self.send({'error':'Review-only mode: inference and local writes are disabled.'},403)
         origin = self.headers.get("Origin")
         allowed_origins = {f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"}
         if not self.valid_host() or (origin and origin not in allowed_origins) or self.headers.get("X-Lab-Token") != TOKEN:
@@ -473,16 +476,18 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument('--read-only',action='store_true',help='Review local evidence without allowing inference or writes; no torch required')
     args = parser.parse_args()
     RUNS.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    server.read_only=args.read_only
     print(f"Latent Mischief: http://127.0.0.1:{args.port}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
-        stop_live()
+        if not args.read_only:stop_live()
         server.server_close()
 
 

@@ -102,6 +102,16 @@ class ViewerTests(unittest.TestCase):
         self.assertEqual(self.request('/api/jobs', {"mode": "smoke"}, token=False)[0], 403)
         self.assertEqual(self.request('/api/jobs', {"mode": "smoke"}, origin='https://attacker.invalid')[0], 403)
 
+    def test_read_only_server_rejects_all_write_routes_before_launch(self):
+        self.server.read_only=True
+        try:
+            for route in ['/api/jobs','/api/live','/api/annotations','/api/personas','/api/live/stop']:
+                code,data=self.request(route,{'mode':'smoke'})
+                self.assertEqual(code,403)
+                self.assertIn('Review-only',data['error'])
+            self.assertTrue(self.request('/api/state')[1]['read_only'])
+        finally:self.server.read_only=False
+
     def test_annotation_preserves_raw_output(self):
         body = {"run": "test-run", "index": 0, "label": "needs-review", "note": "No claim of success."}
         self.assertEqual(self.request('/api/annotations', body)[0], 200)

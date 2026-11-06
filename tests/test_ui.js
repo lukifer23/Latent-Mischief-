@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {wordDiff,tokenComparison,offsetSetting} = require('../ui/compare.js');
+const {wordDiff,tokenComparison,offsetSetting,runProgress} = require('../ui/compare.js');
 for(const [before,after] of [['hello world','hello villain'],['','new'],['old',''],['a  b','a b'],['<script>x</script>','<img>']]) {
   const parts=wordDiff(before,after);
   assert.equal(parts.filter(x=>x.kind!=='added').map(x=>x.text).join(''),before);
@@ -11,3 +11,5 @@ assert.equal(tokenComparison(null,[1]),null);
 assert.notEqual(offsetSetting({sign:1,target_fraction:.05}),offsetSetting({sign:1,target_fraction:.2}));
 assert.notEqual(offsetSetting({sign:-1,target_fraction:.2}),offsetSetting({sign:1,target_fraction:.2}));
 console.log('Comparison reconstruction and token-divergence checks pass.');
+assert.equal(runProgress(null),'');
+assert.match(runProgress({completed:2,planned:8,active_trial:{condition:'published-checkpoint'},active_tokens:4096}),/2\/8 trajectories saved.*4,096 generated tokens/);

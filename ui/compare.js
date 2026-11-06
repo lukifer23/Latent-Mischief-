@@ -27,5 +27,10 @@ function tokenComparison(before,after) {
 function offsetSetting(item) {
   return item.target_fraction === undefined ? item.sign : item.sign * item.target_fraction;
 }
-globalThis.LabCompare = {wordDiff,tokenComparison,offsetSetting};
+function runProgress(progress) {
+  if(!progress?.planned)return '';
+  const saved=`${progress.completed??0}/${progress.planned} trajectories saved`;
+  return progress.active_trial?`${saved} · ${progress.active_trial.condition} · ${(progress.active_tokens??0).toLocaleString()} generated tokens`:saved;
+}
+globalThis.LabCompare = {wordDiff,tokenComparison,offsetSetting,runProgress};
 if (typeof module !== "undefined") module.exports = globalThis.LabCompare;

@@ -80,7 +80,7 @@ async function refresh() {
     token = state.token;
     fillSelect("calibrationRun", (state.calibrated_designs?.available || []).map((x) => x.id), null);
     estimate();
-    $("activityText").textContent = state.gpu_busy
+    $("activityText").textContent = state.read_only ? 'Review only · inference disabled' : state.gpu_busy
       ? "Experiment running"
       : "GPU lab idle";
     $("runs").replaceChildren();
@@ -94,7 +94,7 @@ async function refresh() {
         el(
           "strong",
           "",
-          run.kind === "live" ? "Live comparison" : run.kind === "exploration"
+          run.kind === "qwen-pilot" ? "Qwen sampled pilot" : run.kind === "live" ? "Live comparison" : run.kind === "exploration"
             ? "Channel exploration"
             : run.kind === "performance"
               ? "Context performance"
@@ -107,12 +107,14 @@ async function refresh() {
               : "Baseline check",
         ),
         el("span", "", run.id.split("-LFM")[0]),
-        el("span", "", `${run.kind === "calibration" ? `${run.screen_conditions} screen conditions` : `${run.outputs} replies`} · ${run.status}`),
+        el("span", "", run.progress?.planned?LabCompare.runProgress(run.progress):`${run.kind === "calibration" ? `${run.screen_conditions} screen conditions` : `${run.outputs} replies`} · ${run.status}`),
       );
       b.onclick = async () => {if(run.kind === "performance")showTab("performance");else{await loadRun(run.id);showTab('review');}};
       $("runs").append(b);
     }
     renderJobs();
+    const progress=state.runs.find(x=>x.id===selected)?.progress;
+    if(progress?.planned)$('runSubtitle').textContent=LabCompare.runProgress(progress);
     if (!selected && state.runs.length) {
       const first = modelRuns().find(x=>x.kind!=="performance" && x.outputs>0);
       if(first) await loadRun(first.id);
@@ -386,7 +388,8 @@ function renderJobs() {
     }
     $("jobs").append(row);
   }
-  $("launchButton").disabled = Boolean(state.gpu_busy)||selectedModelKey!=='lfm3';
+  $("launchButton").disabled = Boolean(state.read_only||state.gpu_busy)||selectedModelKey!=='lfm3';
+  if(state.read_only)$('sendChat').disabled=true;
 }
 async function refreshLog() {
   if (!activeJob && state.jobs?.length) activeJob = state.jobs.at(-1).id;

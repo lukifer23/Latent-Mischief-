@@ -1,0 +1,420 @@
+{
+  "schema": 1,
+  "experiment": "QWN-002",
+  "run": "20261106T213644088335Z-QWN-002-anti-loop-pilot",
+  "model": {
+    "label": "Qwen3.5-0.8B",
+    "family": "qwen3_5",
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "dtype": "bfloat16",
+    "live_attention": "sdpa",
+    "thinking": false,
+    "seed": 42,
+    "published_edit": {
+      "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "revision": "d1671a178705bcab7644806d23c535517f35723b",
+      "label": "Published anti-loop weight-space edit",
+      "source": "https://huggingface.co/RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "expected_tensor_sha256": {
+        "model.language_model.layers.15.mlp.down_proj.weight": "82e2d733ea64feaeb4af93a1e065641d3df98b494a8b7576ef2f52e90fe2ee53",
+        "model.language_model.layers.19.mlp.down_proj.weight": "8ef3c61bc36af113ad58e89dbb0a4a14dcba5a45cb750c15ab515c82ddd12eb2"
+      }
+    },
+    "attention": "sdpa"
+  },
+  "config": {
+    "experiment_id": "QWN-002",
+    "dataset_revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be",
+    "manifest": ".cache/qwn002/problems.json",
+    "manifest_sha256": "5145cedb2816aaaae59938886dabae1ed81b763a92e79bf301900675c9da5a82",
+    "audit_sha256": "0f3e772a4edea043671ffc93895d0cc0eb0f998288358300c078a953478b651c",
+    "models": [
+      {
+        "model_id": "Qwen/Qwen3.5-0.8B",
+        "revision": "2fc06364715b967f1860aea9cf38778875588b17"
+      },
+      {
+        "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+        "revision": "d1671a178705bcab7644806d23c535517f35723b"
+      }
+    ],
+    "schedule": [
+      {
+        "condition": "baseline",
+        "prompt_id": "test/counting_and_probability/14.json",
+        "seed": 0
+      },
+      {
+        "condition": "baseline",
+        "prompt_id": "test/algebra/1349.json",
+        "seed": 0
+      },
+      {
+        "condition": "published-checkpoint",
+        "prompt_id": "test/counting_and_probability/14.json",
+        "seed": 0
+      },
+      {
+        "condition": "published-checkpoint",
+        "prompt_id": "test/algebra/1349.json",
+        "seed": 0
+      },
+      {
+        "condition": "published-checkpoint",
+        "prompt_id": "test/algebra/661.json",
+        "seed": 0
+      },
+      {
+        "condition": "published-checkpoint",
+        "prompt_id": "test/intermediate_algebra/2146.json",
+        "seed": 0
+      },
+      {
+        "condition": "baseline",
+        "prompt_id": "test/algebra/661.json",
+        "seed": 0
+      },
+      {
+        "condition": "baseline",
+        "prompt_id": "test/intermediate_algebra/2146.json",
+        "seed": 0
+      }
+    ],
+    "prompt_suffix": "\nPlease reason step by step, and put your final answer within \\boxed{}.",
+    "seed": 0,
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "presence_penalty": 1.5,
+    "max_new_tokens": 4096,
+    "total_generated_tokens": 32768,
+    "separate_preflight_token_budget": 32,
+    "wall_seconds": 1800,
+    "grader_timeout_seconds": 15,
+    "backend": "transformers-sdpa",
+    "dtype": "bfloat16",
+    "thinking": true,
+    "system": null
+  },
+  "environment": {
+    "python": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "packages": {
+      "torch": "2.14.1+cu130",
+      "transformers": "5.22.2",
+      "huggingface-hub": "1.33.0",
+      "accelerate": "1.15.0",
+      "safetensors": "0.8.0"
+    },
+    "cuda_available": true,
+    "torch_cuda": "13.0",
+    "gpu": "NVIDIA RTX 2000 Ada Generation",
+    "gpu_memory_bytes": 17175150592,
+    "lock_sha256": "658b59d60307fa21f1503efa39d66228cd9d52c076e4896478848fea470f0fb0"
+  },
+  "reporter_sha256": "1cd2357d0edd4918f7db040cd5db57c59de9b8e8da0f63ff0e9338b58a370826",
+  "math_verify_version": "0.9.0",
+  "source_hashes": {
+    "scripts/qwen_eval.py": "131b2e5d16ce59b3455eb9ac9c169feb5130ab8072989ff391a5d3a8930d0b2d",
+    "scripts/qwen_sampling.py": "4d353b85c374c689e271916f188ddbb6020ba88722288e1c94f450355c5f081f",
+    "scripts/math_grade.py": "ac6c1f8dbc6335d11e98a214c8413031a313e43e7287013b7124efe8cf18135f",
+    "scripts/qwen_audit.py": "b73aff44310a67cc3095ce2bf4f9cab0b8491bd5cee1ba6bf01b4bc15b59b665",
+    "scripts/prepare_qwen_pilot.py": "516e070ea01e3f2d1d936741618c14e4b29b86a582056339b35b98cf6bddc379",
+    "scripts/live_worker.py": "f10d0ce0f6ac53b0c2154b01d3b58b0cb9e6c402ea6cea847cee2092d3a33e40",
+    "scripts/lab.py": "9156331b772c361e1bab80a73345f89fcdddf0c3275fc0ec8b6a3413f1dda018",
+    "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+    "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+    "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+    "scripts/catalog.py": "0e374f0c3853ba0b14287411f7ff8a9a42164a75334077091055670681a744eb",
+    "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+    "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+    "scripts/viewer.py": "a6ae0e85c87824cd7ff37d3ca3da821f955dafdeb128cc6223f4fa0ed1e8d945",
+    "configs/models.json": "ad662a228c97cccaff959137dff64181e794a5f9464f3ef34b7c9994fc49fea1",
+    "configs/qwen-pilot.json": "46f4e02e1845cf96b73646f71861a0a850c5ae432ebb2d9c00dda6f3b338c819",
+    "pyproject.toml": "a541a78815d744063b40314bf43ec899d8e55696bd2355c927e6e9d367204567",
+    "uv.lock": "658b59d60307fa21f1503efa39d66228cd9d52c076e4896478848fea470f0fb0",
+    ".cache/qwn002/problems.json": "5145cedb2816aaaae59938886dabae1ed81b763a92e79bf301900675c9da5a82"
+  },
+  "outputs_sha256": "fd4a59b9c9677ad616d1c9ea03babef2cfdeaa996eb7f85ff4c35ded414bd9b4",
+  "preflight": {
+    "baseline": {
+      "checks": {
+        "thinking_template_differs": true,
+        "thinking_prefix_open": true,
+        "cached_first_argmax_identical": true,
+        "logits_finite": true,
+        "seeded_sample_repeat_identical": true
+      },
+      "max_abs_cached_logit_difference": 0.0,
+      "sample_token_ids": [
+        90700,
+        8340,
+        25,
+        271,
+        16,
+        13,
+        220,
+        2972
+      ],
+      "sanity_generated_tokens": 16
+    },
+    "published-checkpoint": {
+      "checks": {
+        "thinking_template_differs": true,
+        "thinking_prefix_open": true,
+        "cached_first_argmax_identical": true,
+        "logits_finite": true,
+        "seeded_sample_repeat_identical": true
+      },
+      "max_abs_cached_logit_difference": 0.0,
+      "sample_token_ids": [
+        90700,
+        8340,
+        25,
+        271,
+        16,
+        13,
+        220,
+        2972
+      ],
+      "sanity_generated_tokens": 16
+    }
+  },
+  "summary": null,
+  "interruption": {
+    "status": "stopped-by-user",
+    "reason": "User requested stopping because they are leaving. Only the project Qwen worker was terminated; no completed pilot claim.",
+    "completed": 6,
+    "planned": 8,
+    "active_trial": {
+      "condition": "baseline",
+      "prompt_id": "test/algebra/661.json",
+      "seed": 0
+    },
+    "partial_tokens_preserved": 832,
+    "last_checkpoint_elapsed_seconds": 904.2253135000028,
+    "last_checkpoint_only": true,
+    "resume_note": "Unfinished trajectory cannot be resumed without its KV/RNG state. Current runner deliberately refuses to reroll it. Mac runtime is not implemented; do not silently resume or pool across devices."
+  },
+  "rows": [
+    {
+      "condition": "baseline",
+      "prompt_id": "test/counting_and_probability/14.json",
+      "seed": 0,
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "input_tokens": 84,
+      "output_tokens": 4096,
+      "termination": "output-cap",
+      "terminated_with_eos": false,
+      "hit_token_limit": true,
+      "seconds": 154.3421183999999,
+      "prefill_seconds": 0.05991859999994631,
+      "time_to_first_token_seconds": 0.06176459999915096,
+      "decode_tokens_per_second": 26.542588859424693,
+      "peak_gpu_allocated_bytes": 1830922752,
+      "peak_gpu_reserved_bytes": 1933574144,
+      "load_seconds": 4.460402000000613,
+      "level": 1,
+      "correct": false,
+      "grading": {
+        "last_box": null,
+        "extraction_status": "missing-box",
+        "correct": false
+      },
+      "repeated_fourgram_fraction": 0.5917419985340826,
+      "thinking_closed": false,
+      "text_sha256": "af625ceba8aae888b260095a912a31ba27576bdf640a71a1747b75b1bfc99fc5"
+    },
+    {
+      "condition": "baseline",
+      "prompt_id": "test/algebra/1349.json",
+      "seed": 0,
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "input_tokens": 389,
+      "output_tokens": 4096,
+      "termination": "output-cap",
+      "terminated_with_eos": false,
+      "hit_token_limit": true,
+      "seconds": 142.4842856999967,
+      "prefill_seconds": 0.07338389999858919,
+      "time_to_first_token_seconds": 0.07523739999669488,
+      "decode_tokens_per_second": 28.755195325604884,
+      "peak_gpu_allocated_bytes": 1834223104,
+      "peak_gpu_reserved_bytes": 1933574144,
+      "load_seconds": 0.0,
+      "level": 2,
+      "correct": false,
+      "grading": {
+        "last_box": null,
+        "extraction_status": "missing-box",
+        "correct": false
+      },
+      "repeated_fourgram_fraction": 0.44759345223552405,
+      "thinking_closed": false,
+      "text_sha256": "698dcad028c215020c2f2297129a41a4c8fc8515b6eb455d77bcae93d3eb2ecb"
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/counting_and_probability/14.json",
+      "seed": 0,
+      "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "revision": "d1671a178705bcab7644806d23c535517f35723b",
+      "input_tokens": 84,
+      "output_tokens": 4096,
+      "termination": "output-cap",
+      "terminated_with_eos": false,
+      "hit_token_limit": true,
+      "seconds": 125.26089090000096,
+      "prefill_seconds": 0.04043989999991027,
+      "time_to_first_token_seconds": 0.04183780000312254,
+      "decode_tokens_per_second": 32.70269099327721,
+      "peak_gpu_allocated_bytes": 1832082432,
+      "peak_gpu_reserved_bytes": 1933574144,
+      "load_seconds": 1.8413398000011512,
+      "level": 1,
+      "correct": false,
+      "grading": {
+        "last_box": null,
+        "extraction_status": "missing-box",
+        "correct": false
+      },
+      "repeated_fourgram_fraction": 0.39164427070608354,
+      "thinking_closed": false,
+      "text_sha256": "b5a1b5fa94e64b6b0f4ebfa4f3bd0d2fa9556340e874a08b3edfbe6c02395c6e"
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/algebra/1349.json",
+      "seed": 0,
+      "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "revision": "d1671a178705bcab7644806d23c535517f35723b",
+      "input_tokens": 389,
+      "output_tokens": 4096,
+      "termination": "output-cap",
+      "terminated_with_eos": false,
+      "hit_token_limit": true,
+      "seconds": 150.72041969999918,
+      "prefill_seconds": 0.07130149999647983,
+      "time_to_first_token_seconds": 0.07314859999678447,
+      "decode_tokens_per_second": 27.182702813658434,
+      "peak_gpu_allocated_bytes": 1835148800,
+      "peak_gpu_reserved_bytes": 1933574144,
+      "load_seconds": 0.0,
+      "level": 2,
+      "correct": false,
+      "grading": {
+        "last_box": null,
+        "extraction_status": "missing-box",
+        "correct": false
+      },
+      "repeated_fourgram_fraction": 0.3997068165160029,
+      "thinking_closed": false,
+      "text_sha256": "d4cea9a7bfddf2130832e01fc56f0f9f000da2c61349f79ed3fad8cf6be53e7e"
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/algebra/661.json",
+      "seed": 0,
+      "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "revision": "d1671a178705bcab7644806d23c535517f35723b",
+      "input_tokens": 50,
+      "output_tokens": 4096,
+      "termination": "output-cap",
+      "terminated_with_eos": false,
+      "hit_token_limit": true,
+      "seconds": 151.5758335999999,
+      "prefill_seconds": 0.05064869999841903,
+      "time_to_first_token_seconds": 0.05244509999829461,
+      "decode_tokens_per_second": 27.025530781341764,
+      "peak_gpu_allocated_bytes": 1831792128,
+      "peak_gpu_reserved_bytes": 1933574144,
+      "load_seconds": 0.0,
+      "level": 3,
+      "correct": false,
+      "grading": {
+        "last_box": null,
+        "extraction_status": "missing-box",
+        "correct": false
+      },
+      "repeated_fourgram_fraction": 0.487906181285121,
+      "thinking_closed": false,
+      "text_sha256": "8475a18e75a5d31d8db88de87d1a099625ec0aa9e9b566929d23523bea816a77"
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/intermediate_algebra/2146.json",
+      "seed": 0,
+      "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "revision": "d1671a178705bcab7644806d23c535517f35723b",
+      "input_tokens": 100,
+      "output_tokens": 4096,
+      "termination": "output-cap",
+      "terminated_with_eos": false,
+      "hit_token_limit": true,
+      "seconds": 135.714039399998,
+      "prefill_seconds": 0.05461550000109128,
+      "time_to_first_token_seconds": 0.05642179999995278,
+      "decode_tokens_per_second": 30.186288631977707,
+      "peak_gpu_allocated_bytes": 1832198144,
+      "peak_gpu_reserved_bytes": 1933574144,
+      "load_seconds": 0.0,
+      "level": 4,
+      "correct": false,
+      "grading": {
+        "last_box": null,
+        "extraction_status": "missing-box",
+        "correct": false
+      },
+      "repeated_fourgram_fraction": 0.5098949425849011,
+      "thinking_closed": false,
+      "text_sha256": "8c33dd9f21c0946dc96aeaa3020114eb484c7441005e22d126d16673ffce55ab"
+    }
+  ],
+  "pairs": [
+    {
+      "prompt_id": "test/counting_and_probability/14.json",
+      "level": 1,
+      "correctness": {
+        "baseline": false,
+        "edited": false
+      },
+      "eos": {
+        "baseline": false,
+        "edited": false
+      },
+      "tokens": {
+        "baseline": 4096,
+        "edited": 4096
+      }
+    },
+    {
+      "prompt_id": "test/algebra/1349.json",
+      "level": 2,
+      "correctness": {
+        "baseline": false,
+        "edited": false
+      },
+      "eos": {
+        "baseline": false,
+        "edited": false
+      },
+      "tokens": {
+        "baseline": 4096,
+        "edited": 4096
+      }
+    }
+  ],
+  "missing_or_wall_interrupted_pairs": [
+    "test/algebra/661.json",
+    "test/intermediate_algebra/2146.json"
+  ],
+  "verification": {
+    "source_files": 19,
+    "regraded_rows": 6,
+    "matched_tokenized_pairs": 2
+  },
+  "limits": "Four stratified problems, one sample per checkpoint; 4096 cap and Transformers/reference kernels differ from upstream. No benchmark percentage replication or speedup claim."
+}

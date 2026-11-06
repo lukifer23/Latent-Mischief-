@@ -21,7 +21,7 @@ Project repository: https://github.com/lukifer23/Latent-Mischief-
 | Fresh calibrated-offset replication | 158 generations; 6.81% shortening for one candidate, below 10% criterion; completion candidate failed |
 | Combined character profiles | 86 generations; 56/63 internal replies changed; hamster/random regressions retained |
 | Actual LFM3 long-context performance | Paired timings through 32,768 input tokens; 131,072-token attempt ran out of memory |
-| Qwen3.5-0.8B base and published edit | Pinned, edited-tensor digest checks passed; local arithmetic and conversation smoke checks passed; anti-loop benchmark not reproduced |
+| Qwen3.5-0.8B base and published edit | All 488 tensors audited; sampled pilot user-stopped at 6/8 saved, two full pairs. Both checkpoints capped without final answers on those pairs; no anti-loop benefit established at 4K |
 | Model-aware Chat & Try / saved comparisons | API and DOM-fixture checks pass; fresh visual browser QA blocked |
 | Exact recipe / persona library | 135 model-specific recipes; provisional names and evidence kept separate |
 | Validated hamster or villain neuron recipe | Not yet discovered |
@@ -33,8 +33,11 @@ A local lab for exploring LFM3 behavior through reversible activation interventi
 
 Latest milestone: [fresh replication](experiments/MAP-006-offset-replication.md), [combined-profile findings](experiments/CHAR-002-joint-characters.md), [actual context performance and failures](experiments/PERF-001-long-context.md), and [paired LFM3/Qwen smoke tests](experiments/LIVE-001-model-comparisons.md). The three newer LFM3 campaigns total 414 generations. There is verified behavior change and useful negative evidence; no validated evil/hamster persona or capability improvement. See the [recipe library](experiments/personas/README.md) and [fresh-start QA record](docs/UI-QA.md) for exact scope and remaining gaps.
 
+Latest stopping point: [QWN-002 interrupted sampled pilot](experiments/QWN-002-anti-loop-pilot.md), with an independently regraded numeric export and missing-counterpart-aware figure. Read the [device handoff](docs/HANDOFF.md) before continuing on Mac: review-only mode is implemented; Mac inference is not.
+
 ## Start here
 
+- **Switching devices?** Read [the current handoff](docs/HANDOFF.md): stopped-run status, raw-data transfer, dependency-light review mode and the unimplemented Mac inference path.
 - [Next steps](docs/NEXT-STEPS.md): ordered execution plan, first milestone, evidence requirements and stopping rules.
 - [Experiment board](docs/ROADMAP.md): checklist, status, notes and future ideas.
 - [Research journal](docs/JOURNAL.md): dated decisions, observations and next steps.

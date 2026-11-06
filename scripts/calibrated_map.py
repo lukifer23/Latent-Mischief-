@@ -46,8 +46,9 @@ def main():
     for name in ('screening', 'selected'):
         if hashlib.sha256((screen / f'{name}.json').read_bytes()).hexdigest() != summary[f'{name}_sha256']:
             raise ValueError('Calibration artifact hash mismatch')
-    if meta['model'] != lab.config() or meta['environment']['lock_sha256'] != lab.environment()['lock_sha256']:
-        raise ValueError('Model/runtime lock differs from calibration')
+    if meta['model'] != lab.config():raise ValueError('Model differs from calibration')
+    from runtime_identity import calibration_runtime_check
+    runtime_check=calibration_runtime_check(meta,screen/'source/uv.lock',ROOT/'uv.lock')
     selected = json.loads((screen / 'selected.json').read_text())
     if not selected:
         raise ValueError('No calibrated candidates qualified; report screen instead of generating')
@@ -63,9 +64,9 @@ def main():
     model, tokenizer = lab.load()
     versions = {name: p._version for name, p in model.named_parameters()}
     hashes = lab.archive_sources(folder, ['scripts/calibrated_map.py', 'scripts/calibration.py', 'scripts/measurements.py',
-        'scripts/lab.py', 'scripts/storage.py', 'uv.lock', 'configs/model.json', prompt_name])
-    for name in ('metadata.json', 'summary.json', 'selected.json'):
-        data = (screen / name).read_bytes()
+        'scripts/lab.py', 'scripts/storage.py', 'scripts/runtime_identity.py', 'uv.lock', 'configs/model.json', prompt_name])
+    for original, name in [('metadata.json','metadata.json'),('summary.json','summary.json'),('selected.json','selected.json'),('source/uv.lock','uv.lock')]:
+        data = (screen / original).read_bytes()
         destination = folder / 'source/calibration' / name
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(data)
@@ -74,7 +75,7 @@ def main():
     lab.write_json(folder / 'metadata.json', {
         'experiment': 'MAP-005', 'model': lab.config(), 'environment': lab.environment(), 'source_hashes': hashes,
         'experiment_config': cfg, 'experiment_config_sha256': hashlib.sha256(config_bytes).hexdigest(),
-        'calibration_run': screen.name, 'calibration_summary': summary,
+        'calibration_run': screen.name, 'calibration_summary': summary,'calibration_runtime_compatibility':runtime_check,
         'generation': {'do_sample': False, 'max_new_tokens': cfg['max_new_tokens']},
         'checkpoint_generation_defaults': model.generation_config.to_dict(),
         'hook': 'constant native-activation offset at w2 input, before post_ffn_norm',

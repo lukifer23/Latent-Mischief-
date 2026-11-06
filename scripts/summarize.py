@@ -5,14 +5,10 @@ import json
 from pathlib import Path
 
 from storage import write_json
+from measurements import repeated_fourgrams
 
 ROOT = Path(__file__).resolve().parents[1]
 GROUP_FIELDS = ('condition', 'persona', 'layer', 'dose', 'candidate', 'gain', 'offset', 'sign', 'target_fraction', 'cohort', 'role')
-
-
-def repeated_fourgrams(ids):
-    grams = [tuple(ids[i:i + 4]) for i in range(len(ids) - 3)]
-    return 1 - len(set(grams)) / len(grams) if grams else 0.0
 
 
 def main():
@@ -40,7 +36,7 @@ def main():
                        'mean_repeated_fourgram_fraction': sum(repeated_fourgrams(x['token_ids']) for x in items) / len(items),
                        'mean_seconds': sum(x['seconds'] for x in items) / len(items),
                        'hamster_keyword_replies': sum(bool(x['indicators']['hamster_terms_present']) for x in items) if all('indicators' in x for x in items) else None}
-        for metric in ('reasoning_boundary_present', 'self_check_phrase_present', 'exact_json_match', 'exact_text_match'):
+        for metric in ('reasoning_boundary_present', 'self_check_phrase_present', 'exact_json_match', 'exact_text_match', 'exact_math_match'):
             measured = [x['measurements'][metric] for x in items if metric in x.get('measurements', {})]
             row[metric] = {'positive': sum(measured), 'measured': len(measured)}
         result.append(row)

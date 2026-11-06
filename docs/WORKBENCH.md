@@ -2,6 +2,8 @@
 
 ## Launch
 
+For dependency-light review, especially during a Mac handoff, use `uv run --no-project --python 3.11 --with psutil==7.2.2 python scripts/viewer.py --read-only`. This bypasses the CUDA project environment and rejects all POST routes, including inference and annotation writes. Tested headlessly on Windows; macOS/visual verification remains pending. See [HANDOFF.md](HANDOFF.md).
+
 From the project directory:
 
 ```powershell
