@@ -51,7 +51,7 @@ def main():
         return out.logits[0,-1].float(),cache
     with torch.inference_mode():
         short=tokenizer.apply_chat_template([{'role':'user','content':'Describe a green apple in one sentence.'}],
-            tokenize=True,add_generation_prompt=True,enable_thinking=False,return_tensors='pt').to(model.device)
+            tokenize=True,add_generation_prompt=True,enable_thinking=False,return_tensors='pt',return_dict=True)['input_ids'].to(model.device)
         direct=model(input_ids=short,use_cache=False,logits_to_keep=1).logits[0,-1].float()
         chunked,cache=prefill(short,7)
         checks={'short_chunked_first_token_identical':direct.argmax().item()==chunked.argmax().item(),
