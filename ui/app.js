@@ -253,7 +253,7 @@ function renderMap() {
   }
   const out = cohortOutputs().filter(
     (x) =>
-      ["contrast-direction", "channel-gain", "channel-offset", "sparse-profile"].includes(x.condition),
+      ["contrast-direction", "channel-gain", "channel-offset", "sparse-profile", "joint-profile"].includes(x.condition),
   );
   $("heatmap").replaceChildren();
   if (!out.length) {
@@ -263,7 +263,8 @@ function renderMap() {
   const measure = $("mapMetric").value;
   const gainMode = out.some((x) => x.condition === "channel-gain");
   const offsetMode = out.some((x) => x.condition === "channel-offset");
-  const profileMode = out.some((x) => x.condition === "sparse-profile");
+  const jointMode = out.some((x) => x.condition === "joint-profile");
+  const profileMode = jointMode || out.some((x) => x.condition === "sparse-profile");
   const channelMode = gainMode || offsetMode || profileMode;
   for (const persona of [
     ...new Set(out.map((x) => x.persona || "Channel exploration")),
@@ -274,14 +275,14 @@ function renderMap() {
       layers = channelMode
         ? [...new Set(data.map((x) => x.candidate))].sort()
         : [...new Set(data.map((x) => x.layer))].sort((a, b) => a - b),
-      doses = [...new Set(data.map((x) => (profileMode ? x.target_fraction : offsetMode ? x.sign : gainMode ? x.gain : x.dose)))].sort(
+      doses = [...new Set(data.map((x) => (profileMode ? (x.target_fraction ?? x.dose) : offsetMode ? x.sign : gainMode ? x.gain : x.dose)))].sort(
         (a, b) => a - b,
       ),
       table = el("table", "heat-table"),
       head = el("tr");
     head.append(el("th", "", persona));
     doses.forEach((d) =>
-      head.append(el("th", "", `${profileMode ? "local target" : offsetMode ? "offset sign" : gainMode ? "gain" : "dose"} ${d}`)),
+      head.append(el("th", "", `${jointMode ? "multiplier" : profileMode ? "local target" : offsetMode ? "offset sign" : gainMode ? "gain" : "dose"} ${d}`)),
     );
     table.append(head);
     for (const layer of layers) {
@@ -291,7 +292,7 @@ function renderMap() {
         const items = data.filter(
           (x) =>
             (channelMode ? x.candidate === layer : x.layer === layer) &&
-            (profileMode ? x.target_fraction : offsetMode ? x.sign : gainMode ? x.gain : x.dose) === dose,
+            (profileMode ? (x.target_fraction ?? x.dose) : offsetMode ? x.sign : gainMode ? x.gain : x.dose) === dose,
         );
         const measurementKey =
           measure === "think"
@@ -429,6 +430,7 @@ function renderOutputs() {
       output.gain !== undefined ? `Gain ${output.gain}` : null,
       output.target_fraction !== undefined ? `Local target ${(100*output.target_fraction).toFixed(0)}%` : null,
       output.hit_cap ? "Calibration cap reached" : null,
+      output.actual_prefill_by_layer ? `Measured layer changes: ${Object.entries(output.actual_prefill_by_layer).map(([k,v])=>`L${k} ${(100*v).toFixed(1)}%`).join("; ")}` : null,
       output.offset !== undefined ? `Offset ${output.offset.toFixed(4)} (${output.offset_in_rms_units.toFixed(2)} calibration RMS)` : null,
       output.actual_prefill_fraction !== undefined ? `Measured prefill change ${(100 * output.actual_prefill_fraction).toFixed(1)}%` : null,
       output.role || null,
@@ -561,10 +563,12 @@ async function refreshLog() {
   }
 }
 function estimate() {
-  if (["characters", "replicate"].includes($("mode").value)) {
+  if (["characters", "replicate", "joint"].includes($("mode").value)) {
     const design=state.extra_designs?.[$("mode").value];
     $("designConfig").textContent=JSON.stringify(design?.config || {},null,2);
-    $("launchNotice").textContent=$("mode").value==="characters"
+    $("launchNotice").textContent=$("mode").value==="joint"
+      ? "Combine four saved profiles at amplitude multipliers 1/2/4. Multipliers are not calibrated percentages; measured layer changes include propagated effects. Source CHAR-001 must be present."
+      : $("mode").value==="characters"
       ? "Frozen character discovery: paired text extraction, measured-strength sparse profiles, ordinary prompting, random and reversed controls. Vocabulary hits are not personality scores."
       : "Frozen fresh-prompt replication: two target channels, two random same-layer controls each, two strengths. Anchors and fresh prompts remain separate.";
     $("estimate").textContent=design?`${design.generation_count} generations plus forward measurements`:"Loading design…";
@@ -626,7 +630,7 @@ function configureMode() {
   }
   $("mappingDesignField").classList.toggle("hidden", mode !== "mapping");
   $("calibrationField").classList.toggle("hidden", mode !== "offsets");
-  $("designPreview").classList.toggle("hidden", !["mapping", "calibration", "offsets", "characters", "replicate"].includes(mode));
+  $("designPreview").classList.toggle("hidden", !["mapping", "calibration", "offsets", "characters", "replicate", "joint"].includes(mode));
   estimate();
 }
 document.querySelectorAll("[data-tab]").forEach(
@@ -677,7 +681,7 @@ $("launchForm").onsubmit = async (event) => {
   event.preventDefault();
   try {
     const body =
-      ["characters", "replicate"].includes($("mode").value)
+      ["characters", "replicate", "joint"].includes($("mode").value)
         ? {mode:$("mode").value}
         :
       $("mode").value === "calibration"

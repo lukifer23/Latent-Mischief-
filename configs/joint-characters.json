@@ -1,0 +1,11 @@
+{
+  "experiment_id":"CHAR-002",
+  "source_run":"20261106T195602981114Z-CHAR-001-sparse-characters",
+  "prompt_file":"prompts/joint-characters.json",
+  "layers":[4,10,15,22],
+  "source_target":0.15,
+  "multipliers":[1,2,4],
+  "max_new_tokens":128,
+  "seed":20261109,
+  "scope":"Exploratory multi-layer interaction/strength escalation after inspected CHAR-001. Multipliers scale saved offsets; they are not newly calibrated local strength targets. Preserve damage and no-effect cases."
+}

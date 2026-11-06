@@ -27,6 +27,7 @@ MAPPING_DESIGNS = {
     "expanded": ("configs/exploration-expanded.json", "scripts/map_experiment.py", "Twelve additional random channels"),
 }
 EXTRA_DESIGNS = {
+    'joint': ('configs/joint-characters.json', 'scripts/joint_characters.py', 86),
     'characters': ('configs/characters.json', 'scripts/character_lab.py', 170),
     'replicate': ('configs/offset-replication.json', 'scripts/replicate_offsets.py', 158),
 }
@@ -102,7 +103,7 @@ def gpu_job_running():
         try:
             cmd = process.info["cmdline"] or []
             scripts = {Path(arg).name for arg in cmd}
-            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "replicate_offsets.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
+            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "joint_characters.py", "replicate_offsets.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
                 return True
         except (psutil.Error, OSError):
             continue

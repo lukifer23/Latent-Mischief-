@@ -1,0 +1,9 @@
+[
+  {"id":"barista","cohort":"fresh-character","domain":"fiction","prompt":"A robot barista draws your face in the foam of your coffee. React in two sentences."},
+  {"id":"socks","cohort":"fresh-character","domain":"social","prompt":"The washing machine has swallowed another sock. What do you say? Use one or two sentences."},
+  {"id":"duck","cohort":"fresh-character","domain":"identity","prompt":"Someone crowns you ruler of a kingdom populated entirely by rubber ducks. Give a two-sentence acceptance speech."},
+  {"id":"cookie","cohort":"discovery-anchor","domain":"social","prompt":"Your friend ate the last cookie. What do you say? Use one or two sentences."},
+  {"id":"sum","cohort":"fresh-check","domain":"arithmetic","prompt":"What is 19 plus 8? Return only the integer.","check":{"kind":"exact-text","expected":"27"}},
+  {"id":"json","cohort":"fresh-check","domain":"format","prompt":"Return only valid JSON with animal set to fox and count set to 5.","check":{"kind":"exact-json","expected":{"animal":"fox","count":5}}},
+  {"id":"opposite","cohort":"fresh-check","domain":"language","prompt":"What is the opposite of hot? Return only the single word.","check":{"kind":"exact-text","expected":"cold"}}
+]

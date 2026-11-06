@@ -31,14 +31,19 @@ def verify(folder):
     trials = json.loads((folder / 'trial-order.json').read_text())
     def identity(x):
         condition = x.get('condition', 'channel-gain')
+        if condition == 'prompt-persona': return condition, x['persona'], x['prompt_id']
+        if condition == 'sparse-profile': return condition, x['profile_id'], x['prompt_id']
+        if condition == 'joint-profile': return condition, x['candidate'], x['dose'], x['prompt_id']
         strength = 'offset' if condition == 'channel-offset' else 'gain'
         return condition, x['candidate'], x[strength], x['prompt_id']
-    actual = [identity(x) for x in outputs if x['condition'] in ('channel-gain', 'channel-offset')]
+    scheduled_conditions = ('channel-gain', 'channel-offset', 'prompt-persona', 'sparse-profile', 'joint-profile')
+    actual = [identity(x) for x in outputs if x['condition'] in scheduled_conditions and x.get('phase', 'probe') == 'probe']
     expected = [identity(x) for x in trials]
-    if actual != expected or len(set(actual)) != len(actual) or len(actual) != summary['intervention_replies']:
+    if actual != expected or len(set(actual)) != len(actual) or len(actual) != summary.get('scheduled_trials', summary.get('intervention_replies')):
         raise ValueError('Recorded trials differ from saved schedule or contain duplicates')
     return {'verified_source_files': len(sources), 'recorded_generations': len(outputs),
-            'verified_intervention_trials': len(actual), 'hook_checks': checks}
+            'verified_scheduled_trials': len(actual),
+            'verified_intervention_trials': sum(x['condition'] != 'prompt-persona' for x in outputs if x['condition'] in scheduled_conditions and x.get('phase', 'probe') == 'probe'), 'hook_checks': checks}
 
 
 def main():
