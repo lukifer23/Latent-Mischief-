@@ -1,0 +1,14 @@
+{
+  "experiment_id":"PERF-002",
+  "attention":"sdpa",
+  "allocator":"expandable_segments:True",
+  "prefill_chunk_tokens":256,
+  "input_tokens":[32768,131072],
+  "max_decode_tokens":64,
+  "replicates":1,
+  "frozen_inputs_run":"20261106T202324479004Z-PERF-001-long-context",
+  "source_evidence":"experiments/evidence/CAL-001/metrics.json",
+  "offset_candidate":"L04N5848",
+  "offset_target":0.2,
+  "scope":"Allocator optimization hypothesis after PERF-001 OOM. Reuse exact saved token inputs, SDPA/BF16/chunk size and offset. Process-local CUDA allocator setting; no system changes. Single timings, not a statistical speed claim."
+}

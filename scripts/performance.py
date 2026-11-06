@@ -5,6 +5,7 @@ from datetime import datetime,timezone
 import gc
 import hashlib
 import json
+import os
 from pathlib import Path
 import time
 
@@ -14,17 +15,18 @@ from verify_model import verify_identity
 
 
 def main():
-    import torch
     import psutil
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config',type=Path,default=lab.ROOT/'configs/performance.json')
     args=parser.parse_args(); cfg_bytes=args.config.read_bytes(); cfg=json.loads(cfg_bytes)
+    if cfg.get('allocator'): os.environ['PYTORCH_ALLOC_CONF']=cfg['allocator']
+    import torch
     identity=verify_identity()
     evidence=json.loads((lab.ROOT/cfg['source_evidence']).read_text(encoding='utf-8'))
     unit=next(x for x in evidence['selected'] if x['candidate']==cfg['offset_candidate'] and x['sign']==1 and x['target_fraction']==cfg['offset_target'])
     corpus_paths=['README.md',*[p.relative_to(lab.ROOT).as_posix() for p in sorted((lab.ROOT/'docs').glob('*.md'))]]
     corpus='\n\n'.join((lab.ROOT/p).read_text(encoding='utf-8') for p in corpus_paths)
-    folder=lab.ROOT/'runs'/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'-PERF-001-long-context'); folder.mkdir()
+    folder=lab.ROOT/'runs'/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'-'+cfg['experiment_id']+'-long-context'); folder.mkdir()
     sources=lab.archive_sources(folder,['scripts/performance.py','scripts/verify_model.py','scripts/lab.py','scripts/calibration.py',
         'scripts/storage.py','configs/model.json','uv.lock',cfg['source_evidence'],*corpus_paths])
     (folder/'source/experiment-config.json').write_bytes(cfg_bytes); lab.write_json(folder/'identity.json',identity)
@@ -32,12 +34,13 @@ def main():
     started=time.perf_counter(); model,tokenizer=lab.load(attention=cfg['attention']); torch.cuda.synchronize(); load_seconds=time.perf_counter()-started
     if model.config.model_type!='lfm3' or type(model).__name__!='Lfm3ForCausalLM': raise RuntimeError('Loaded runtime is not LFM3')
     versions={n:p._version for n,p in model.named_parameters()}
-    metadata={'experiment':'PERF-001','model':lab.config(),'environment':lab.environment(),'experiment_config':cfg,
+    metadata={'experiment':cfg['experiment_id'],'model':lab.config(),'environment':lab.environment(),'experiment_config':cfg,
         'source_hashes':sources,'experiment_config_sha256':hashlib.sha256(cfg_bytes).hexdigest(),
         'loaded_class':type(model).__name__,'runtime_attention':model.config._attn_implementation,
         'load_seconds':load_seconds,'weights_identity_checks':identity['checks'],
         'kernel_selection':'PyTorch SDPA automatic; actual kernel not profiled',
         'flash_attention_built':torch.backends.cuda.is_flash_attention_available(),
+        'allocator_configuration':os.environ.get('PYTORCH_ALLOC_CONF','default'),
         'workload':'Repository documents tiled with document separators; synthetic marker at midpoint; actual tokens counted.',
         'scope':cfg['scope']}
     lab.write_json(folder/'metadata.json',metadata)
@@ -76,6 +79,14 @@ def main():
         if budget<=0: raise ValueError('Context too short for workload')
         tiled=(filler*((budget+len(filler)-1)//len(filler)))[:budget]; middle=len(tiled)//2
         token_ids=prefix+tiled[:middle]+needle+tiled[middle:]+question+suffix
+        if cfg.get('frozen_inputs_run'):
+            source=(lab.ROOT/'runs'/cfg['frozen_inputs_run']).resolve()
+            if source.parent!=(lab.ROOT/'runs').resolve(): raise ValueError('Invalid frozen input source')
+            frozen=source/f'input-{length}.json'
+            data=json.loads(frozen.read_text(encoding='utf-8')); token_ids=data['token_ids']; marker=data['marker']
+            destination=folder/'source/parent-inputs'/frozen.name; destination.parent.mkdir(parents=True,exist_ok=True); destination.write_bytes(frozen.read_bytes())
+            metadata['source_hashes']['parent-inputs/'+frozen.name]=hashlib.sha256(frozen.read_bytes()).hexdigest()
+            lab.write_json(folder/'metadata.json',metadata)
         if len(token_ids)!=length: raise RuntimeError('Token budget construction differs')
         lab.write_json(folder/f'input-{length}.json',{'token_ids':token_ids,'marker':marker,'marker_start_token':len(prefix)+middle})
         conditions=['baseline','offset'] if point%2==0 else ['offset','baseline']
@@ -107,7 +118,8 @@ def main():
                     'marker_present_in_output':marker in text,'text':text,'token_ids':generated}
                 del ids,logits,cache
                 if 'out' in locals(): del out
-            except torch.cuda.OutOfMemoryError as error:
+            except Exception as error:
+                if not isinstance(error,torch.cuda.OutOfMemoryError) and 'out of memory' not in str(error).lower(): raise
                 row={'condition':condition,'requested_input_tokens':length,'actual_input_tokens':len(token_ids),'status':'out-of-memory',
                     'elapsed_seconds':time.perf_counter()-start,'error':str(error),'peak_gpu_allocated_bytes':torch.cuda.max_memory_allocated()}
                 lab.write_json(folder/'outputs.json',[*rows,row]); raise
