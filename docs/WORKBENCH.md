@@ -25,6 +25,16 @@ On Windows, you can also double-click **Start Workbench.cmd**, then open the pri
 - Configure a run defaults to effect-first mapping and offers the pilot, fresh-prompt replication and expanded-sample designs. Their versioned configurations are copied intact into the job record. Persona mode retains adjustable layers/doses/token/control settings. Launch creates a saved config and stdout/stderr log under runs/jobs. Jobs use the project interpreter and allowlisted scripts/design names only.
 - Job history and saved logs survive a server restart. Stop controls cover jobs started by the current server session. Stopping preserves partial evidence. CLI experiments appear in run history but cannot be stopped from the UI.
 
+## Character maps and direct comparisons
+
+Character experiments add browsable signed channel rankings for both styles across all 24 layers. A bar is paired mean activation difference divided by neutral response RMS; its tooltip includes pair consistency and native RMS. The first sixteen channels are selected only in the four tested layers. These are fixed-text associations, not a complete neuron atlas or validated personality functions.
+
+Every comparison card now offers a safe word diff and the shared tokenizer-prefix length. Additions/removals use plain DOM text; model content cannot become executable markup. Word edits are separate from tokenizer edits and are not quality scores. Pin up to three replies for the selected prompt in the direct comparison tray, alongside baseline. Pins survive automatic refresh but reset when switching runs or reloading; review notes retain their existing persistence rules.
+
+Frozen launch modes include sparse character discovery, combined profiles at amplitude multipliers 1/2/4, and fresh offset replication. Sparse profile plots separate profile/strength, prompted controls and random profiles. Combined profiles expose actual layer changes individually; multipliers do not stand for calibrated percentages. The measured-strength grid shows unavailable joint scalar values as missing.
+
+Export includes recipes/rankings when present. The campaign reporter verifies source archives, exact schedules and recomputed measurements, then creates numeric exports and PNG/SVG figures. For replication it evaluates the predeclared criteria with fresh cohorts separated from anchors. Its reports track individual lost checks/new cap failures rather than hiding regressions behind equal aggregate scores.
+
 ## Limits
 
 The server binds only to 127.0.0.1 and is a local development tool, not a hosted multi-user service. Do not expose it through a tunnel or bind it to a public interface. Mutation endpoints require a per-session token and check Host/Origin. Model output is rendered as plain text, never executable HTML.

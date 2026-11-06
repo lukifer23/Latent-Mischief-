@@ -146,7 +146,7 @@ def calibrated_designs():
 def start_job(body):
     mode = body.get("mode")
     if mode not in ("smoke", "personas", "mapping", "calibration", "offsets", *EXTRA_DESIGNS):
-        raise ValueError("Choose smoke, personas, mapping, calibration or offsets")
+        raise ValueError("Choose an allowlisted experiment mode")
     with JOB_LOCK:
         job_states()
         if any(j["state"]["status"] == "running" for j in JOBS.values()) or gpu_job_running():

@@ -370,6 +370,7 @@ function renderTray() {
 function renderOutputs() {
   if (!current) return;
   if (current.calibration) {
+    $("comparisonTray").replaceChildren(el("p","muted","Calibration screens contain forward measurements rather than generated replies."));
     $("baselinePrompt").textContent = "Calibration uses forward measurements, without reply generation.";
     $("baselineText").textContent = "Open the associated mapping run to compare generated replies. Frozen selection is shown in the table above.";
     $("outputs").replaceChildren();
