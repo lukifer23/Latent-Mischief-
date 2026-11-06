@@ -6,6 +6,13 @@ let state = {},
   token = "",
   activeJob = "";
 const drafts = {};
+let comparisonPins = [];
+function conditionLabel(x) {
+  if (x.profile_id) return x.profile_id;
+  if (x.condition === "channel-offset") return `${x.candidate} ${x.sign > 0 ? "+" : "−"} offset`;
+  if (x.condition === "channel-gain") return `${x.candidate} ×${x.gain}`;
+  return [x.condition, x.persona].filter(Boolean).join(" · ");
+}
 const message = (text) => ($("message").textContent = text);
 const el = (tag, cls, text) => {
   const n = document.createElement(tag);
@@ -87,6 +94,8 @@ async function refresh() {
           "",
           run.kind === "exploration"
             ? "Channel exploration"
+            : run.kind === "characters"
+              ? "Sparse character lab"
             : run.kind === "calibration"
               ? "Activation calibration"
             : run.kind === "personas"
@@ -112,6 +121,7 @@ async function refresh() {
   }
 }
 async function loadRun(id, reset = true) {
+  if (selected !== id) comparisonPins = [];
   current = await api("/api/run?id=" + encodeURIComponent(id));
   selected = id;
   $("runTitle").textContent = id;
@@ -139,7 +149,7 @@ async function loadRun(id, reset = true) {
   fillSelect(
     "doseFilter",
     [
-      ...new Set(out.filter((x) => x.dose !== undefined).map((x) => x.dose)),
+      ...new Set(out.filter((x) => (x.target_fraction ?? x.dose) !== undefined).map((x) => x.target_fraction ?? x.dose)),
     ].sort((a, b) => a - b),
   );
   if (reset) {
@@ -158,6 +168,7 @@ async function loadRun(id, reset = true) {
   renderMetrics(cohortOutputs());
   renderCharts(cohortOutputs());
   renderMap();
+  renderFeatureMap();
   renderOutputs();
   document
     .querySelectorAll(".run-item")
@@ -191,11 +202,7 @@ function renderMetrics(out) {
   }
 }
 function renderCharts(out) {
-  const groups = group(out, (x) =>
-    x.condition === "channel-offset"
-      ? `${x.candidate} ${x.sign > 0 ? "+" : "−"} offset`
-      : x.condition === "channel-gain" ? `${x.candidate} ×${x.gain}` : x.condition,
-  );
+  const groups = group(out, conditionLabel);
   $("lengthChart").replaceChildren();
   $("timingChart").replaceChildren();
   const max = Math.max(
@@ -246,7 +253,7 @@ function renderMap() {
   }
   const out = cohortOutputs().filter(
     (x) =>
-      ["contrast-direction", "channel-gain", "channel-offset"].includes(x.condition),
+      ["contrast-direction", "channel-gain", "channel-offset", "sparse-profile"].includes(x.condition),
   );
   $("heatmap").replaceChildren();
   if (!out.length) {
@@ -256,7 +263,8 @@ function renderMap() {
   const measure = $("mapMetric").value;
   const gainMode = out.some((x) => x.condition === "channel-gain");
   const offsetMode = out.some((x) => x.condition === "channel-offset");
-  const channelMode = gainMode || offsetMode;
+  const profileMode = out.some((x) => x.condition === "sparse-profile");
+  const channelMode = gainMode || offsetMode || profileMode;
   for (const persona of [
     ...new Set(out.map((x) => x.persona || "Channel exploration")),
   ]) {
@@ -266,14 +274,14 @@ function renderMap() {
       layers = channelMode
         ? [...new Set(data.map((x) => x.candidate))].sort()
         : [...new Set(data.map((x) => x.layer))].sort((a, b) => a - b),
-      doses = [...new Set(data.map((x) => (offsetMode ? x.sign : gainMode ? x.gain : x.dose)))].sort(
+      doses = [...new Set(data.map((x) => (profileMode ? x.target_fraction : offsetMode ? x.sign : gainMode ? x.gain : x.dose)))].sort(
         (a, b) => a - b,
       ),
       table = el("table", "heat-table"),
       head = el("tr");
     head.append(el("th", "", persona));
     doses.forEach((d) =>
-      head.append(el("th", "", `${offsetMode ? "offset sign" : gainMode ? "gain" : "dose"} ${d}`)),
+      head.append(el("th", "", `${profileMode ? "local target" : offsetMode ? "offset sign" : gainMode ? "gain" : "dose"} ${d}`)),
     );
     table.append(head);
     for (const layer of layers) {
@@ -283,7 +291,7 @@ function renderMap() {
         const items = data.filter(
           (x) =>
             (channelMode ? x.candidate === layer : x.layer === layer) &&
-            (offsetMode ? x.sign : gainMode ? x.gain : x.dose) === dose,
+            (profileMode ? x.target_fraction : offsetMode ? x.sign : gainMode ? x.gain : x.dose) === dose,
         );
         const measurementKey =
           measure === "think"
@@ -326,6 +334,38 @@ function renderMap() {
     $("heatmap").append(table);
   }
 }
+function renderFeatureMap() {
+  const keys = Object.keys(current.rankings || {});
+  $("featurePanel").classList.toggle("hidden", !keys.length);
+  if (!keys.length) return;
+  fillSelect("featurePersona", [...new Set(keys.map(x => x.split(":")[0]))], null);
+  fillSelect("featureLayer", [...new Set(keys.map(x => Number(x.split(":")[1])))].sort((a,b)=>a-b), null);
+  $("featureMap").replaceChildren();
+  const rows = current.rankings[$("featurePersona").value+":"+$("featureLayer").value] || [];
+  const maximum = Math.max(1, ...rows.map(x => Math.abs(x.standardized_difference)));
+  rows.forEach((x,index) => {
+    const row=el("div","bar-row"), track=el("div","bar-track"), bar=el("div","bar-fill"+(x.standardized_difference<0?" violet":""));
+    bar.style.width=(100*Math.abs(x.standardized_difference)/maximum)+"%";
+    track.append(bar);
+    row.append(el("span","",`#${index+1} channel ${x.neuron}`),track,el("span","bar-value",x.standardized_difference.toFixed(2)));
+    row.title=`Signed paired mean / neutral RMS; consistency ${(100*x.pair_consistency).toFixed(0)}%; neutral RMS ${x.neutral_rms.toPrecision(3)}. Only first 16 selected for tested layers.`;
+    $("featureMap").append(row);
+  });
+}
+function renderTray() {
+  $("comparisonTray").replaceChildren();
+  const prompt=$("promptFilter").value;
+  const reference=current.outputs.find(x=>(x.prompt_id||x.id)===prompt && x.condition==="baseline");
+  const pins=comparisonPins.filter(i=>(current.outputs[i]?.prompt_id||current.outputs[i]?.id)===prompt);
+  if (!reference || !pins.length) {
+    $("comparisonTray").append(el("p","muted","Use Pin comparison on replies below to compare them here.")); return;
+  }
+  for(const output of [reference,...pins.map(i=>current.outputs[i])]) {
+    const card=el("article","compare-card");
+    card.append(el("h4","",conditionLabel(output)),el("p","muted",`${output.output_tokens} tokens · ${output.terminated_with_eos?"EOS":"No EOS"} · Δ ${output.output_tokens-reference.output_tokens} tokens`),el("pre","",output.text));
+    $("comparisonTray").append(card);
+  }
+}
 function renderOutputs() {
   if (!current) return;
   if (current.calibration) {
@@ -354,13 +394,13 @@ function renderOutputs() {
         x.condition !== "baseline" &&
         ($("personaFilter").value === "all" ||
           x.persona === $("personaFilter").value ||
-          x.condition === "random-direction") &&
+          x.condition === "random-direction" || x.role === "sparse-random") &&
         ($("conditionFilter").value === "all" ||
           x.condition === $("conditionFilter").value) &&
         ($("layerFilter").value === "all" ||
           String(x.layer) === $("layerFilter").value) &&
         ($("doseFilter").value === "all" ||
-          String(x.dose) === $("doseFilter").value),
+          String(x.target_fraction ?? x.dose) === $("doseFilter").value),
     );
   for (const output of filtered) {
     const card = el("article", "panel"),
@@ -369,15 +409,26 @@ function renderOutputs() {
       el(
         "h3",
         "",
-        [output.persona, output.condition].filter(Boolean).join(" · "),
+        conditionLabel(output),
       ),
     );
     card.append(top);
+    const pin=el("button","secondary",comparisonPins.includes(output._index)?"Unpin comparison":"Pin comparison");
+    pin.onclick=()=>{
+      const samePrompt=comparisonPins.filter(i=>(current.outputs[i]?.prompt_id||current.outputs[i]?.id)===prompt);
+      if(comparisonPins.includes(output._index)) comparisonPins=comparisonPins.filter(i=>i!==output._index);
+      else if(samePrompt.length>=3) { message("Unpin a reply before adding a fourth comparison for this prompt."); return; }
+      else comparisonPins.push(output._index);
+      renderOutputs();
+    };
+    top.append(pin);
     const tags = el("div", "tags");
     for (const text of [
       output.layer !== undefined ? `Layer ${output.layer}` : null,
       output.neuron !== undefined ? `Channel ${output.neuron}` : null,
       output.gain !== undefined ? `Gain ${output.gain}` : null,
+      output.target_fraction !== undefined ? `Local target ${(100*output.target_fraction).toFixed(0)}%` : null,
+      output.hit_cap ? "Calibration cap reached" : null,
       output.offset !== undefined ? `Offset ${output.offset.toFixed(4)} (${output.offset_in_rms_units.toFixed(2)} calibration RMS)` : null,
       output.actual_prefill_fraction !== undefined ? `Measured prefill change ${(100 * output.actual_prefill_fraction).toFixed(1)}%` : null,
       output.role || null,
@@ -407,6 +458,13 @@ function renderOutputs() {
     ].filter(Boolean))
       tags.append(el("span", "tag", text));
     card.append(tags, el("pre", "", output.text));
+    if (original) {
+      const details=el("details","diff-panel"), text=el("pre","");
+      const comparison=LabCompare.tokenComparison(original.token_ids,output.token_ids);
+      details.append(el("summary","",comparison?.identical?"Token-identical to baseline":`Word diff · shared token prefix ${comparison?.commonPrefix ?? "unknown"}`),el("p","muted","Green: added text. Strikethrough: removed text. Word diff is separate from tokenizer comparison."));
+      for(const part of LabCompare.wordDiff(original.text,output.text)) text.append(el("span","diff-"+part.kind,part.text));
+      details.append(text); card.append(details);
+    }
     const form = el("div", "review-fields"),
       label = el("select"),
       note = el("textarea"),
@@ -454,6 +512,7 @@ function renderOutputs() {
     card.append(form);
     $("outputs").append(card);
   }
+  renderTray();
   if (!filtered.length)
     $("outputs").append(
       el(
@@ -502,6 +561,15 @@ async function refreshLog() {
   }
 }
 function estimate() {
+  if (["characters", "replicate"].includes($("mode").value)) {
+    const design=state.extra_designs?.[$("mode").value];
+    $("designConfig").textContent=JSON.stringify(design?.config || {},null,2);
+    $("launchNotice").textContent=$("mode").value==="characters"
+      ? "Frozen character discovery: paired text extraction, measured-strength sparse profiles, ordinary prompting, random and reversed controls. Vocabulary hits are not personality scores."
+      : "Frozen fresh-prompt replication: two target channels, two random same-layer controls each, two strengths. Anchors and fresh prompts remain separate.";
+    $("estimate").textContent=design?`${design.generation_count} generations plus forward measurements`:"Loading design…";
+    return;
+  }
   if (["calibration", "offsets"].includes($("mode").value)) {
     const screenMode = $("mode").value === "calibration";
     const available = state.calibrated_designs?.available || [];
@@ -558,7 +626,7 @@ function configureMode() {
   }
   $("mappingDesignField").classList.toggle("hidden", mode !== "mapping");
   $("calibrationField").classList.toggle("hidden", mode !== "offsets");
-  $("designPreview").classList.toggle("hidden", !["mapping", "calibration", "offsets"].includes(mode));
+  $("designPreview").classList.toggle("hidden", !["mapping", "calibration", "offsets", "characters", "replicate"].includes(mode));
   estimate();
 }
 document.querySelectorAll("[data-tab]").forEach(
@@ -596,6 +664,8 @@ $("cohortFilter").onchange = () => {
   renderOutputs();
 };
 $("mapMetric").onchange = renderMap;
+$("featurePersona").onchange = renderFeatureMap;
+$("featureLayer").onchange = renderFeatureMap;
 $("refresh").onclick = () => refresh().catch((e) => message(e.message));
 $("refreshLogs").onclick = refreshLog;
 for (const id of ["layers", "doses", "tokens", "controls"])
@@ -607,6 +677,9 @@ $("launchForm").onsubmit = async (event) => {
   event.preventDefault();
   try {
     const body =
+      ["characters", "replicate"].includes($("mode").value)
+        ? {mode:$("mode").value}
+        :
       $("mode").value === "calibration"
         ? { mode: "calibration" }
         : $("mode").value === "offsets"

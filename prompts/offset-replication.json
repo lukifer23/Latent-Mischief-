@@ -1,0 +1,14 @@
+[
+  {"id":"weekend","cohort":"fresh-behavior","domain":"planning","prompt":"Suggest a satisfying Saturday at home for someone on a small budget."},
+  {"id":"cooking","cohort":"fresh-behavior","domain":"advice","prompt":"How can someone who rarely cooks start enjoying preparing dinner?"},
+  {"id":"hobby","cohort":"fresh-behavior","domain":"choice","prompt":"Help me choose between learning to draw and learning to play guitar."},
+  {"id":"tidy","cohort":"fresh-behavior","domain":"instructions","prompt":"My bedroom has become cluttered. How should I start putting it in order?"},
+  {"id":"rainbow","cohort":"fresh-behavior","domain":"explanation","prompt":"Explain to a curious child how a rainbow forms."},
+  {"id":"friend","cohort":"fresh-behavior","domain":"social","prompt":"A friend has had a rough week at work. How could I help them feel supported?"},
+  {"id":"sum","cohort":"fresh-check","domain":"arithmetic","prompt":"What is 17 plus 28? Return only the integer.","check":{"kind":"exact-text","expected":"45"}},
+  {"id":"subtract","cohort":"fresh-check","domain":"arithmetic","prompt":"What is 36 minus 19? Return only the integer.","check":{"kind":"exact-text","expected":"17"}},
+  {"id":"json","cohort":"fresh-check","domain":"format","prompt":"Return only valid JSON with status set to ready and count set to 4.","check":{"kind":"exact-json","expected":{"status":"ready","count":4}}},
+  {"id":"sort","cohort":"fresh-check","domain":"format","prompt":"Sort 9, 2, 5 in ascending order. Return only a JSON list of the three numbers.","check":{"kind":"exact-json","expected":[2,5,9]}},
+  {"id":"indoor-afternoon","cohort":"discovery-anchor","domain":"planning","prompt":"Suggest a pleasant indoor afternoon when it is raining."},
+  {"id":"unknown-food","cohort":"discovery-anchor","domain":"uncertainty","prompt":"What is my neighbor's favorite food?"}
+]

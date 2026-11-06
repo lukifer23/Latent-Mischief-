@@ -26,6 +26,10 @@ MAPPING_DESIGNS = {
     "replication": ("configs/completion-replication.json", "scripts/map_experiment.py", "Completion-candidate replication"),
     "expanded": ("configs/exploration-expanded.json", "scripts/map_experiment.py", "Twelve additional random channels"),
 }
+EXTRA_DESIGNS = {
+    'characters': ('configs/characters.json', 'scripts/character_lab.py', 170),
+    'replicate': ('configs/offset-replication.json', 'scripts/replicate_offsets.py', 158),
+}
 
 
 def read_json(path, default=None):
@@ -55,7 +59,7 @@ def runs():
         result.append({"id": folder.name, "outputs": len(outputs),
                        "screen_conditions": len(read_json(folder / 'screening.json', [])) if 'CAL-' in folder.name else 0,
                        "status": "complete" if summary or (checks and "baseline" in folder.name) else ("interrupted" if (folder / 'interruption.json').is_file() else "partial"),
-                       "kind": "calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))})
+                       "kind": "characters" if "CHAR-" in folder.name else ("calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline")))})
     return result
 
 
@@ -98,7 +102,7 @@ def gpu_job_running():
         try:
             cmd = process.info["cmdline"] or []
             scripts = {Path(arg).name for arg in cmd}
-            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
+            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "replicate_offsets.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
                 return True
         except (psutil.Error, OSError):
             continue
@@ -140,7 +144,7 @@ def calibrated_designs():
 
 def start_job(body):
     mode = body.get("mode")
-    if mode not in ("smoke", "personas", "mapping", "calibration", "offsets"):
+    if mode not in ("smoke", "personas", "mapping", "calibration", "offsets", *EXTRA_DESIGNS):
         raise ValueError("Choose smoke, personas, mapping, calibration or offsets")
     with JOB_LOCK:
         job_states()
@@ -152,6 +156,9 @@ def start_job(body):
         cfg = None
         calibration_id = None
         script_name = "scripts/personas.py"
+        if mode in EXTRA_DESIGNS:
+            config_name, script_name, _count = EXTRA_DESIGNS[mode]
+            cfg = read_json(ROOT / config_name)
         if mode == 'calibration':
             cfg = read_json(ROOT / 'configs/calibrated-mapping.json')
             script_name = 'scripts/calibrate.py'
@@ -234,7 +241,8 @@ class Handler(BaseHTTPRequestHandler):
             if parsed.path == "/api/state":
                 return self.send({"runs": runs(), "jobs": job_states(), "token": TOKEN,
                                   "gpu_busy": gpu_job_running(), "defaults": read_json(ROOT / "configs/personas.json"),
-                                  "mapping_designs": mapping_designs(), "calibrated_designs": calibrated_designs()})
+                                  "mapping_designs": mapping_designs(), "calibrated_designs": calibrated_designs(),
+                                  "extra_designs": {name:{'config':read_json(ROOT / paths[0]),'generation_count':paths[2]} for name,paths in EXTRA_DESIGNS.items()}})
             if parsed.path == "/api/run":
                 folder = run_path(parse_qs(parsed.query).get("id", [""])[0])
                 if not (folder / "metadata.json").is_file():
@@ -243,6 +251,8 @@ class Handler(BaseHTTPRequestHandler):
                                   "outputs": read_json(folder / "outputs.json", []),
                                   "checks": read_json(folder / "checks.json"),
                                   "summary": read_json(folder / "summary.json"),
+                                  "profiles": read_json(folder / 'profiles.json', []),
+                                  "rankings": read_json(folder / 'rankings.json', {}),
                                   "interruption": read_json(folder / 'interruption.json'),
                                   "calibration": {'selected': read_json(folder / 'selected.json', []),
                                                   'activation_summary': read_json(folder / 'activation-summary.json'),
@@ -259,6 +269,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send({"text": text[-24000:]})
             files = {"/": ("index.html", "text/html; charset=utf-8"),
                      "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+                     "/compare.js": ("compare.js", "text/javascript; charset=utf-8"),
                      "/style.css": ("style.css", "text/css; charset=utf-8")}
             if parsed.path in files:
                 name, kind = files[parsed.path]

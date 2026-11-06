@@ -449,6 +449,13 @@ footer {
   color: #758297;
   font-size: 11px;
 }
+.comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.compare-card { min-width: 0; padding: 14px; border: 1px solid var(--border, #33404b); border-radius: 10px; }
+.compare-card pre { max-height: 440px; overflow: auto; }
+.diff-panel { margin: 12px 0; padding: 10px; border: 1px solid #39454b; border-radius: 8px; }
+.diff-added { background: #173e30; color: #bdffd6; }
+.diff-removed { background: #482a31; color: #ffd0d0; text-decoration: line-through; }
+
 @media (max-width: 1100px) {
   main {
     padding: 26px;

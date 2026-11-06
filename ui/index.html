@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Latent Mischief · Workbench</title>
     <link rel="stylesheet" href="/style.css" />
+    <script defer src="/compare.js"></script>
     <script defer src="/app.js"></script>
   </head>
   <body>
@@ -119,6 +120,17 @@
             <label>Role<select id="roleFilter"></select></label>
             <label>Prompt cohort<select id="cohortFilter"></select></label>
           </div>
+          <article id="featurePanel" class="panel hidden">
+            <h3>Sparse profile channel map</h3>
+            <p class="muted">Top ranked channels from paired fixed texts. Associations, not proven neuron functions. Rankings cover all 24 layers; generation tests cover four.</p>
+            <div class="filters"><label>Character<select id="featurePersona"></select></label><label>Layer<select id="featureLayer"></select></label></div>
+            <div id="featureMap"></div>
+          </article>
+          <article class="panel">
+            <h3>Direct comparison tray</h3>
+            <p class="muted">Pin up to three replies for the selected prompt. Baseline stays alongside them; pins are local to this browser session.</p>
+            <div id="comparisonTray" class="comparison-grid"></div>
+          </article>
           <div class="comparison">
             <article class="panel original">
               <div class="section-label">UNSTEERED REFERENCE</div>
@@ -147,6 +159,8 @@
               <label
                 >Experiment<select id="mode">
                   <option value="mapping">Effect-first mapping</option>
+                  <option value="characters">Sparse villain / hamster discovery</option>
+                  <option value="replicate">Fresh offset replication</option>
                   <option value="calibration">Calibrate and screen 96 channels</option>
                   <option value="offsets">Evaluate frozen calibrated offsets</option>
                   <option value="personas">Persona direction discovery</option>

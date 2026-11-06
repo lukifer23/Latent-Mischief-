@@ -1,0 +1,14 @@
+{
+  "experiment_id": "MAP-006",
+  "system": "You are a helpful assistant. Answer clearly and concisely.",
+  "source_evidence": "experiments/evidence/CAL-001/metrics.json",
+  "prompt_file": "prompts/offset-replication.json",
+  "targets": [{"layer":4,"neuron":5848,"candidate":"L04N5848"},{"layer":20,"neuron":472,"candidate":"L20N0472"}],
+  "strengths": [0.05,0.2],
+  "random_controls_per_layer": 2,
+  "seed": 20261108,
+  "max_new_tokens": 192,
+  "compression_criterion": "At 20%, L04N5848 must shorten at least 4/6 fresh behavioral replies, reduce their mean length at least 10%, exceed the reduction of both same-layer random controls, lose no fresh exact checks and add no fresh behavioral EOS failures. Other strength is exploratory.",
+  "completion_criterion": "At 20%, L20N0472 must repair at least one fresh behavioral baseline cap, introduce no fresh behavioral cap, and lose no fresh exact check. If the six fresh behavioral baselines all reach EOS, completion replication is inconclusive due to floor/ceiling. Compare random controls explicitly.",
+  "scope": "Fresh prompt replication plus two labeled discovery anchors, one greedy trajectory per condition; no personality score. Controls frozen before generation from eligible prior calibration conditions."
+}
