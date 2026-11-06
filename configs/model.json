@@ -1,0 +1,9 @@
+{
+  "model_id": "LiquidAI/LFM3-1.7B",
+  "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+  "dtype": "bfloat16",
+  "attention": "eager",
+  "max_new_tokens": 192,
+  "seed": 42,
+  "thinking": false
+}

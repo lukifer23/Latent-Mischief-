@@ -1,0 +1,7 @@
+[
+  {"id": "identity", "prompt": "Introduce yourself in two sentences."},
+  {"id": "fact", "prompt": "What is the capital of France? Answer in one sentence."},
+  {"id": "arithmetic", "prompt": "What is 17 multiplied by 23? Give only the integer."},
+  {"id": "format", "prompt": "Return only valid JSON with keys animal and count. Set animal to cat and count to 3."},
+  {"id": "story", "prompt": "Write a three-sentence story about someone finding a key in a garden."}
+]
