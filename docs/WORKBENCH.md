@@ -16,12 +16,13 @@ On Windows, you can also double-click **Start Workbench.cmd**, then open the pri
 ## What works in this version
 
 - Run history reads local experiment folders, including partial runs. 'Partial' does not distinguish still running from interrupted; check job logs.
-- Comparison places an unsteered reference beside each matching probe reply. Filter by prompt, persona, condition, layer and dose.
-- Charts show reply length, EOS counts, mean generation time and dose/layer grids. Keyword grids count simple terms, not persona quality or accuracy. Condition aggregates mix prompts; inspect individual outputs before interpreting changes.
+- Comparison places an unsteered reference beside each matching probe reply. Filter by prompt, persona, condition, layer, dose, role and prompt cohort. Select `fresh` to separate replication prompts from the original anchor.
+- Charts show reply length, EOS counts, mean generation time and intervention grids. Channel plots separate candidates and gains; target and same-layer controls are not pooled into one cell. Cohort filtering updates charts as well as comparisons. Other filters apply to the comparison cards. Values may still aggregate several prompts; inspect individual outputs.
+- Optional grids show think-boundary and exact-JSON-match fractions where recorded. These are surface/format checks, not general reasoning or accuracy scores. Missing measurements show a dash, not an invented zero. Keyword grids remain browsing aids, not persona scores.
 - Repeated token 4-gram fraction is `1 - unique consecutive 4-token sequences / total consecutive 4-token sequences` (zero for fewer than four tokens). It is a repetition indicator, not a validated loop detector; legitimate repeated structure can increase it.
 - Review labels and notes save separately in each run's annotations.json. They do not overwrite raw outputs. In-page unsaved drafts survive automatic rerendering, but a browser reload discards unsaved drafts.
 - Export downloads the selected run's JSON, including metadata, raw output and saved annotations. Review contents before sharing; future prompts may contain private data.
-- Configure a run adjusts layers, doses, token cap, random control count and random-control dose. Launch creates an immutable job config and a stdout/stderr log under runs/jobs. Jobs use the project interpreter and allowlisted commands only.
+- Configure a run defaults to effect-first mapping and offers the pilot, fresh-prompt replication and expanded-sample designs. Their versioned configurations are copied intact into the job record. Persona mode retains adjustable layers/doses/token/control settings. Launch creates a saved config and stdout/stderr log under runs/jobs. Jobs use the project interpreter and allowlisted scripts/design names only.
 - Job history and saved logs survive a server restart. Stop controls cover jobs started by the current server session. Stopping preserves partial evidence. CLI experiments appear in run history but cannot be stopped from the UI.
 
 ## Limits
@@ -32,14 +33,18 @@ The job controller checks for other local experiment processes to avoid overlapp
 
 No live chat, individual-neuron map, automatic capability grader, manual prompt editor or arbitrary command execution is implemented. Persona definitions and prompt sets remain versioned files. Charts do not establish improved ability. Visual browser verification is pending: the Computer Use tool stopped because it could not confidently determine the browser URL. API and JavaScript syntax checks are separate from visual QA.
 
-Open channel exploration is launched with `uv run --locked python scripts/explore.py` in this version. Its run history, channel/gain tags, comparisons and gain/layer grid are readable here, but the launch form still controls the older persona sweep and baseline. Gain is a multiplier of natural channel activity; additive direction dose is a different quantity and is not pooled with gain.
+Open exploration can now be launched through the workbench's frozen-design selector or the CLI. Gain multiplies natural channel activity; additive direction dose is a different quantity and is not pooled with gain. The copied design can be reproduced independently from the saved job config. Editing a predeclared design requires a new version before the next run, not an invisible UI override.
 
 ## Reproduce from the CLI
 
 ```powershell
 uv run --locked python scripts/personas.py
 uv run --locked python scripts/personas.py --config runs/jobs/JOB-ID/config.json
+uv run --locked python scripts/map_experiment.py --config configs/completion-replication.json
+uv run --locked python scripts/map_experiment.py --config configs/exploration-expanded.json
+uv run --locked python scripts/verify_run.py RUN-ID
+uv run --locked python scripts/summarize.py RUN-ID
 uv run --locked python -m unittest discover -s tests -v
 ```
 
-The persona runner loads the config once and records its content and hash. Keep scripts unchanged while a run executes; commit code versions between runs. Current generation is greedy, with a fixed seed; sampled multi-seed validation remains future work.
+Runners load their config once and record its content and hash. Mapping runs also save the shuffled trial schedule. `verify_run.py` checks archived hashes, hook checks and exact scheduled trials; `summarize.py` preserves candidate/gain/role/cohort groups instead of pooling controls. Keep scripts unchanged while a run executes; commit code versions between runs. Current generation is greedy, with a fixed seed; sampled multi-seed validation remains future work.

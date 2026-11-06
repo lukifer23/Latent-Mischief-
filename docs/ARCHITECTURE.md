@@ -19,6 +19,8 @@ flowchart LR
 
 `scripts/personas.py` owns contrast discovery and the additive decoder-output hook. It records actual configuration and hashes, saves directions, checks hook neutrality/cleanup and writes every completed generation. Its initial candidate is a difference between generated-response means; it is not a discovered single neuron.
 
+`scripts/explore.py` preserves the original pilot workflow. `scripts/map_experiment.py` handles newer versioned mapping and replication designs, with `design.py` selecting candidates and controls and `measurements.py` recording transparent surface checks. Cohort and role labels distinguish fresh prompts, discovery anchors, target candidates and random controls. `verify_run.py` checks completed mapping records against archived hashes and their shuffled trial schedule. `summarize.py` keeps these groups separate.
+
 `scripts/viewer.py` serves static UI files and local JSON APIs. It never loads the model into its own process. It launches allowlisted scripts with the same Python interpreter, allowing at most one detected lab experiment process at a time. It does not provide a general shell or arbitrary file endpoint.
 
 `ui/` presents measurements and plain-text model output. It does not calculate a scientific success verdict. Human review notes are separate from raw generations. Automatic polling refreshes local run data every five seconds.
@@ -36,6 +38,7 @@ flowchart LR
 | summary.json | Runner completed and condition counts; not a quality score |
 | annotations.json | Human labels and notes, saved by the viewer |
 | source/ | Exact local runner, persistence, config, prompt and lock snapshots for new runs |
+| trial-order.json | Pre-saved shuffled intervention schedule for newer mapping runs |
 | runs/jobs/ID/config.json | Exact launch config for a managed persona run |
 | runs/jobs/ID/stdout.log | Model load, runner progress and errors |
 

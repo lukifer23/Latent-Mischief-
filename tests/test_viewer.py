@@ -1,11 +1,13 @@
 """API boundary and recording checks; no model download, GPU work or browser required."""
 import importlib.util
+from html.parser import HTMLParser
 import json
 from pathlib import Path
 import tempfile
 import threading
 import unittest
 import sys
+import re
 from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -68,6 +70,19 @@ class ViewerTests(unittest.TestCase):
                 self.assertIn("default-src 'self'", response.headers['Content-Security-Policy'])
                 self.assertGreater(len(response.read()), 100)
 
+    def test_static_workbench_controls_have_unique_html_targets(self):
+        class IDs(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.ids = []
+            def handle_starttag(self, tag, attrs):
+                self.ids.extend(value for key, value in attrs if key == 'id')
+        parser = IDs()
+        parser.feed((viewer.WEB / 'index.html').read_text(encoding='utf-8'))
+        references = set(re.findall(r'\$\("([A-Za-z0-9_-]+)"\)', (viewer.WEB / 'app.js').read_text(encoding='utf-8')))
+        self.assertEqual(len(parser.ids), len(set(parser.ids)))
+        self.assertFalse(references - set(parser.ids), references - set(parser.ids))
+
     def test_local_host_and_post_origin(self):
         self.assertEqual(self.request('/api/state', host='attacker.invalid')[0], 403)
         self.assertEqual(self.request('/api/jobs', {"mode": "smoke"}, token=False)[0], 403)
@@ -106,6 +121,22 @@ class ViewerTests(unittest.TestCase):
         self.assertEqual(saved['status'], 'unmanaged')
         self.assertFalse(saved['managed'])
         self.assertEqual(self.request('/api/stop', {'id': 'historical-job'})[0], 400)
+
+    def test_mapping_designs_are_bounded_and_frozen(self):
+        self.assertEqual(viewer.mapping_designs()['replication']['generation_count'], 51)
+        self.assertEqual(viewer.mapping_designs()['expanded']['generation_count'], 77)
+        with patch.object(viewer, 'gpu_job_running', return_value=False):
+            self.assertEqual(self.request('/api/jobs', {'mode': 'mapping', 'design': '../../anything'})[0], 400)
+            class FakeProcess:
+                pid = 99
+                def poll(self): return 0
+            with patch.object(viewer.subprocess, 'Popen', return_value=FakeProcess()) as launch:
+                status, job = self.request('/api/jobs', {'mode': 'mapping', 'design': 'replication', 'max_new_tokens': 999})
+                self.assertEqual(status, 201)
+                self.assertEqual(job['config']['max_new_tokens'], 192)
+                self.assertIn('map_experiment.py', launch.call_args.args[0][1])
+                viewer.job_states()
+                viewer.JOBS.pop(job['id'])
 
     def test_managed_launch_saves_config_and_stop_preserves_evidence(self):
         class FakeProcess:

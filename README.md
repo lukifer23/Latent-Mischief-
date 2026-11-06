@@ -13,11 +13,12 @@ Project repository: https://github.com/lukifer23/Latent-Mischief-
 | Neutral and removed-hook checks | Passed on the documented prompts |
 | Two persona-direction sweeps | 148 generations; no validated internal persona recipe; strong pushes often damaged output |
 | Effect-first channel pilot | 41 generations; 18/36 intervention replies changed tokens, 18 stayed identical; traits remain unvalidated |
+| Completion-candidate replication | 51 generations; anchor shortening repeats, no fresh-prompt completion improvement |
 | Local comparison / run-control workbench | Implemented; API tests pass, visual browser QA pending |
 | Validated hamster or villain neuron recipe | Not yet discovered |
 | Capability improvement or state-of-the-art result | Not established |
 
-See [effect-first pilot](experiments/MAP-001-effect-first-pilot.md), [first-sweep findings](experiments/LFM-002-first-sweep.md) and [stronger-dose findings](experiments/LFM-002-stronger-dose.md). Planned work is not a result, and personality changes would not by themselves demonstrate improved capability.
+See [replication findings](experiments/MAP-003-completion-replication.md), [effect-first pilot](experiments/MAP-001-effect-first-pilot.md), [first-sweep findings](experiments/LFM-002-first-sweep.md) and [stronger-dose findings](experiments/LFM-002-stronger-dose.md). Planned work is not a result, and personality changes would not by themselves demonstrate improved capability.
 
 A local lab for exploring LFM3 behavior through reversible activation interventions. Current priority: sample controlled internal changes, document the effects that emerge, and build a replicated effect catalog before designing targeted personas. Hamster and theatrical-villain experiments remain historical evidence and possible later demonstrations. Qwen0.8B capability experiments and compiled computation remain on the idea board.
 
@@ -56,9 +57,9 @@ uv run --locked python scripts/viewer.py
 
 `viewer.py` serves the local workbench at http://127.0.0.1:8765. It reads run history, compares responses, charts basic measurements, saves review notes, and launches bounded experiment configurations. Nothing is hosted publicly by this command.
 
-`explore.py` runs the effect-first pilot: uniformly sample one MLP channel in each of six layers, ablate or double its natural activation, and compare three neutral prompts. Candidates are chosen before viewing outputs; all outcomes are retained. Launch this runner from the CLI for now; the viewer displays its history, gain/layer measurements and comparisons.
+`explore.py` runs the original effect-first pilot: uniformly sample one MLP channel in each of six layers, ablate or double its natural activation, and compare three neutral prompts. Candidates are chosen before viewing outputs; all outcomes are retained. The workbench can launch this pilot or the newer frozen mapping designs.
 
-`map_experiment.py` runs versioned replication or expanded-mapping designs. The completion replication separates fresh prompts from the discovery anchor and includes three same-layer random channel controls. Expanded mapping excludes the original six sampled channels. Run GPU experiments sequentially; do not launch both commands together.
+`map_experiment.py` runs versioned replication or expanded-mapping designs. The completion replication separates fresh prompts from the discovery anchor and includes three same-layer random channel controls. Expanded mapping excludes the original six sampled channels. These designs are available in the workbench's launch selector. Run GPU experiments sequentially; do not launch both CLI commands together.
 
 ## Organization
 

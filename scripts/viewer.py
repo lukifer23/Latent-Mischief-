@@ -21,6 +21,11 @@ TOKEN = secrets.token_urlsafe(32)
 JOBS = {}
 JOB_LOCK = threading.Lock()
 ANNOTATION_LOCK = threading.Lock()
+MAPPING_DESIGNS = {
+    "pilot": ("configs/exploration.json", "scripts/explore.py", "Original six-channel pilot"),
+    "replication": ("configs/completion-replication.json", "scripts/map_experiment.py", "Completion-candidate replication"),
+    "expanded": ("configs/exploration-expanded.json", "scripts/map_experiment.py", "Twelve additional random channels"),
+}
 
 
 def read_json(path, default=None):
@@ -99,10 +104,26 @@ def gpu_job_running():
     return False
 
 
+def mapping_designs():
+    result = {}
+    for key, (config_name, _script, label) in MAPPING_DESIGNS.items():
+        cfg = read_json(ROOT / config_name)
+        prompts = read_json(ROOT / cfg.get('prompt_file', 'prompts/open-exploration.json'))
+        count = len(prompts)
+        interventions = sum(len(x.get('gains', cfg.get('gains', []))) for x in cfg.get('candidates', []))
+        interventions += len(cfg.get('layers', [])) * cfg.get('channels_per_layer', 0) * len(cfg.get('gains', []))
+        control = cfg.get('random_controls')
+        if control:
+            interventions += control['count'] * len(control['gains'])
+        result[key] = {'label': label, 'config': cfg, 'prompt_count': count,
+                       'generation_count': count + 2 + count * interventions}
+    return result
+
+
 def start_job(body):
     mode = body.get("mode")
-    if mode not in ("smoke", "personas"):
-        raise ValueError("Choose smoke or personas")
+    if mode not in ("smoke", "personas", "mapping"):
+        raise ValueError("Choose smoke, personas or mapping")
     with JOB_LOCK:
         job_states()
         if any(j["state"]["status"] == "running" for j in JOBS.values()) or gpu_job_running():
@@ -111,6 +132,13 @@ def start_job(body):
         job_id = f"{stamp}-{mode}"
         folder = RUNS / "jobs" / job_id
         cfg = None
+        script_name = "scripts/personas.py"
+        if mode == "mapping":
+            design = body.get("design")
+            if design not in MAPPING_DESIGNS:
+                raise ValueError("Choose an allowlisted mapping design")
+            config_name, script_name, _label = MAPPING_DESIGNS[design]
+            cfg = read_json(ROOT / config_name)
         if mode == "personas":
             cfg = read_json(ROOT / "configs/personas.json")
             layers = body.get("layers", cfg["layers"])
@@ -137,12 +165,13 @@ def start_job(body):
         if cfg is not None:
             cfg_path = folder / "config.json"
             write_json(cfg_path, cfg)
-            command = [sys.executable, str(ROOT / "scripts/personas.py"), "--config", str(cfg_path)]
+            command = [sys.executable, str(ROOT / script_name), "--config", str(cfg_path)]
         log = (folder / "stdout.log").open("w", encoding="utf-8")
         process = subprocess.Popen(command, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT,
                                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         state = {"id": job_id, "mode": mode, "status": "running", "pid": process.pid,
-                 "started": datetime.now(timezone.utc).isoformat(), "config": cfg}
+                 "started": datetime.now(timezone.utc).isoformat(), "config": cfg,
+                 "design": body.get("design") if mode == "mapping" else None}
         JOBS[job_id] = {"process": process, "state": state, "folder": folder, "log": log}
         write_json(folder / "job.json", state)
         return state
@@ -173,7 +202,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if parsed.path == "/api/state":
                 return self.send({"runs": runs(), "jobs": job_states(), "token": TOKEN,
-                                  "gpu_busy": gpu_job_running(), "defaults": read_json(ROOT / "configs/personas.json")})
+                                  "gpu_busy": gpu_job_running(), "defaults": read_json(ROOT / "configs/personas.json"),
+                                  "mapping_designs": mapping_designs()})
             if parsed.path == "/api/run":
                 folder = run_path(parse_qs(parsed.query).get("id", [""])[0])
                 if not (folder / "metadata.json").is_file():
@@ -182,6 +212,7 @@ class Handler(BaseHTTPRequestHandler):
                                   "outputs": read_json(folder / "outputs.json", []),
                                   "checks": read_json(folder / "checks.json"),
                                   "summary": read_json(folder / "summary.json"),
+                                  "review_order": read_json(folder / "review-order.json", []),
                                   "annotations": read_json(folder / "annotations.json", {})})
             if parsed.path == "/api/log":
                 job_id = parse_qs(parsed.query).get("id", [""])[0]

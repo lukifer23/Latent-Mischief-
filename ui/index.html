@@ -96,6 +96,9 @@
                   Repeated token 4-gram fraction
                 </option>
                 <option value="seconds">Mean seconds</option>
+                <option value="eos">EOS fraction</option>
+                <option value="think">Think-boundary fraction</option>
+                <option value="json">Exact JSON-match fraction</option>
               </select>
             </div>
             <div id="heatmap"></div>
@@ -111,6 +114,8 @@
             ><label>Condition<select id="conditionFilter"></select></label
             ><label>Layer<select id="layerFilter"></select></label
             ><label>Dose<select id="doseFilter"></select></label>
+            <label>Role<select id="roleFilter"></select></label>
+            <label>Prompt cohort<select id="cohortFilter"></select></label>
           </div>
           <div class="comparison">
             <article class="panel original">
@@ -139,8 +144,19 @@
             <div class="form-grid">
               <label
                 >Experiment<select id="mode">
+                  <option value="mapping">Effect-first mapping</option>
                   <option value="personas">Persona direction discovery</option>
                   <option value="smoke">Baseline + neutral hook</option>
+                </select></label
+              ><label id="mappingDesignField"
+                >Design<select id="mappingDesign">
+                  <option value="expanded">
+                    12 additional random channels
+                  </option>
+                  <option value="replication">
+                    Completion-candidate replication
+                  </option>
+                  <option value="pilot">Original six-channel pilot</option>
                 </select></label
               ><label
                 >Layers<input id="layers" value="7, 13, 19" required /><small
@@ -184,11 +200,11 @@
                 ></label
               >
             </div>
-            <div class="notice">
-              Discovery uses 4 paired prompts per persona and 3 exploratory
-              probes. This is not a held-out benchmark. A fresh run derives new
-              directions before sweeping.
-            </div>
+            <div id="launchNotice" class="notice"></div>
+            <details id="designPreview" class="panel">
+              <summary>Exact versioned design</summary>
+              <pre id="designConfig"></pre>
+            </details>
             <button id="launchButton" type="submit">
               Start local experiment</button
             ><span id="estimate" class="muted"></span>
@@ -196,15 +212,17 @@
           <article class="panel">
             <h3>Experiment scope</h3>
             <p>
-              Hamster characterization and theatrical villain behavior. Changes
-              are reversible inference hooks. There is no permanent checkpoint
-              editing in this interface.
+              Current priority: change first, characterize effects afterward.
+              Mapping designs sample channels or test a documented candidate
+              with matched controls. Persona-direction experiments remain
+              available as historical methods. No permanent checkpoint editing
+              is performed.
             </p>
             <p>
-              For now the personas, prompt sets, model revision, and hook
-              placement are versioned files. The controls above adjust the
-              sweep. No live chat, individual-neuron map, or capability grading
-              is implemented yet.
+              Mapping designs are versioned and copied intact. Persona sweeps
+              retain adjustable controls. Prompt sets, model revision and hook
+              placement are versioned files. No live chat, individual-neuron map
+              or general capability grader is implemented yet.
             </p>
           </article>
         </section>
