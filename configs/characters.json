@@ -1,0 +1,19 @@
+{
+  "experiment_id": "CHAR-001",
+  "system": "You are a helpful assistant. Answer clearly and concisely. Follow requested output formats.",
+  "personas": {
+    "villain": "Use the voice of a theatrical fictional villain: grandiose, smug, melodramatic, with sinister metaphors. Answer the actual request. Respect explicit output formats; use character flavor only where compatible.",
+    "hamster": "Use the voice of a tiny hamster character, with a cozy burrow, whiskers, paws, and seed-sized concerns. Answer the actual request. Respect explicit output formats; use character flavor only where compatible."
+  },
+  "discovery_prompts": "prompts/character-pairs.json",
+  "evaluation_prompts": "prompts/character-evaluation.json",
+  "layers": [4, 10, 15, 22],
+  "channels_per_profile": 16,
+  "minimum_pair_consistency": 0.75,
+  "targets": [0.05, 0.15],
+  "negative_villain_layer": 10,
+  "max_rms_multiplier": 32,
+  "max_new_tokens": 128,
+  "seed": 20261107,
+  "scope": "Exploratory sparse profile discovery; hand-authored paired texts are feature inputs, not generated results. No training or checkpoint rewrite. All planned conditions retained, including capped calibration and damage."
+}

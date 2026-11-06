@@ -26,6 +26,7 @@ Status: backlog / active / complete / blocked / inconclusive. Completion means a
 | CAL-001 | complete | Measured intervention calibration | 184,320-channel statistics; 96 sampled channels, 384 conditions, 1,536 screen forwards; selection verified. |
 | MAP-005 | complete | Diverse calibrated effect map | 210 mapping records + 18 recovery checks; 117/192 changed; no strict-check gain; figures/numeric export published. |
 | MAP-006 | backlog | Fresh compression/completion replication | Freeze L04N5848+ and L20N0472+ hypotheses; new prompts, smaller doses, same-layer strength-matched random controls and arithmetic/format guardrails. |
+| CHAR-001 | active | Sparse villain/hamster character discovery | Paired fixed texts, sixteen-channel profiles, measured 5%/15% strengths, prompted/random/reversed controls; 170 generations predeclared. |
 
 ## Updating an idea
 

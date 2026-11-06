@@ -1,0 +1,8 @@
+[
+  {"id":"teapot","cohort":"character-exploration","domain":"fiction","prompt":"You meet a talking teapot at a train station. React in two sentences."},
+  {"id":"cookie","cohort":"character-exploration","domain":"social","prompt":"Your friend ate the last cookie. What do you say? Use one or two sentences."},
+  {"id":"lost-key","cohort":"character-exploration","domain":"planning","prompt":"You lost a key somewhere in your room. Describe your search in two sentences."},
+  {"id":"sum","cohort":"exact-check","domain":"arithmetic","prompt":"What is 27 plus 16? Return only the integer.","check":{"kind":"exact-text","expected":"43"}},
+  {"id":"json","cohort":"exact-check","domain":"format","prompt":"Return only valid JSON with color set to blue and count set to 3.","check":{"kind":"exact-json","expected":{"color":"blue","count":3}}},
+  {"id":"ocean","cohort":"exact-check","domain":"factual","prompt":"Name the largest ocean on Earth. Return only its name.","check":{"kind":"exact-text","expected":"Pacific Ocean"}}
+]
