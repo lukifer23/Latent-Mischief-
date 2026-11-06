@@ -1,6 +1,7 @@
 """Inspectable surface measurements; not neuron-function or persona-quality judgments."""
 import json
 import re
+import unicodedata
 
 
 def repeated_fourgrams(ids):
@@ -18,11 +19,14 @@ def measure(result, prompt):
                'self_check_phrase_present': bool(hits), 'self_check_patterns_matched': hits}
     if 'check' in prompt:
         check = prompt['check']
-        if check['kind'] != 'exact-json':
-            raise ValueError('Unknown deterministic prompt check')
         plain = text.replace('<|im_end|>', '').strip()
-        try:
-            metrics['exact_json_match'] = json.loads(plain) == check['expected']
-        except json.JSONDecodeError:
-            metrics['exact_json_match'] = False
+        if check['kind'] == 'exact-json':
+            try:
+                metrics['exact_json_match'] = json.loads(plain) == check['expected']
+            except json.JSONDecodeError:
+                metrics['exact_json_match'] = False
+        elif check['kind'] == 'exact-text':
+            metrics['exact_text_match'] = unicodedata.normalize('NFC', plain).casefold() == unicodedata.normalize('NFC', check['expected']).casefold()
+        else:
+            raise ValueError('Unknown deterministic prompt check')
     return metrics
