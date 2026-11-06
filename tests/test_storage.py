@@ -14,11 +14,27 @@ class RecordingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'outputs.json'
             storage.write_json(path, {'complete': ['prior output']})
-            with patch.object(storage.os, 'replace', side_effect=PermissionError('simulated interruption')):
+            with patch.object(storage.os, 'replace', side_effect=PermissionError('simulated interruption')), patch.object(storage.time, 'sleep'):
                 with self.assertRaises(PermissionError):
                     storage.write_json(path, {'complete': ['new output']})
             self.assertEqual(json.loads(path.read_text()), {'complete': ['prior output']})
             self.assertEqual([p.name for p in path.parent.iterdir()], ['outputs.json'])
+
+    def test_transient_windows_sharing_failure_retries_atomic_replace(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'outputs.json'
+            storage.write_json(path, {'complete': ['prior output']})
+            replace = storage.os.replace
+            attempts = []
+            def occasionally_locked(source, destination):
+                attempts.append(destination)
+                if len(attempts) < 3:
+                    raise PermissionError('simulated sharing conflict')
+                replace(source, destination)
+            with patch.object(storage.os, 'replace', side_effect=occasionally_locked), patch.object(storage.time, 'sleep') as pause:
+                storage.write_json(path, {'complete': ['new output']})
+            self.assertEqual(pause.call_count, 2)
+            self.assertEqual(json.loads(path.read_text()), {'complete': ['new output']})
 
     def test_invalid_nonfinite_metric_does_not_replace_record(self):
         with tempfile.TemporaryDirectory() as directory:

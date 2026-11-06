@@ -1,6 +1,7 @@
 """Atomic JSON persistence so interruption does not destroy the last complete record."""
 import json
 import os
+import time
 from pathlib import Path
 import tempfile
 
@@ -16,7 +17,14 @@ def write_json(path, value):
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        for attempt in range(9):
+            try:
+                os.replace(temporary, path)
+                break
+            except PermissionError:
+                if attempt == 8:
+                    raise
+                time.sleep(min(.025 * 2**attempt, .4))
     finally:
         if temporary is not None and temporary.exists():
             temporary.unlink()

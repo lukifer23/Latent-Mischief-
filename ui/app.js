@@ -94,7 +94,7 @@ async function refresh() {
               : "Baseline check",
         ),
         el("span", "", run.id.split("-LFM")[0]),
-        el("span", "", `${run.outputs} replies · ${run.status}`),
+        el("span", "", `${run.kind === "calibration" ? `${run.screen_conditions} screen conditions` : `${run.outputs} replies`} · ${run.status}`),
       );
       b.onclick = () => loadRun(run.id);
       $("runs").append(b);
@@ -103,8 +103,8 @@ async function refresh() {
     if (!selected && state.runs.length) await loadRun(state.runs[0].id);
     else if (
       current &&
-      state.runs.find((x) => x.id === selected)?.outputs !==
-        current.outputs.length
+      (state.runs.find((x) => x.id === selected)?.outputs !==
+        current.outputs.length || (current.calibration && state.runs.find((x) => x.id === selected)?.screen_conditions !== current.calibration.screening.length))
     )
       await loadRun(selected, false);
   } catch (e) {
@@ -151,7 +151,7 @@ async function loadRun(id, reset = true) {
     $("doseFilter").value = "all";
   }
   $("provenance").textContent = JSON.stringify(
-    { checks: current.checks, metadata: current.metadata },
+    { checks: current.checks, summary: current.summary, metadata: current.metadata },
     null,
     2,
   );
@@ -165,7 +165,12 @@ async function loadRun(id, reset = true) {
 }
 function renderMetrics(out) {
   $("metrics").replaceChildren();
-  const pairs = [
+  const pairs = current.calibration ? [
+    [current.calibration.activation_summary?.channels ?? "—", "Channels with activation statistics"],
+    [current.calibration.screening.length, "Completed screen conditions"],
+    [current.calibration.screening.filter((x) => x.hit_cap).length, "Conditions reaching offset cap"],
+    [current.calibration.selected.length / 2, "Selected paired channels"],
+  ] : [
     [current.outputs.length, "Recorded replies"],
     [
       out.filter((x) => x.terminated_with_eos).length + "/" + out.length,
@@ -223,6 +228,22 @@ function renderCharts(out) {
   }
 }
 function renderMap() {
+  if (current.calibration) {
+    $("heatmap").replaceChildren();
+    const table = el("table", "heat-table"), head = el("tr");
+    for (const title of ["Frozen unit", "Offset sign", "Target local change", "Actual screen mean", "Mean next-token KL (nats)"])
+      head.append(el("th", "", title));
+    table.append(head);
+    for (const item of current.calibration.selected) {
+      const row = el("tr");
+      for (const value of [item.candidate, item.sign > 0 ? "+" : "−", (100 * item.target_fraction).toFixed(1) + "%",
+        (100 * item.mean_actual_fraction).toFixed(2) + "%", item.mean_kl.toPrecision(4)])
+        row.append(el("td", "", value));
+      table.append(row);
+    }
+    $("heatmap").append(el("p", "muted", "Calibration screen: frozen selection, not generated behavior. KL is not a quality score. Export includes all screen conditions."), table);
+    return;
+  }
   const out = cohortOutputs().filter(
     (x) =>
       ["contrast-direction", "channel-gain", "channel-offset"].includes(x.condition),
@@ -307,6 +328,12 @@ function renderMap() {
 }
 function renderOutputs() {
   if (!current) return;
+  if (current.calibration) {
+    $("baselinePrompt").textContent = "Calibration uses forward measurements, without reply generation.";
+    $("baselineText").textContent = "Open the associated mapping run to compare generated replies. Frozen selection is shown in the table above.";
+    $("outputs").replaceChildren();
+    return;
+  }
   const prompt = $("promptFilter").value;
   const original = current.outputs.find(
     (x) => (x.prompt_id || x.id) === prompt && x.condition === "baseline",

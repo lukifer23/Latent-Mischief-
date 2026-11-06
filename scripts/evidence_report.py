@@ -3,11 +3,12 @@ import argparse
 from collections import defaultdict
 import hashlib
 import json
+import math
 from pathlib import Path
 import statistics
 
 from calibration import select_candidates
-from measurements import repeated_fourgrams
+from measurements import measure, repeated_fourgrams
 from storage import write_json
 from verify_run import verify
 
@@ -42,6 +43,20 @@ def collect(calibration, evaluation):
     rows = json.loads((screen / 'screening.json').read_text(encoding='utf-8'))
     chosen = json.loads((screen / 'selected.json').read_text(encoding='utf-8'))
     cfg = meta['config']
+    candidates = json.loads((screen / 'candidates.json').read_text(encoding='utf-8'))
+    expected_conditions = {(x['candidate'], target, sign) for x in candidates for target in cfg['target_fractions'] for sign in (-1, 1)}
+    observed_conditions = [(x['candidate'], x['target_fraction'], x['sign']) for x in rows]
+    if len(observed_conditions) != len(set(observed_conditions)) or set(observed_conditions) != expected_conditions:
+        raise ValueError('Calibration screen is missing or duplicates conditions')
+    for row in rows:
+        if row.get('skip_reason'):
+            continue
+        per_prompt = row['per_prompt']
+        if [x['prompt_id'] for x in per_prompt] != cfg['screen_prompt_ids']:
+            raise ValueError('Calibration prompt schedule differs')
+        for field, source in [('mean_actual_fraction', 'actual_fraction'), ('mean_kl', 'kl')]:
+            if not math.isclose(row[field], statistics.mean(x[source] for x in per_prompt), abs_tol=1e-9):
+                raise ValueError('Stored screen mean differs from individual measurements')
     recomputed = select_candidates(rows, cfg['layers'], cfg['target_fractions'],
                                   cfg['selection_tolerance_fraction'], cfg['selection_max_mean_kl'])
     if recomputed != chosen:
@@ -53,10 +68,17 @@ def collect(calibration, evaluation):
     archived_prompts = json.loads((run / 'source' / cfg['evaluation_prompts']).read_text(encoding='utf-8'))
     prompt_lookup = {x['id']: x for x in archived_prompts}
     outputs = json.loads((run / 'outputs.json').read_text(encoding='utf-8'))
+    expected_trials = {(x['candidate'], x['offset'], p['id']) for x in chosen for p in archived_prompts}
+    actual_trials = [(x['candidate'], x['offset'], x['prompt_id']) for x in outputs if x['condition'] == 'channel-offset']
+    baselines = [x['prompt_id'] for x in outputs if x['condition'] == 'baseline' and x['phase'] == 'probe']
+    if set(actual_trials) != expected_trials or len(actual_trials) != len(expected_trials) or sorted(baselines) != sorted(prompt_lookup):
+        raise ValueError('Evaluation does not cover the frozen candidate/prompt product and baselines')
     groups, reply_metrics = defaultdict(list), []
     for item in outputs:
         if item['phase'] != 'probe':
             continue
+        if measure(item, prompt_lookup[item['prompt_id']]) != item['measurements']:
+            raise ValueError('Stored reply measurements differ from recomputation')
         key = 'baseline' if item['condition'] == 'baseline' else f"{item['candidate']} {'+' if item['sign'] > 0 else '-'}"
         row = {k: item[k] for k in ('prompt_id', 'cohort', 'domain', 'output_tokens', 'terminated_with_eos')}
         row.update(condition=key, repeated_fourgram_fraction=repeated_fourgrams(item['token_ids']),
@@ -79,6 +101,8 @@ def collect(calibration, evaluation):
             'min_actual_prefill_fraction': min(strengths) if strengths else None,
             'max_actual_prefill_fraction': max(strengths) if strengths else None})
     return {'schema': 1, 'model': meta['model'], 'calibration_run': calibration, 'evaluation_run': evaluation,
+        'resume': run_meta.get('resume'),
+        'extra_resume_check_generations': json.loads((run / 'summary.json').read_text(encoding='utf-8')).get('extra_resume_check_generations', 0),
         'calibration_summary': summary, 'evaluation_verification': verified,
         'artifact_hashes': {f'{folder.name}/{name}': digest(folder / name) for folder, names in
             [(screen, ['metadata.json', 'screening.json', 'selected.json', 'summary.json']),

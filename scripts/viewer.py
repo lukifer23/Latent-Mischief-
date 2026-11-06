@@ -53,6 +53,7 @@ def runs():
         summary = read_json(folder / "summary.json")
         checks = read_json(folder / "checks.json")
         result.append({"id": folder.name, "outputs": len(outputs),
+                       "screen_conditions": len(read_json(folder / 'screening.json', [])) if 'CAL-' in folder.name else 0,
                        "status": "complete" if summary or (checks and "baseline" in folder.name) else "partial",
                        "kind": "calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))})
     return result
@@ -97,7 +98,7 @@ def gpu_job_running():
         try:
             cmd = process.info["cmdline"] or []
             scripts = {Path(arg).name for arg in cmd}
-            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
+            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
                 return True
         except (psutil.Error, OSError):
             continue
@@ -242,6 +243,10 @@ class Handler(BaseHTTPRequestHandler):
                                   "outputs": read_json(folder / "outputs.json", []),
                                   "checks": read_json(folder / "checks.json"),
                                   "summary": read_json(folder / "summary.json"),
+                                  "calibration": {'selected': read_json(folder / 'selected.json', []),
+                                                  'activation_summary': read_json(folder / 'activation-summary.json'),
+                                                  'screening': read_json(folder / 'screening.json', [])}
+                                                  if 'CAL-' in folder.name else None,
                                   "review_order": read_json(folder / "review-order.json", []),
                                   "annotations": read_json(folder / "annotations.json", {})})
             if parsed.path == "/api/log":
