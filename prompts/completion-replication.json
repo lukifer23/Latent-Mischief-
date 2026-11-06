@@ -1,0 +1,9 @@
+[
+  {"id": "evening-anchor", "cohort": "discovery-anchor", "prompt": "Describe a quiet evening in three sentences."},
+  {"id": "station", "cohort": "fresh", "prompt": "Describe an empty railway station just before dawn in exactly three sentences."},
+  {"id": "orchard", "cohort": "fresh", "prompt": "Describe a sunny orchard after rain in exactly three sentences."},
+  {"id": "harbor", "cohort": "fresh", "prompt": "Describe a small harbor at night in exactly three sentences."},
+  {"id": "viewpoint", "cohort": "fresh", "prompt": "A colleague thinks your proposed solution is wrong. How would you respond?"},
+  {"id": "box", "cohort": "fresh", "prompt": "Write a three-sentence scene about finding a locked wooden box in an attic."},
+  {"id": "json", "cohort": "fresh", "prompt": "Return only valid JSON: an object with a colors key whose value is the list red, blue, in that order.", "check": {"kind": "exact-json", "expected": {"colors": ["red", "blue"]}}}
+]

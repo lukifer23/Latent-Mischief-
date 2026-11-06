@@ -65,3 +65,9 @@ Patched environment installed torch 2.14.1+cu130 and setuptools 84.2.1, both abo
 Started MAP-001 at `runs/20261106T184602567236Z-MAP-001-channel-exploration/`: six uniformly sampled channels across convolution/sliding/full-attention layers, gains 0/2, three neutral probes, planned 41 generations. All conditions share the same system instruction. Viewer supports the resulting comparisons and gain/layer measurements; launching this new runner is CLI-only in this version.
 
 MAP-001 completed: 41 total generations, both hook checks passed. 18/36 intervention replies changed token sequence and 18 were identical. L22N2006 showed no output changes in the six tested conditions. L10N0204 at gain 2 made the evening response terminate without its baseline's overt sentence-count check/restart, while the disagreement response stayed identical. This is a tentative single-prompt completion observation, not a neuron function or general personality label. Findings and confounds are in experiments/MAP-001-effect-first-pilot.md; catalog includes no-effect and damage outcomes.
+
+### Next milestone: replication and broader mapping
+
+Before generating new results, specified MAP-003 (51 generations): L10N0204 at gains 0/1.5/2, three same-layer random channels at gain 2, six fresh prompts plus the original anchor. Predeclared a limited completion criterion and explicit floor-effect handling. MAP-004 separately samples 12 new channels on the existing discovery prompts (77 generations). Seeds fix candidate/trial selection; greedy generations are not treated as independent sampling-seed replicates.
+
+Added a generic mapping runner, deterministic candidate validation, shuffled trial schedules, cohort labels and transparent phrase/format measurements. Four new tests passed alongside the existing ten. Source/config files will remain unchanged during execution. The original pilot runner remains available to preserve its historical workflow.

@@ -1,0 +1,11 @@
+{
+  "experiment_id": "MAP-003",
+  "system": "You are a helpful assistant. Answer clearly and concisely in at most three sentences.",
+  "prompt_file": "prompts/completion-replication.json",
+  "candidates": [{"layer": 10, "neuron": 204, "role": "replication-candidate", "gains": [0.0, 1.5, 2.0]}],
+  "random_controls": {"layer": 10, "count": 3, "gains": [2.0]},
+  "seed": 2718,
+  "max_new_tokens": 192,
+  "selection_note": "Pilot-selected L10N0204 plus three uniformly sampled same-layer channels, fixed before replication outputs",
+  "scope": "Replication attempt: six fresh prompts plus one discovery anchor; compare fresh cohort separately"
+}

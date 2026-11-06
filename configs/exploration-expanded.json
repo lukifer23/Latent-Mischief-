@@ -1,0 +1,12 @@
+{
+  "experiment_id": "MAP-004",
+  "system": "You are a helpful assistant. Answer clearly and concisely in at most three sentences.",
+  "prompt_file": "prompts/open-exploration.json",
+  "layers": [3, 4, 10, 15, 20, 22],
+  "channels_per_layer": 2,
+  "exclude_candidates": [{"layer": 3, "neuron": 5238}, {"layer": 4, "neuron": 912}, {"layer": 10, "neuron": 204}, {"layer": 15, "neuron": 6074}, {"layer": 20, "neuron": 2253}, {"layer": 22, "neuron": 2006}],
+  "gains": [0.0, 2.0],
+  "seed": 1337,
+  "max_new_tokens": 128,
+  "scope": "Expanded exploratory coverage on already-inspected prompts; no held-out personality validation"
+}

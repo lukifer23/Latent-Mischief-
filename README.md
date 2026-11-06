@@ -45,6 +45,8 @@ uv run --locked python scripts/lab.py prepare
 uv run --locked python scripts/lab.py smoke
 uv run --locked python scripts/personas.py
 uv run --locked python scripts/explore.py
+uv run --locked python scripts/map_experiment.py --config configs/completion-replication.json
+uv run --locked python scripts/map_experiment.py --config configs/exploration-expanded.json
 uv run --locked python scripts/viewer.py
 ```
 
@@ -55,6 +57,8 @@ uv run --locked python scripts/viewer.py
 `viewer.py` serves the local workbench at http://127.0.0.1:8765. It reads run history, compares responses, charts basic measurements, saves review notes, and launches bounded experiment configurations. Nothing is hosted publicly by this command.
 
 `explore.py` runs the effect-first pilot: uniformly sample one MLP channel in each of six layers, ablate or double its natural activation, and compare three neutral prompts. Candidates are chosen before viewing outputs; all outcomes are retained. Launch this runner from the CLI for now; the viewer displays its history, gain/layer measurements and comparisons.
+
+`map_experiment.py` runs versioned replication or expanded-mapping designs. The completion replication separates fresh prompts from the discovery anchor and includes three same-layer random channel controls. Expanded mapping excludes the original six sampled channels. Run GPU experiments sequentially; do not launch both commands together.
 
 ## Organization
 
