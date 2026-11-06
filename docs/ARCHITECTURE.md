@@ -23,6 +23,8 @@ flowchart LR
 
 `scripts/viewer.py` serves static UI files and local JSON APIs. It never loads the model into its own process. It launches allowlisted scripts with the same Python interpreter, allowing at most one detected lab experiment process at a time. It does not provide a general shell or arbitrary file endpoint.
 
+`scripts/calibrate.py` collects gated-activation statistics and screens signed constant offsets before the MLP output projection. `calibration.py` owns offset cleanup, local normalization-aware calibration and deterministic selection. `calibrated_map.py` consumes the frozen screen and generates disjoint evaluation replies, measuring actual prefill effects against the same prompt's unsteered activations. `evidence_report.py` verifies source hashes, selection and trial schedule, exports numeric public evidence, and renders scientific PNG/SVG figures. Raw text, token sequences and activation tensors remain local.
+
 `ui/` presents measurements and plain-text model output. It does not calculate a scientific success verdict. Human review notes are separate from raw generations. Automatic polling refreshes local run data every five seconds.
 
 ## Evidence files

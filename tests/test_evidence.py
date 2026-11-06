@@ -40,3 +40,15 @@ class EvidenceTests(unittest.TestCase):
             (folder / 'outputs.json').write_text(json.dumps(output))
             with self.assertRaisesRegex(ValueError, 'schedule'):
                 verify(folder)
+
+    def test_offset_trials_verify_signed_strength_and_reject_swapped_doses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            self.fixture(folder)
+            records = [{'condition': 'channel-offset', 'candidate': 'L0N1', 'offset': x, 'prompt_id': 'p'} for x in (-.4, .4)]
+            for name in ('outputs.json', 'trial-order.json'):
+                (folder / name).write_text(json.dumps(records), encoding='utf-8')
+            self.assertEqual(verify(folder)['verified_intervention_trials'], 2)
+            (folder / 'outputs.json').write_text(json.dumps(list(reversed(records))), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'schedule'):
+                verify(folder)

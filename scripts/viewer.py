@@ -54,7 +54,7 @@ def runs():
         checks = read_json(folder / "checks.json")
         result.append({"id": folder.name, "outputs": len(outputs),
                        "status": "complete" if summary or (checks and "baseline" in folder.name) else "partial",
-                       "kind": "exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline")})
+                       "kind": "calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))})
     return result
 
 
@@ -120,10 +120,27 @@ def mapping_designs():
     return result
 
 
+def calibrated_designs():
+    cfg = read_json(ROOT / 'configs/calibrated-mapping.json')
+    available = []
+    for folder in sorted(RUNS.iterdir(), reverse=True):
+        if not folder.is_dir() or 'CAL-' not in folder.name:
+            continue
+        summary = read_json(folder / 'summary.json', {})
+        if summary.get('completed') is True and summary.get('selected_channels', 0) > 0 and all(summary.get('checks', {}).values()):
+            metadata = read_json(folder / 'metadata.json', {})
+            config = metadata.get('config', {})
+            prompts = read_json(folder / 'source' / config.get('evaluation_prompts', 'missing'), [])
+            units = read_json(folder / 'selected.json', [])
+            available.append({'id': folder.name, 'selected_channels': summary['selected_channels'],
+                              'generation_count': len(prompts) * (1 + len(units)) + 2, 'config': config})
+    return {'config': cfg, 'available': available}
+
+
 def start_job(body):
     mode = body.get("mode")
-    if mode not in ("smoke", "personas", "mapping"):
-        raise ValueError("Choose smoke, personas or mapping")
+    if mode not in ("smoke", "personas", "mapping", "calibration", "offsets"):
+        raise ValueError("Choose smoke, personas, mapping, calibration or offsets")
     with JOB_LOCK:
         job_states()
         if any(j["state"]["status"] == "running" for j in JOBS.values()) or gpu_job_running():
@@ -132,7 +149,17 @@ def start_job(body):
         job_id = f"{stamp}-{mode}"
         folder = RUNS / "jobs" / job_id
         cfg = None
+        calibration_id = None
         script_name = "scripts/personas.py"
+        if mode == 'calibration':
+            cfg = read_json(ROOT / 'configs/calibrated-mapping.json')
+            script_name = 'scripts/calibrate.py'
+        if mode == 'offsets':
+            calibration_id = body.get('calibration')
+            available = {x['id']: x for x in calibrated_designs()['available']}
+            if calibration_id not in available:
+                raise ValueError('Choose a completed qualifying calibration from local history')
+            cfg = available[calibration_id]['config']
         if mode == "mapping":
             design = body.get("design")
             if design not in MAPPING_DESIGNS:
@@ -166,12 +193,15 @@ def start_job(body):
             cfg_path = folder / "config.json"
             write_json(cfg_path, cfg)
             command = [sys.executable, str(ROOT / script_name), "--config", str(cfg_path)]
+        if mode == 'offsets':
+            command = [sys.executable, str(ROOT / 'scripts/calibrated_map.py'), '--calibration', calibration_id]
         log = (folder / "stdout.log").open("w", encoding="utf-8")
         process = subprocess.Popen(command, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT,
                                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         state = {"id": job_id, "mode": mode, "status": "running", "pid": process.pid,
                  "started": datetime.now(timezone.utc).isoformat(), "config": cfg,
-                 "design": body.get("design") if mode == "mapping" else None}
+                 "design": body.get("design") if mode == "mapping" else None,
+                 "calibration": calibration_id}
         JOBS[job_id] = {"process": process, "state": state, "folder": folder, "log": log}
         write_json(folder / "job.json", state)
         return state
@@ -203,7 +233,7 @@ class Handler(BaseHTTPRequestHandler):
             if parsed.path == "/api/state":
                 return self.send({"runs": runs(), "jobs": job_states(), "token": TOKEN,
                                   "gpu_busy": gpu_job_running(), "defaults": read_json(ROOT / "configs/personas.json"),
-                                  "mapping_designs": mapping_designs()})
+                                  "mapping_designs": mapping_designs(), "calibrated_designs": calibrated_designs()})
             if parsed.path == "/api/run":
                 folder = run_path(parse_qs(parsed.query).get("id", [""])[0])
                 if not (folder / "metadata.json").is_file():

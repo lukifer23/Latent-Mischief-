@@ -38,3 +38,11 @@ class DesignTests(unittest.TestCase):
         self.assertFalse(metrics['exact_json_match'])
         self.assertTrue(metrics['reasoning_boundary_present'])
         self.assertTrue(metrics['self_check_phrase_present'])
+
+    def test_exact_text_preserves_format_constraints_and_normalizes_unicode(self):
+        prompt = {'check': {'kind': 'exact-text', 'expected': 'Buenos días'}}
+        result = {'text': ' BUENOS DI\u0301AS<|im_end|> ', 'token_ids': [1, 2, 3]}
+        self.assertTrue(measure(result, prompt)['exact_text_match'])
+        for bad in ['Buenos días.', 'Translation: Buenos días', '</think>Buenos días']:
+            result['text'] = bad
+            self.assertFalse(measure(result, prompt)['exact_text_match'])

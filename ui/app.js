@@ -70,6 +70,7 @@ async function refresh() {
   try {
     state = await api("/api/state");
     token = state.token;
+    fillSelect("calibrationRun", (state.calibrated_designs?.available || []).map((x) => x.id), null);
     estimate();
     $("activityText").textContent = state.gpu_busy
       ? "Experiment running"
@@ -86,6 +87,8 @@ async function refresh() {
           "",
           run.kind === "exploration"
             ? "Channel exploration"
+            : run.kind === "calibration"
+              ? "Activation calibration"
             : run.kind === "personas"
               ? "Persona discovery"
               : "Baseline check",
@@ -184,7 +187,9 @@ function renderMetrics(out) {
 }
 function renderCharts(out) {
   const groups = group(out, (x) =>
-    x.condition === "channel-gain" ? `${x.candidate} ×${x.gain}` : x.condition,
+    x.condition === "channel-offset"
+      ? `${x.candidate} ${x.sign > 0 ? "+" : "−"} offset`
+      : x.condition === "channel-gain" ? `${x.candidate} ×${x.gain}` : x.condition,
   );
   $("lengthChart").replaceChildren();
   $("timingChart").replaceChildren();
@@ -220,7 +225,7 @@ function renderCharts(out) {
 function renderMap() {
   const out = cohortOutputs().filter(
     (x) =>
-      x.condition === "contrast-direction" || x.condition === "channel-gain",
+      ["contrast-direction", "channel-gain", "channel-offset"].includes(x.condition),
   );
   $("heatmap").replaceChildren();
   if (!out.length) {
@@ -229,44 +234,48 @@ function renderMap() {
   }
   const measure = $("mapMetric").value;
   const gainMode = out.some((x) => x.condition === "channel-gain");
+  const offsetMode = out.some((x) => x.condition === "channel-offset");
+  const channelMode = gainMode || offsetMode;
   for (const persona of [
     ...new Set(out.map((x) => x.persona || "Channel exploration")),
   ]) {
     const data = out.filter(
         (x) => (x.persona || "Channel exploration") === persona,
       ),
-      layers = gainMode
+      layers = channelMode
         ? [...new Set(data.map((x) => x.candidate))].sort()
         : [...new Set(data.map((x) => x.layer))].sort((a, b) => a - b),
-      doses = [...new Set(data.map((x) => (gainMode ? x.gain : x.dose)))].sort(
+      doses = [...new Set(data.map((x) => (offsetMode ? x.sign : gainMode ? x.gain : x.dose)))].sort(
         (a, b) => a - b,
       ),
       table = el("table", "heat-table"),
       head = el("tr");
     head.append(el("th", "", persona));
     doses.forEach((d) =>
-      head.append(el("th", "", `${gainMode ? "gain" : "dose"} ${d}`)),
+      head.append(el("th", "", `${offsetMode ? "offset sign" : gainMode ? "gain" : "dose"} ${d}`)),
     );
     table.append(head);
     for (const layer of layers) {
       const row = el("tr");
-      row.append(el("th", "", gainMode ? layer : `Layer ${layer}`));
+      row.append(el("th", "", channelMode ? layer : `Layer ${layer}`));
       for (const dose of doses) {
         const items = data.filter(
           (x) =>
-            (gainMode ? x.candidate === layer : x.layer === layer) &&
-            (gainMode ? x.gain : x.dose) === dose,
+            (channelMode ? x.candidate === layer : x.layer === layer) &&
+            (offsetMode ? x.sign : gainMode ? x.gain : x.dose) === dose,
         );
         const measurementKey =
           measure === "think"
             ? "reasoning_boundary_present"
             : measure === "json"
               ? "exact_json_match"
-              : null;
+              : measure === "exactText" ? "exact_text_match" : null;
         const scoredItems = measurementKey
           ? items.filter(
               (x) => typeof x.measurements?.[measurementKey] === "boolean",
             )
+          : measure === "strength"
+            ? items.filter((x) => Number.isFinite(x.actual_prefill_fraction))
           : ["hamster", "villain"].includes(measure)
             ? items.filter((x) =>
                 Array.isArray(x.indicators?.[measure + "_terms_present"]),
@@ -281,6 +290,8 @@ function renderMap() {
                 ? x.output_tokens
                 : measure === "seconds"
                   ? x.seconds
+                  : measure === "strength"
+                    ? x.actual_prefill_fraction
                   : measure === "repetition"
                     ? repetitionRatio(x)
                     : (x.indicators?.[measure + "_terms_present"] || []).length,
@@ -340,6 +351,8 @@ function renderOutputs() {
       output.layer !== undefined ? `Layer ${output.layer}` : null,
       output.neuron !== undefined ? `Channel ${output.neuron}` : null,
       output.gain !== undefined ? `Gain ${output.gain}` : null,
+      output.offset !== undefined ? `Offset ${output.offset.toFixed(4)} (${output.offset_in_rms_units.toFixed(2)} calibration RMS)` : null,
+      output.actual_prefill_fraction !== undefined ? `Measured prefill change ${(100 * output.actual_prefill_fraction).toFixed(1)}%` : null,
       output.role || null,
       output.cohort || null,
       output.measurements?.reasoning_boundary_present ? "Think boundary" : null,
@@ -355,6 +368,9 @@ function renderOutputs() {
         ? output.token_identical_to_baseline
           ? "Token-identical"
           : "Changed sequence"
+        : null,
+      typeof output.measurements?.exact_text_match === "boolean"
+        ? output.measurements.exact_text_match ? "Exact text matched" : "Exact text failed"
         : null,
       output.dose !== undefined ? `Dose ${output.dose}` : null,
       `${output.output_tokens} tokens`,
@@ -459,6 +475,20 @@ async function refreshLog() {
   }
 }
 function estimate() {
+  if (["calibration", "offsets"].includes($("mode").value)) {
+    const screenMode = $("mode").value === "calibration";
+    const available = state.calibrated_designs?.available || [];
+    const chosen = available.find((x) => x.id === $("calibrationRun").value);
+    const cfg = screenMode ? state.calibrated_designs?.config : chosen?.config;
+    $("designConfig").textContent = JSON.stringify(cfg || {}, null, 2);
+    $("launchNotice").textContent = screenMode
+      ? "Measure activation statistics, calibrate signed offsets, and select units using only calibration forward measurements. No reply generation or persona target."
+      : "Use the selected screen's frozen offsets and disjoint evaluation prompts. The runner verifies source hashes and runtime lock before generating. Repeating these prompts is not fresh validation.";
+    $("estimate").textContent = screenMode
+      ? "96 sampled channels · 384 conditions · 1,536 screen forwards plus calibration/checks"
+      : chosen ? `${chosen.generation_count} generations · ${chosen.selected_channels} frozen channels` : "Complete a qualifying calibration first";
+    return;
+  }
   if ($("mode").value === "mapping") {
     const selected = state.mapping_designs?.[$("mappingDesign").value];
     const cfg = selected?.config;
@@ -500,7 +530,8 @@ function configureMode() {
       .classList.toggle("hidden", mode !== "personas");
   }
   $("mappingDesignField").classList.toggle("hidden", mode !== "mapping");
-  $("designPreview").classList.toggle("hidden", mode !== "mapping");
+  $("calibrationField").classList.toggle("hidden", mode !== "offsets");
+  $("designPreview").classList.toggle("hidden", !["mapping", "calibration", "offsets"].includes(mode));
   estimate();
 }
 document.querySelectorAll("[data-tab]").forEach(
@@ -544,10 +575,16 @@ for (const id of ["layers", "doses", "tokens", "controls"])
   $(id).oninput = estimate;
 $("mode").onchange = configureMode;
 $("mappingDesign").onchange = estimate;
+$("calibrationRun").onchange = estimate;
 $("launchForm").onsubmit = async (event) => {
   event.preventDefault();
   try {
     const body =
+      $("mode").value === "calibration"
+        ? { mode: "calibration" }
+        : $("mode").value === "offsets"
+        ? { mode: "offsets", calibration: $("calibrationRun").value }
+        :
       $("mode").value === "mapping"
         ? { mode: "mapping", design: $("mappingDesign").value }
         : $("mode").value === "smoke"

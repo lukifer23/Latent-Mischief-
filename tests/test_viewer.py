@@ -111,6 +111,20 @@ class ViewerTests(unittest.TestCase):
             self.assertEqual(code, 400)
             self.assertIn('already running', data['error'])
 
+    def test_calibrated_launch_is_frozen_and_requires_completed_screen(self):
+        class FakeProcess:
+            pid = 98
+            def poll(self): return 0
+        with patch.object(viewer, 'gpu_job_running', return_value=False):
+            self.assertEqual(self.request('/api/jobs', {'mode': 'offsets', 'calibration': '../../anything'})[0], 400)
+            with patch.object(viewer.subprocess, 'Popen', return_value=FakeProcess()) as launch:
+                status, job = self.request('/api/jobs', {'mode': 'calibration', 'max_new_tokens': 999})
+                self.assertEqual(status, 201)
+                self.assertEqual(job['config']['max_new_tokens'], 192)
+                self.assertIn('calibrate.py', launch.call_args.args[0][1])
+                viewer.job_states()
+                viewer.JOBS.pop(job['id'])
+
     def test_saved_job_history_and_logs_survive_server_state(self):
         folder = viewer.RUNS / 'jobs' / 'historical-job'
         viewer.write_json(folder / 'job.json', {'id': 'historical-job', 'status': 'running'})

@@ -37,6 +37,8 @@ Open exploration can now be launched through the workbench's frozen-design selec
 
 ## Reproduce from the CLI
 
+The two-stage calibrated workflow is also available in Configure a run. **Calibrate and screen 96 channels** uses the frozen versioned design. **Evaluate frozen calibrated offsets** requires a completed qualifying calibration from local history; the runner verifies its hashes and model/runtime lock. Reusing these evaluation prompts is a repeat, not fresh validation. Calibration-only history entries contain measurements rather than generated replies. Offset charts keep channel/sign separate, and cards show native offset, calibration-RMS units and measured prefill change. The strength grid is a relative fraction at post_ffn_norm, not a percentage of behavior change.
+
 ```powershell
 uv run --locked python scripts/personas.py
 uv run --locked python scripts/personas.py --config runs/jobs/JOB-ID/config.json
@@ -44,7 +46,18 @@ uv run --locked python scripts/map_experiment.py --config configs/completion-rep
 uv run --locked python scripts/map_experiment.py --config configs/exploration-expanded.json
 uv run --locked python scripts/verify_run.py RUN-ID
 uv run --locked python scripts/summarize.py RUN-ID
+uv run --locked python scripts/calibrate.py
+uv run --locked python scripts/calibrated_map.py --calibration CALIBRATION-RUN-ID
 uv run --locked python -m unittest discover -s tests -v
 ```
 
 Runners load their config once and record its content and hash. Mapping runs also save the shuffled trial schedule. `verify_run.py` checks archived hashes, hook checks and exact scheduled trials; `summarize.py` preserves candidate/gain/role/cohort groups instead of pooling controls. Keep scripts unchanged while a run executes; commit code versions between runs. Current generation is greedy, with a fixed seed; sampled multi-seed validation remains future work.
+
+To export numeric evidence and PNG/SVG figures after both stages complete:
+
+```powershell
+uv sync --locked --extra analysis
+uv run --locked --extra analysis python scripts/evidence_report.py --calibration CALIBRATION-RUN-ID --evaluation EVALUATION-RUN-ID
+```
+
+This verifies source archives and candidate selection, then exports numeric measurements rather than raw reply text. Published figures can be redrawn from their accompanying `metrics.json` using `--evidence PATH/metrics.json --destination LOCAL-FOLDER`. Browser visual QA remains pending; figure rendering is checked separately.

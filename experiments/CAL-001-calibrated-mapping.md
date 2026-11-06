@@ -1,6 +1,6 @@
 # CAL-001: calibrated offset mapping
 
-Status: predeclared; no results yet.
+Status: calibration screen complete; diverse generation evaluation in progress. The plan below was committed before screening, and the evaluation runner before generation.
 
 ## Milestones and scope
 
@@ -21,3 +21,20 @@ The calibration inputs and the 16 evaluation prompts are disjoint. The latter wi
 ## Evidence and deliverable
 
 Keep all activation statistics, offsets, achieved effects, per-prompt screen rows, selected candidates, neutral checks, generation schedules, complete outputs and code/config snapshots locally. Create a repository report with reviewed aggregate figures and representative successes/failures. Preserve the current workbench and make calibrated results browsable. No weight training or permanent checkpoint change.
+
+## Screen results (2026-11-06)
+
+Run: `20261106T192008134252Z-CAL-001-calibration`. Completed 1,536 screen forwards for 384 conditions across 96 sampled channels. All 184,320 MLP channels have calibration RMS/max statistics over 405 selected input positions per layer. This is a small, specific calibration corpus, including system tokens, not a broad activation atlas.
+
+26/384 conditions reached the 32-RMS offset cap. These outcomes remain in the screen evidence and were ineligible for selection. All six layers supplied a qualifying paired candidate at the preferred 20% target; no fallback or skipped layer was required. The twelve selected signed offsets achieved mean local changes between 19.92% and 20.32% on the four screen prompts. Zero-offset logits and removed-hook logits matched exactly; parameter version counters were unchanged.
+
+| Layer / channel | Operator | Negative KL (nats) | Positive KL (nats) |
+|---|---|---:|---:|
+| L03N6960 | convolution | 0.129708 | 0.175264 |
+| L04N5848 | sliding attention | 0.023999 | 0.117567 |
+| L10N4117 | full attention | 0.019514 | 0.020243 |
+| L15N6252 | convolution | 0.005809 | 0.003731 |
+| L20N0472 | sliding attention | 0.001893 | 0.002800 |
+| L22N0450 | full attention | 0.000901 | 0.000607 |
+
+Equal local targets produced unequal next-token distribution shifts for these selected units. Layer and operator effects are confounded, each layer contributes only one selected unit, and selection itself uses KL. This table cannot establish a general layer-sensitivity law or superior behavior. The next stage uses all twelve frozen offsets on 16 different prompts.

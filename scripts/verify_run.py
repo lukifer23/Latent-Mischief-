@@ -29,8 +29,12 @@ def verify(folder):
         raise ValueError('Run is not complete')
     outputs = json.loads((folder / 'outputs.json').read_text(encoding='utf-8'))
     trials = json.loads((folder / 'trial-order.json').read_text())
-    actual = [(x['candidate'], x['gain'], x['prompt_id']) for x in outputs if x['condition'] == 'channel-gain']
-    expected = [(x['candidate'], x['gain'], x['prompt_id']) for x in trials]
+    def identity(x):
+        condition = x.get('condition', 'channel-gain')
+        strength = 'offset' if condition == 'channel-offset' else 'gain'
+        return condition, x['candidate'], x[strength], x['prompt_id']
+    actual = [identity(x) for x in outputs if x['condition'] in ('channel-gain', 'channel-offset')]
+    expected = [identity(x) for x in trials]
     if actual != expected or len(set(actual)) != len(actual) or len(actual) != summary['intervention_replies']:
         raise ValueError('Recorded trials differ from saved schedule or contain duplicates')
     return {'verified_source_files': len(sources), 'recorded_generations': len(outputs),
