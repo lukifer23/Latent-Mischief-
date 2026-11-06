@@ -25,3 +25,4 @@ torch = { index = "pytorch-cu130" }
 
 [project.optional-dependencies]
 analysis = ["matplotlib>=3.10,<4"]
+eval = ["math-verify[antlr4_13_2]==0.9.0"]

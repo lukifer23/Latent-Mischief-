@@ -1,0 +1,74 @@
+{
+  "experiment_id": "QWN-002",
+  "dataset_revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be",
+  "manifest": ".cache/qwn002/problems.json",
+  "manifest_sha256": "5145cedb2816aaaae59938886dabae1ed81b763a92e79bf301900675c9da5a82",
+  "audit_sha256": "0f3e772a4edea043671ffc93895d0cc0eb0f998288358300c078a953478b651c",
+  "models": [
+    {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17"
+    },
+    {
+      "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "revision": "d1671a178705bcab7644806d23c535517f35723b"
+    }
+  ],
+  "schedule": [
+    {
+      "condition": "baseline",
+      "prompt_id": "test/counting_and_probability/14.json",
+      "seed": 0
+    },
+    {
+      "condition": "baseline",
+      "prompt_id": "test/algebra/1349.json",
+      "seed": 0
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/counting_and_probability/14.json",
+      "seed": 0
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/algebra/1349.json",
+      "seed": 0
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/algebra/661.json",
+      "seed": 0
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/intermediate_algebra/2146.json",
+      "seed": 0
+    },
+    {
+      "condition": "baseline",
+      "prompt_id": "test/algebra/661.json",
+      "seed": 0
+    },
+    {
+      "condition": "baseline",
+      "prompt_id": "test/intermediate_algebra/2146.json",
+      "seed": 0
+    }
+  ],
+  "prompt_suffix": "\nPlease reason step by step, and put your final answer within \\boxed{}.",
+  "seed": 0,
+  "temperature": 0.6,
+  "top_p": 0.95,
+  "top_k": 20,
+  "presence_penalty": 1.5,
+  "max_new_tokens": 4096,
+  "total_generated_tokens": 32768,
+  "separate_preflight_token_budget": 32,
+  "wall_seconds": 1800,
+  "grader_timeout_seconds": 15,
+  "backend": "transformers-sdpa",
+  "dtype": "bfloat16",
+  "thinking": true,
+  "system": null
+}

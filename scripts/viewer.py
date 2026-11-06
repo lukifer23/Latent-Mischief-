@@ -147,7 +147,7 @@ def gpu_job_running(ignore_pids=()):
             if process.info['pid'] in ignore_pids: continue
             cmd = process.info["cmdline"] or []
             scripts = {Path(arg).name for arg in cmd}
-            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "joint_characters.py", "replicate_offsets.py", "performance.py", "live_worker.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
+            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "joint_characters.py", "replicate_offsets.py", "performance.py", "live_worker.py", "qwen_eval.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
                 return True
         except (psutil.Error, OSError):
             continue
