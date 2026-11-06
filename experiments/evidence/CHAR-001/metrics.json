@@ -63,7 +63,7 @@
     "prompts/character-evaluation.json": "f2013c2a2dedbdcfaad4b10f71c3939320a3b6e3858ef362fff1b8092cbfc874"
   },
   "raw_output_sha256": "4235face503947c06e5cac263bd97b69ecc1b6dbcf351721f7f4967d1c7ab907",
-  "report_generator_sha256": "e3b51429ad9decdcd82383f351e987ef27aae77eeeb23a2913acbe2a8046e292",
+  "report_generator_sha256": "7ca22701056f037b30215c1aa80e3734f349692af3e2fa09e49060378dd9d9df",
   "prompts": [
     {
       "id": "teapot",

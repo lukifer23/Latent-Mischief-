@@ -17,15 +17,21 @@ Project repository: https://github.com/lukifer23/Latent-Mischief-
 | Expanded effect-first mapping | 77 generations over 12 new channels; 40/72 intervention replies changed, 32 stayed identical; traits unvalidated |
 | Calibrated single-channel offsets | 184,320-channel statistics; 96 sampled channels, 384 conditions, 1,536 screen forwards |
 | Diverse calibrated evaluation | 210 mapping records + 18 recovery checks; 117/192 intervention replies changed; no strict-check score improvement |
-| Local comparison / run-control workbench | Implemented; API tests pass, visual browser QA pending |
+| Sparse character profiles | 170 generations; no coherent internal persona established |
+| Fresh calibrated-offset replication | 158 generations; 6.81% shortening for one candidate, below 10% criterion; completion candidate failed |
+| Combined character profiles | 86 generations; 56/63 internal replies changed; hamster/random regressions retained |
+| Actual LFM3 long-context performance | Paired timings through 32,768 input tokens; 131,072-token attempt ran out of memory |
+| Qwen3.5-0.8B base and published edit | Pinned, edited-tensor digest checks passed; local arithmetic and conversation smoke checks passed; anti-loop benchmark not reproduced |
+| Model-aware Chat & Try / saved comparisons | API and DOM-fixture checks pass; fresh visual browser QA blocked |
+| Exact recipe / persona library | 135 model-specific recipes; provisional names and evidence kept separate |
 | Validated hamster or villain neuron recipe | Not yet discovered |
 | Capability improvement or state-of-the-art result | Not established |
 
 See [expanded mapping](experiments/MAP-004-expanded-sample.md), [replication findings](experiments/MAP-003-completion-replication.md), [effect-first pilot](experiments/MAP-001-effect-first-pilot.md), [first-sweep findings](experiments/LFM-002-first-sweep.md) and [stronger-dose findings](experiments/LFM-002-stronger-dose.md). Planned work is not a result, and personality changes would not by themselves demonstrate improved capability.
 
-A local lab for exploring LFM3 behavior through reversible activation interventions. Current priority: sample controlled internal changes, document the effects that emerge, and build a replicated effect catalog before designing targeted personas. Hamster and theatrical-villain experiments remain historical evidence and possible later demonstrations. Qwen0.8B capability experiments and compiled computation remain on the idea board.
+A local lab for exploring LFM3 behavior through reversible activation interventions, with a separate Qwen3.5-0.8B track for comparing the official base against a pinned published weight-space edit. Current priority: characterize changes with matched controls and honest regression checks before claiming targeted personas. Compiled computation remains on the idea board.
 
-Latest milestone: [calibrated effects and tradeoffs](experiments/MAP-005-calibrated-effects.md), with [screen results](experiments/CAL-001-calibrated-mapping.md), three inspected PNG/SVG figures and a public numeric export. One offset removes a repeated translation but breaks arithmetic on another prompt. Candidate compression/completion effects still need fresh replication. The report documents a Windows write interruption, exact baseline revalidation and continuation.
+Latest milestone: [fresh replication](experiments/MAP-006-offset-replication.md), [combined-profile findings](experiments/CHAR-002-joint-characters.md), [actual context performance and failures](experiments/PERF-001-long-context.md), and [paired LFM3/Qwen smoke tests](experiments/LIVE-001-model-comparisons.md). The three newer LFM3 campaigns total 414 generations. There is verified behavior change and useful negative evidence; no validated evil/hamster persona or capability improvement. See the [recipe library](experiments/personas/README.md) and [fresh-start QA record](docs/UI-QA.md) for exact scope and remaining gaps.
 
 ## Start here
 
@@ -33,6 +39,7 @@ Latest milestone: [calibrated effects and tradeoffs](experiments/MAP-005-calibra
 - [Research journal](docs/JOURNAL.md): dated decisions, observations and next steps.
 - [Setup](docs/SETUP.md): native Windows, no administrator privileges.
 - [Local workbench](docs/WORKBENCH.md): comparisons, charts, run controls, notes and logs.
+- [Persona naming](docs/PERSONAS.md): exact recipe IDs, provisional names, differences and methodology.
 - [Method](docs/METHOD.md): how we distinguish a funny output from a repeatable effect.
 - [Open exploration](docs/EXPLORATION.md): change first, characterize afterward.
 - [Sources](docs/SOURCES.md): upstream references and provenance.

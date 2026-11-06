@@ -6,10 +6,9 @@ let state = {},
   token = "",
   activeJob = "";
 const drafts = {};
-let comparisonPins = [];
 function conditionLabel(x) {
   if (x.profile_id) return x.profile_id;
-  if (x.condition === "channel-offset") return `${x.candidate} ${x.sign > 0 ? "+" : "−"} offset`;
+  if (x.condition === "channel-offset") return `${x.candidate} ${x.sign > 0 ? "+" : "−"} offset${x.target_fraction === undefined ? "" : ` · target ${100*x.target_fraction}%`}`;
   if (x.condition === "channel-gain") return `${x.candidate} ×${x.gain}`;
   return [x.condition, x.persona].filter(Boolean).join(" · ");
 }
@@ -41,6 +40,8 @@ function fillSelect(id, values, label = "All") {
   node.replaceChildren();
   if (label) node.add(new Option(label, "all"));
   for (const value of values) node.add(new Option(value, value));
+  node.disabled = !values.length;
+  if (!values.length) node.add(new Option("No choices in this experiment", ""));
   if ([...node.options].some((x) => x.value === old)) node.value = old;
 }
 function group(items, key) {
@@ -83,17 +84,20 @@ async function refresh() {
       ? "Experiment running"
       : "GPU lab idle";
     $("runs").replaceChildren();
-    for (const run of state.runs) {
+    for (const run of modelRuns()) {
       const b = el(
         "button",
         "run-item" + (run.id === selected ? " active" : ""),
       );
+      b.dataset.runId=run.id;
       b.append(
         el(
           "strong",
           "",
-          run.kind === "exploration"
+          run.kind === "live" ? "Live comparison" : run.kind === "exploration"
             ? "Channel exploration"
+            : run.kind === "performance"
+              ? "Context performance"
             : run.kind === "characters"
               ? "Sparse character lab"
             : run.kind === "calibration"
@@ -105,11 +109,14 @@ async function refresh() {
         el("span", "", run.id.split("-LFM")[0]),
         el("span", "", `${run.kind === "calibration" ? `${run.screen_conditions} screen conditions` : `${run.outputs} replies`} · ${run.status}`),
       );
-      b.onclick = () => loadRun(run.id);
+      b.onclick = async () => {if(run.kind === "performance")showTab("performance");else{await loadRun(run.id);showTab('review');}};
       $("runs").append(b);
     }
     renderJobs();
-    if (!selected && state.runs.length) await loadRun(state.runs[0].id);
+    if (!selected && state.runs.length) {
+      const first = modelRuns().find(x=>x.kind!=="performance" && x.outputs>0);
+      if(first) await loadRun(first.id);
+    }
     else if (
       current &&
       (state.runs.find((x) => x.id === selected)?.outputs !==
@@ -117,14 +124,14 @@ async function refresh() {
     )
       await loadRun(selected, false);
   } catch (e) {
+    $("activityText").textContent = "Connection error";
     message(e.message);
   }
 }
 async function loadRun(id, reset = true) {
-  if (selected !== id) comparisonPins = [];
   current = await api("/api/run?id=" + encodeURIComponent(id));
   selected = id;
-  $("runTitle").textContent = id;
+  $("runTitle").textContent = (current.metadata?.experiment || "Experiment") + " · " + (current.metadata?.model?.model_id || "Pinned model");
   $("runSubtitle").textContent =
     "Pinned checkpoint · raw outputs preserved · exploratory measurements";
   const out = probeOutputs();
@@ -172,7 +179,7 @@ async function loadRun(id, reset = true) {
   renderOutputs();
   document
     .querySelectorAll(".run-item")
-    .forEach((n, i) => n.classList.toggle("active", state.runs[i]?.id === id));
+    .forEach((n) => n.classList.toggle("active", n.dataset.runId === id));
 }
 function renderMetrics(out) {
   $("metrics").replaceChildren();
@@ -275,14 +282,14 @@ function renderMap() {
       layers = channelMode
         ? [...new Set(data.map((x) => x.candidate))].sort()
         : [...new Set(data.map((x) => x.layer))].sort((a, b) => a - b),
-      doses = [...new Set(data.map((x) => (profileMode ? (x.target_fraction ?? x.dose) : offsetMode ? x.sign : gainMode ? x.gain : x.dose)))].sort(
+      doses = [...new Set(data.map((x) => (profileMode ? (x.target_fraction ?? x.dose) : offsetMode ? LabCompare.offsetSetting(x) : gainMode ? x.gain : x.dose)))].sort(
         (a, b) => a - b,
       ),
       table = el("table", "heat-table"),
       head = el("tr");
     head.append(el("th", "", persona));
     doses.forEach((d) =>
-      head.append(el("th", "", `${jointMode ? "multiplier" : profileMode ? "local target" : offsetMode ? "offset sign" : gainMode ? "gain" : "dose"} ${d}`)),
+      head.append(el("th", "", `${jointMode ? "multiplier" : profileMode ? "local target" : offsetMode ? "sign × local target" : gainMode ? "gain" : "dose"} ${d}`)),
     );
     table.append(head);
     for (const layer of layers) {
@@ -292,7 +299,7 @@ function renderMap() {
         const items = data.filter(
           (x) =>
             (channelMode ? x.candidate === layer : x.layer === layer) &&
-            (profileMode ? (x.target_fraction ?? x.dose) : offsetMode ? x.sign : gainMode ? x.gain : x.dose) === dose,
+            (profileMode ? (x.target_fraction ?? x.dose) : offsetMode ? LabCompare.offsetSetting(x) : gainMode ? x.gain : x.dose) === dose,
         );
         const measurementKey =
           measure === "think"
@@ -353,178 +360,6 @@ function renderFeatureMap() {
     $("featureMap").append(row);
   });
 }
-function renderTray() {
-  $("comparisonTray").replaceChildren();
-  const prompt=$("promptFilter").value;
-  const reference=current.outputs.find(x=>(x.prompt_id||x.id)===prompt && x.condition==="baseline");
-  const pins=comparisonPins.filter(i=>(current.outputs[i]?.prompt_id||current.outputs[i]?.id)===prompt);
-  if (!reference || !pins.length) {
-    $("comparisonTray").append(el("p","muted","Use Pin comparison on replies below to compare them here.")); return;
-  }
-  for(const output of [reference,...pins.map(i=>current.outputs[i])]) {
-    const card=el("article","compare-card");
-    card.append(el("h4","",conditionLabel(output)),el("p","muted",`${output.output_tokens} tokens · ${output.terminated_with_eos?"EOS":"No EOS"} · Δ ${output.output_tokens-reference.output_tokens} tokens`),el("pre","",output.text));
-    $("comparisonTray").append(card);
-  }
-}
-function renderOutputs() {
-  if (!current) return;
-  if (current.calibration) {
-    $("comparisonTray").replaceChildren(el("p","muted","Calibration screens contain forward measurements rather than generated replies."));
-    $("baselinePrompt").textContent = "Calibration uses forward measurements, without reply generation.";
-    $("baselineText").textContent = "Open the associated mapping run to compare generated replies. Frozen selection is shown in the table above.";
-    $("outputs").replaceChildren();
-    return;
-  }
-  const prompt = $("promptFilter").value;
-  const original = current.outputs.find(
-    (x) => (x.prompt_id || x.id) === prompt && x.condition === "baseline",
-  );
-  $("baselinePrompt").textContent = original?.prompt || prompt;
-  $("baselineText").textContent =
-    original?.text || "No unsteered reference recorded for this prompt.";
-  $("outputs").replaceChildren();
-  const filtered = current.outputs
-    .map((x, i) => ({ ...x, _index: i }))
-    .filter(
-      (x) =>
-        (!x.phase || x.phase === "probe") &&
-        (x.prompt_id || x.id) === prompt &&
-        ($("cohortFilter").value === "all" ||
-          x.cohort === $("cohortFilter").value) &&
-        ($("roleFilter").value === "all" || x.role === $("roleFilter").value) &&
-        x.condition !== "baseline" &&
-        ($("personaFilter").value === "all" ||
-          x.persona === $("personaFilter").value ||
-          x.condition === "random-direction" || x.role === "sparse-random") &&
-        ($("conditionFilter").value === "all" ||
-          x.condition === $("conditionFilter").value) &&
-        ($("layerFilter").value === "all" ||
-          String(x.layer) === $("layerFilter").value) &&
-        ($("doseFilter").value === "all" ||
-          String(x.target_fraction ?? x.dose) === $("doseFilter").value),
-    );
-  for (const output of filtered) {
-    const card = el("article", "panel"),
-      top = el("div", "output-title");
-    top.append(
-      el(
-        "h3",
-        "",
-        conditionLabel(output),
-      ),
-    );
-    card.append(top);
-    const pin=el("button","secondary",comparisonPins.includes(output._index)?"Unpin comparison":"Pin comparison");
-    pin.onclick=()=>{
-      const samePrompt=comparisonPins.filter(i=>(current.outputs[i]?.prompt_id||current.outputs[i]?.id)===prompt);
-      if(comparisonPins.includes(output._index)) comparisonPins=comparisonPins.filter(i=>i!==output._index);
-      else if(samePrompt.length>=3) { message("Unpin a reply before adding a fourth comparison for this prompt."); return; }
-      else comparisonPins.push(output._index);
-      renderOutputs();
-    };
-    top.append(pin);
-    const tags = el("div", "tags");
-    for (const text of [
-      output.layer !== undefined ? `Layer ${output.layer}` : null,
-      output.neuron !== undefined ? `Channel ${output.neuron}` : null,
-      output.gain !== undefined ? `Gain ${output.gain}` : null,
-      output.target_fraction !== undefined ? `Local target ${(100*output.target_fraction).toFixed(0)}%` : null,
-      output.hit_cap ? "Calibration cap reached" : null,
-      output.actual_prefill_by_layer ? `Measured layer changes: ${Object.entries(output.actual_prefill_by_layer).map(([k,v])=>`L${k} ${(100*v).toFixed(1)}%`).join("; ")}` : null,
-      output.offset !== undefined ? `Offset ${output.offset.toFixed(4)} (${output.offset_in_rms_units.toFixed(2)} calibration RMS)` : null,
-      output.actual_prefill_fraction !== undefined ? `Measured prefill change ${(100 * output.actual_prefill_fraction).toFixed(1)}%` : null,
-      output.role || null,
-      output.cohort || null,
-      output.measurements?.reasoning_boundary_present ? "Think boundary" : null,
-      output.measurements?.self_check_phrase_present
-        ? "Self-check phrase"
-        : null,
-      typeof output.measurements?.exact_json_match === "boolean"
-        ? output.measurements.exact_json_match
-          ? "Exact JSON matched"
-          : "Exact JSON failed"
-        : null,
-      typeof output.token_identical_to_baseline === "boolean"
-        ? output.token_identical_to_baseline
-          ? "Token-identical"
-          : "Changed sequence"
-        : null,
-      typeof output.measurements?.exact_text_match === "boolean"
-        ? output.measurements.exact_text_match ? "Exact text matched" : "Exact text failed"
-        : null,
-      output.dose !== undefined ? `Dose ${output.dose}` : null,
-      `${output.output_tokens} tokens`,
-      `${output.seconds.toFixed(2)}s`,
-      `${(repetitionRatio(output) * 100).toFixed(0)}% repeated 4-grams`,
-      output.terminated_with_eos ? "EOS" : "Token cap / no EOS",
-    ].filter(Boolean))
-      tags.append(el("span", "tag", text));
-    card.append(tags, el("pre", "", output.text));
-    if (original) {
-      const details=el("details","diff-panel"), text=el("pre","");
-      const comparison=LabCompare.tokenComparison(original.token_ids,output.token_ids);
-      details.append(el("summary","",comparison?.identical?"Token-identical to baseline":`Word diff · shared token prefix ${comparison?.commonPrefix ?? "unknown"}`),el("p","muted","Green: added text. Strikethrough: removed text. Word diff is separate from tokenizer comparison."));
-      for(const part of LabCompare.wordDiff(original.text,output.text)) text.append(el("span","diff-"+part.kind,part.text));
-      details.append(text); card.append(details);
-    }
-    const form = el("div", "review-fields"),
-      label = el("select"),
-      note = el("textarea"),
-      save = el("button", "secondary", "Save review");
-    label.setAttribute("aria-label", "Review label");
-    note.setAttribute("aria-label", "Review notes");
-    for (const x of [
-      "unreviewed",
-      "interesting",
-      "no-effect",
-      "damaged",
-      "needs-review",
-    ])
-      label.add(new Option(x, x));
-    const draftKey = selected + ":" + output._index;
-    const annotation =
-      drafts[draftKey] || current.annotations?.[String(output._index)];
-    label.value = annotation?.label || "unreviewed";
-    note.value = annotation?.note || "";
-    note.oninput = label.onchange = () => {
-      drafts[draftKey] = { label: label.value, note: note.value };
-    };
-    note.placeholder = "What changed? What failed? Include uncertainty.";
-    save.onclick = async () => {
-      try {
-        await api("/api/annotations", {
-          run: selected,
-          index: output._index,
-          label: label.value,
-          note: note.value,
-        });
-        current.annotations ??= {};
-        current.annotations[output._index] = {
-          label: label.value,
-          note: note.value,
-        };
-        delete drafts[draftKey];
-        renderMetrics(cohortOutputs());
-        message("Review saved locally.");
-      } catch (e) {
-        message(e.message);
-      }
-    };
-    form.append(label, note, save);
-    card.append(form);
-    $("outputs").append(card);
-  }
-  renderTray();
-  if (!filtered.length)
-    $("outputs").append(
-      el(
-        "p",
-        "muted",
-        "No comparison replies match these filters. Baseline-only runs contain no persona sweep.",
-      ),
-    );
-}
 function renderJobs() {
   $("jobs").replaceChildren();
   for (const job of state.jobs || []) {
@@ -551,7 +386,7 @@ function renderJobs() {
     }
     $("jobs").append(row);
   }
-  $("launchButton").disabled = Boolean(state.gpu_busy);
+  $("launchButton").disabled = Boolean(state.gpu_busy)||selectedModelKey!=='lfm3';
 }
 async function refreshLog() {
   if (!activeJob && state.jobs?.length) activeJob = state.jobs.at(-1).id;
@@ -564,6 +399,7 @@ async function refreshLog() {
   }
 }
 function estimate() {
+  if(selectedModelKey!=='lfm3'){$('launchNotice').textContent='These frozen batch designs are LFM3-specific. Use Chat & Try to run Qwen default versus its published edit.';$('estimate').textContent='Qwen interactive comparisons are saved as runs.';return;}
   if (["characters", "replicate", "joint"].includes($("mode").value)) {
     const design=state.extra_designs?.[$("mode").value];
     $("designConfig").textContent=JSON.stringify(design?.config || {},null,2);
@@ -706,6 +542,7 @@ $("launchForm").onsubmit = async (event) => {
               random_controls_per_layer: Number($("controls").value),
               random_control_dose: Number($("controlDose").value),
             };
+    body.model_key=selectedModelKey;
     const job = await api("/api/jobs", body);
     activeJob = job.id;
     message("Experiment started. Configuration and log saved locally.");
@@ -727,8 +564,10 @@ $("export").onclick = () => {
   URL.revokeObjectURL(url);
 };
 configureMode();
+initWorkflow();
 refresh();
 setInterval(async () => {
-  await refresh();
+  if (document.visibilityState !== "visible") return;
+  if (state.gpu_busy || Date.now() - (globalThis.lastLabPoll || 0) > 30000) { await refresh(); globalThis.lastLabPoll = Date.now(); }
   if (activeJob && !$("logs").classList.contains("hidden")) await refreshLog();
 }, 5000);

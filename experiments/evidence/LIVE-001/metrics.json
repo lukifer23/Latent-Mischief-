@@ -1,0 +1,415 @@
+{
+  "scope": "Deliberately reviewed fixed smoke prompts; not routine chat export, anti-loop evaluation or benchmark. Single short greedy trajectories; warmup/loading affect timing.",
+  "cases": [
+    {
+      "run": "20261106T205709737196Z-LIVE-lfm3",
+      "model_key": "lfm3",
+      "recipe_id": "default",
+      "prompt": "Reply with exactly the word READY.",
+      "model": {
+        "model_id": "LiquidAI/LFM3-1.7B",
+        "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "max_new_tokens": 192,
+        "seed": 42,
+        "thinking": false,
+        "label": "LFM3-1.7B",
+        "family": "lfm3",
+        "max_context": 262144,
+        "live_attention": "sdpa"
+      },
+      "runtime_attention": "sdpa",
+      "environment": {
+        "python": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
+        "platform": "Windows-10-10.0.26300-SP0",
+        "packages": {
+          "torch": "2.14.1+cu130",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": true,
+        "torch_cuda": "13.0",
+        "gpu": "NVIDIA RTX 2000 Ada Generation",
+        "gpu_memory_bytes": 17175150592,
+        "lock_sha256": "19da0ae9e13178fbe7ef12e625498162eb768ae2f6d8944ab651a2ee0dfafd7e"
+      },
+      "settings": {
+        "system": "You are a helpful assistant. Answer clearly and concisely.",
+        "max_new_tokens": 64,
+        "thinking": false,
+        "seed": 42
+      },
+      "branches": [
+        {
+          "condition": "baseline",
+          "model_id": "LiquidAI/LFM3-1.7B",
+          "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+          "text": "READY<|im_end|>",
+          "input_tokens": 35,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "time_to_first_token_seconds": 0.27274580000084825,
+          "decode_tokens_per_second": 25.06234257720427,
+          "load_seconds": 5.222095600001921,
+          "peak_gpu_allocated_bytes": 3469519360,
+          "peak_gpu_reserved_bytes": 3500146688
+        },
+        {
+          "condition": "edited",
+          "model_id": "LiquidAI/LFM3-1.7B",
+          "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+          "text": "READY<|im_end|>",
+          "input_tokens": 35,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "time_to_first_token_seconds": 0.027725399999326328,
+          "decode_tokens_per_second": 40.71976252247434,
+          "load_seconds": 0.0,
+          "peak_gpu_allocated_bytes": 3469519360,
+          "peak_gpu_reserved_bytes": 3500146688
+        }
+      ],
+      "token_sequences_identical": true,
+      "checks": {
+        "completed": true,
+        "generations": 2,
+        "recipe_id": "default",
+        "model_key": "lfm3",
+        "parameter_version_checks": true,
+        "same_prompt": true,
+        "history_note": "Each branch retains its own saved conversation; messages are recorded separately."
+      },
+      "source_hashes": {
+        "scripts/live_worker.py": "f10d0ce0f6ac53b0c2154b01d3b58b0cb9e6c402ea6cea847cee2092d3a33e40",
+        "scripts/lab.py": "9156331b772c361e1bab80a73345f89fcdddf0c3275fc0ec8b6a3413f1dda018",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+        "scripts/catalog.py": "0e374f0c3853ba0b14287411f7ff8a9a42164a75334077091055670681a744eb",
+        "configs/models.json": "ad662a228c97cccaff959137dff64181e794a5f9464f3ef34b7c9994fc49fea1",
+        "uv.lock": "19da0ae9e13178fbe7ef12e625498162eb768ae2f6d8944ab651a2ee0dfafd7e"
+      },
+      "outputs_sha256": "0efbf9e95b706dfbc8c2232cdaeb7d91e64b5cfbd33669a24ffbca9938972e0d"
+    },
+    {
+      "run": "20261106T205721720550Z-LIVE-lfm3",
+      "model_key": "lfm3",
+      "recipe_id": "LM-ce653aca7838eb58",
+      "prompt": "My friend ate my last cookie. Give a short playful response.",
+      "model": {
+        "model_id": "LiquidAI/LFM3-1.7B",
+        "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "max_new_tokens": 192,
+        "seed": 42,
+        "thinking": false,
+        "label": "LFM3-1.7B",
+        "family": "lfm3",
+        "max_context": 262144,
+        "live_attention": "sdpa"
+      },
+      "runtime_attention": "eager",
+      "environment": {
+        "python": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
+        "platform": "Windows-10-10.0.26300-SP0",
+        "packages": {
+          "torch": "2.14.1+cu130",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": true,
+        "torch_cuda": "13.0",
+        "gpu": "NVIDIA RTX 2000 Ada Generation",
+        "gpu_memory_bytes": 17175150592,
+        "lock_sha256": "19da0ae9e13178fbe7ef12e625498162eb768ae2f6d8944ab651a2ee0dfafd7e"
+      },
+      "settings": {
+        "system": "You are a helpful assistant. Answer clearly and concisely.",
+        "max_new_tokens": 64,
+        "thinking": false,
+        "seed": 42
+      },
+      "branches": [
+        {
+          "condition": "baseline",
+          "model_id": "LiquidAI/LFM3-1.7B",
+          "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+          "text": "Oh no! That's a tragedy. But maybe it's a *taste* of your cookie, just... shared? Or perhaps you're a cookie detective and you've found the missing piece. Either way, I'll take the last bite. 🍪😉<|im_end|>",
+          "input_tokens": 41,
+          "output_tokens": 55,
+          "terminated_with_eos": true,
+          "time_to_first_token_seconds": 0.08208539999759523,
+          "decode_tokens_per_second": 36.85097751308103,
+          "load_seconds": 3.1581299000026775,
+          "peak_gpu_allocated_bytes": 3470068224,
+          "peak_gpu_reserved_bytes": 3500146688
+        },
+        {
+          "condition": "edited",
+          "model_id": "LiquidAI/LFM3-1.7B",
+          "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+          "text": "Ah, the cookie thief! I shall claim my crumbs as a tribute to your boldness. But perhaps you have a secret stash I missed? Or maybe the cookie was a shared treasure, and I merely took a piece for the road. Either way, I shall return the crumbs and offer a sweet word",
+          "input_tokens": 41,
+          "output_tokens": 64,
+          "terminated_with_eos": false,
+          "time_to_first_token_seconds": 0.03387920000022859,
+          "decode_tokens_per_second": 36.82316179214537,
+          "load_seconds": 0.0,
+          "peak_gpu_allocated_bytes": 3470072320,
+          "peak_gpu_reserved_bytes": 3502243840
+        }
+      ],
+      "token_sequences_identical": false,
+      "checks": {
+        "completed": true,
+        "generations": 2,
+        "recipe_id": "LM-ce653aca7838eb58",
+        "model_key": "lfm3",
+        "parameter_version_checks": true,
+        "same_prompt": true,
+        "history_note": "Each branch retains its own saved conversation; messages are recorded separately."
+      },
+      "source_hashes": {
+        "scripts/live_worker.py": "f10d0ce0f6ac53b0c2154b01d3b58b0cb9e6c402ea6cea847cee2092d3a33e40",
+        "scripts/lab.py": "9156331b772c361e1bab80a73345f89fcdddf0c3275fc0ec8b6a3413f1dda018",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+        "scripts/catalog.py": "0e374f0c3853ba0b14287411f7ff8a9a42164a75334077091055670681a744eb",
+        "configs/models.json": "ad662a228c97cccaff959137dff64181e794a5f9464f3ef34b7c9994fc49fea1",
+        "uv.lock": "19da0ae9e13178fbe7ef12e625498162eb768ae2f6d8944ab651a2ee0dfafd7e"
+      },
+      "outputs_sha256": "74854961baef4eac37ba5525ca9b58466cefbc449e1807cd96d8b88e86ea28ad"
+    },
+    {
+      "run": "20261106T205729484149Z-LIVE-qwen08",
+      "model_key": "qwen08",
+      "recipe_id": "LM-c83b96326de3b919",
+      "prompt": "What is 27 + 16? Reply with only the integer.",
+      "model": {
+        "label": "Qwen3.5-0.8B",
+        "family": "qwen3_5",
+        "model_id": "Qwen/Qwen3.5-0.8B",
+        "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+        "dtype": "bfloat16",
+        "live_attention": "sdpa",
+        "thinking": false,
+        "seed": 42,
+        "published_edit": {
+          "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+          "revision": "d1671a178705bcab7644806d23c535517f35723b",
+          "label": "Published anti-loop weight-space edit",
+          "source": "https://huggingface.co/RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+          "expected_tensor_sha256": {
+            "model.language_model.layers.15.mlp.down_proj.weight": "82e2d733ea64feaeb4af93a1e065641d3df98b494a8b7576ef2f52e90fe2ee53",
+            "model.language_model.layers.19.mlp.down_proj.weight": "8ef3c61bc36af113ad58e89dbb0a4a14dcba5a45cb750c15ab515c82ddd12eb2"
+          }
+        }
+      },
+      "runtime_attention": "sdpa",
+      "environment": {
+        "python": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
+        "platform": "Windows-10-10.0.26300-SP0",
+        "packages": {
+          "torch": "2.14.1+cu130",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": true,
+        "torch_cuda": "13.0",
+        "gpu": "NVIDIA RTX 2000 Ada Generation",
+        "gpu_memory_bytes": 17175150592,
+        "lock_sha256": "19da0ae9e13178fbe7ef12e625498162eb768ae2f6d8944ab651a2ee0dfafd7e"
+      },
+      "settings": {
+        "system": "You are a helpful assistant. Answer clearly and concisely.",
+        "max_new_tokens": 64,
+        "thinking": false,
+        "seed": 42
+      },
+      "branches": [
+        {
+          "condition": "baseline",
+          "model_id": "Qwen/Qwen3.5-0.8B",
+          "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+          "text": "43<|im_end|>",
+          "input_tokens": 46,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "time_to_first_token_seconds": 0.10043089999817312,
+          "decode_tokens_per_second": 25.99421368785206,
+          "load_seconds": 1.8195295999976224,
+          "peak_gpu_allocated_bytes": 1778157056,
+          "peak_gpu_reserved_bytes": 1855979520
+        },
+        {
+          "condition": "edited",
+          "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+          "revision": "d1671a178705bcab7644806d23c535517f35723b",
+          "text": "43<|im_end|>",
+          "input_tokens": 46,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "time_to_first_token_seconds": 0.038004199999704724,
+          "decode_tokens_per_second": 38.68681475942701,
+          "load_seconds": 1.8282471999991685,
+          "peak_gpu_allocated_bytes": 1778157056,
+          "peak_gpu_reserved_bytes": 1855979520
+        }
+      ],
+      "token_sequences_identical": true,
+      "checks": {
+        "completed": true,
+        "generations": 2,
+        "recipe_id": "LM-c83b96326de3b919",
+        "model_key": "qwen08",
+        "parameter_version_checks": true,
+        "same_prompt": true,
+        "history_note": "Each branch retains its own saved conversation; messages are recorded separately."
+      },
+      "source_hashes": {
+        "scripts/live_worker.py": "f10d0ce0f6ac53b0c2154b01d3b58b0cb9e6c402ea6cea847cee2092d3a33e40",
+        "scripts/lab.py": "9156331b772c361e1bab80a73345f89fcdddf0c3275fc0ec8b6a3413f1dda018",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+        "scripts/catalog.py": "0e374f0c3853ba0b14287411f7ff8a9a42164a75334077091055670681a744eb",
+        "configs/models.json": "ad662a228c97cccaff959137dff64181e794a5f9464f3ef34b7c9994fc49fea1",
+        "uv.lock": "19da0ae9e13178fbe7ef12e625498162eb768ae2f6d8944ab651a2ee0dfafd7e"
+      },
+      "outputs_sha256": "325ef35ded56d7cf25578fc0b9a34721d19b6b12a4146055a264fb6cd1bf7961"
+    },
+    {
+      "run": "20261106T205735050977Z-LIVE-qwen08",
+      "model_key": "qwen08",
+      "recipe_id": "LM-c83b96326de3b919",
+      "prompt": "Add one to your previous answer. Reply with only the integer.",
+      "model": {
+        "label": "Qwen3.5-0.8B",
+        "family": "qwen3_5",
+        "model_id": "Qwen/Qwen3.5-0.8B",
+        "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+        "dtype": "bfloat16",
+        "live_attention": "sdpa",
+        "thinking": false,
+        "seed": 42,
+        "published_edit": {
+          "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+          "revision": "d1671a178705bcab7644806d23c535517f35723b",
+          "label": "Published anti-loop weight-space edit",
+          "source": "https://huggingface.co/RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+          "expected_tensor_sha256": {
+            "model.language_model.layers.15.mlp.down_proj.weight": "82e2d733ea64feaeb4af93a1e065641d3df98b494a8b7576ef2f52e90fe2ee53",
+            "model.language_model.layers.19.mlp.down_proj.weight": "8ef3c61bc36af113ad58e89dbb0a4a14dcba5a45cb750c15ab515c82ddd12eb2"
+          }
+        }
+      },
+      "runtime_attention": "sdpa",
+      "environment": {
+        "python": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
+        "platform": "Windows-10-10.0.26300-SP0",
+        "packages": {
+          "torch": "2.14.1+cu130",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": true,
+        "torch_cuda": "13.0",
+        "gpu": "NVIDIA RTX 2000 Ada Generation",
+        "gpu_memory_bytes": 17175150592,
+        "lock_sha256": "19da0ae9e13178fbe7ef12e625498162eb768ae2f6d8944ab651a2ee0dfafd7e"
+      },
+      "settings": {
+        "system": "You are a helpful assistant. Answer clearly and concisely.",
+        "max_new_tokens": 64,
+        "thinking": false,
+        "seed": 42
+      },
+      "branches": [
+        {
+          "condition": "baseline",
+          "model_id": "Qwen/Qwen3.5-0.8B",
+          "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+          "text": "44<|im_end|>",
+          "input_tokens": 71,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "time_to_first_token_seconds": 0.06020949999947334,
+          "decode_tokens_per_second": 38.892572877938484,
+          "load_seconds": 1.9959875999993528,
+          "peak_gpu_allocated_bytes": 1784506368,
+          "peak_gpu_reserved_bytes": 1862270976
+        },
+        {
+          "condition": "edited",
+          "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+          "revision": "d1671a178705bcab7644806d23c535517f35723b",
+          "text": "44<|im_end|>",
+          "input_tokens": 71,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "time_to_first_token_seconds": 0.041696599997521844,
+          "decode_tokens_per_second": 37.57724472321091,
+          "load_seconds": 1.6892619999998715,
+          "peak_gpu_allocated_bytes": 1784506368,
+          "peak_gpu_reserved_bytes": 1862270976
+        }
+      ],
+      "token_sequences_identical": true,
+      "checks": {
+        "completed": true,
+        "generations": 2,
+        "recipe_id": "LM-c83b96326de3b919",
+        "model_key": "qwen08",
+        "parameter_version_checks": true,
+        "same_prompt": true,
+        "history_note": "Each branch retains its own saved conversation; messages are recorded separately."
+      },
+      "source_hashes": {
+        "scripts/live_worker.py": "f10d0ce0f6ac53b0c2154b01d3b58b0cb9e6c402ea6cea847cee2092d3a33e40",
+        "scripts/lab.py": "9156331b772c361e1bab80a73345f89fcdddf0c3275fc0ec8b6a3413f1dda018",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+        "scripts/catalog.py": "0e374f0c3853ba0b14287411f7ff8a9a42164a75334077091055670681a744eb",
+        "configs/models.json": "ad662a228c97cccaff959137dff64181e794a5f9464f3ef34b7c9994fc49fea1",
+        "uv.lock": "19da0ae9e13178fbe7ef12e625498162eb768ae2f6d8944ab651a2ee0dfafd7e"
+      },
+      "outputs_sha256": "ce54ff54c6ca5741efcc9ef71ea8b7ff84294ba7592fbf571ce5b88c29e24e4e"
+    }
+  ],
+  "qwen_edit_identity": {
+    "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+    "revision": "d1671a178705bcab7644806d23c535517f35723b",
+    "tensors": {
+      "model.language_model.layers.15.mlp.down_proj.weight": {
+        "sha256": "82e2d733ea64feaeb4af93a1e065641d3df98b494a8b7576ef2f52e90fe2ee53",
+        "expected": "82e2d733ea64feaeb4af93a1e065641d3df98b494a8b7576ef2f52e90fe2ee53",
+        "matches": true
+      },
+      "model.language_model.layers.19.mlp.down_proj.weight": {
+        "sha256": "8ef3c61bc36af113ad58e89dbb0a4a14dcba5a45cb750c15ab515c82ddd12eb2",
+        "expected": "8ef3c61bc36af113ad58e89dbb0a4a14dcba5a45cb750c15ab515c82ddd12eb2",
+        "matches": true
+      }
+    }
+  }
+}

@@ -24,5 +24,8 @@ function tokenComparison(before,after) {
   while(prefix<Math.min(before.length,after.length) && before[prefix]===after[prefix]) prefix++;
   return {identical: prefix===before.length && prefix===after.length, commonPrefix:prefix};
 }
-globalThis.LabCompare = {wordDiff,tokenComparison};
+function offsetSetting(item) {
+  return item.target_fraction === undefined ? item.sign : item.sign * item.target_fraction;
+}
+globalThis.LabCompare = {wordDiff,tokenComparison,offsetSetting};
 if (typeof module !== "undefined") module.exports = globalThis.LabCompare;

@@ -1,0 +1,35 @@
+{
+  "lfm3": {
+    "model_id": "LiquidAI/LFM3-1.7B",
+    "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+    "dtype": "bfloat16",
+    "attention": "eager",
+    "max_new_tokens": 192,
+    "seed": 42,
+    "thinking": false,
+    "label": "LFM3-1.7B",
+    "family": "lfm3",
+    "max_context": 262144,
+    "live_attention": "sdpa"
+  },
+  "qwen08": {
+    "label": "Qwen3.5-0.8B",
+    "family": "qwen3_5",
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "dtype": "bfloat16",
+    "live_attention": "sdpa",
+    "thinking": false,
+    "seed": 42,
+    "published_edit": {
+      "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "revision": "d1671a178705bcab7644806d23c535517f35723b",
+      "label": "Published anti-loop weight-space edit",
+      "source": "https://huggingface.co/RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "expected_tensor_sha256": {
+        "model.language_model.layers.15.mlp.down_proj.weight": "82e2d733ea64feaeb4af93a1e065641d3df98b494a8b7576ef2f52e90fe2ee53",
+        "model.language_model.layers.19.mlp.down_proj.weight": "8ef3c61bc36af113ad58e89dbb0a4a14dcba5a45cb750c15ab515c82ddd12eb2"
+      }
+    }
+  }
+}

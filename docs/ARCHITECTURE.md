@@ -1,5 +1,9 @@
 # How the lab fits together
 
+The interactive path is `ui/workflow.js` → loopback `/api/live` in `scripts/viewer.py` → one local `scripts/live_worker.py` process. `configs/models.json` separates LFM3 reversible-hook recipes from Qwen's base/published checkpoint pair. The worker records both branches, actual messages, token IDs, timing, source hashes and parameter-version checks under `runs/*-LIVE-*`; it retains one loaded checkpoint until model change or idle timeout. Stop tracks Windows virtualenv launcher children as well as the parent. Research batch designs remain LFM3-specific.
+
+`scripts/catalog.py` derives stable recipe IDs from exact model/operator identities and hook implementation fingerprints, attaching separate scoped observations. Local annotations live under ignored `runs/`; reviewed public names live in `experiments/personas/names.json`. Public catalog generation excludes interactive chat runs and their observations. Public numeric evidence and reviewed examples are deliberately exported into `experiments/evidence/`, separately from private raw run storage. These distinctions are enforced independently of the UI's model filters.
+
 ```mermaid
 flowchart LR
     UI[Local workbench] --> API[Loopback HTTP server]

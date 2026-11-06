@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Latent Mischief · Workbench</title>
     <link rel="stylesheet" href="/style.css" />
+    <script defer src="/bootstrap.js"></script>
     <script defer src="/compare.js"></script>
+    <script defer src="/workflow.js"></script>
     <script defer src="/app.js"></script>
   </head>
   <body>
     <header>
       <a class="brand" href="/"
         >LM<span
-          >Latent Mischief<small>LOCAL EXPERIMENT WORKBENCH</small></span
+          >Latent Mischief<small id="modelBadge">LFM3 · 1.7B · LOCAL LAB</small></span
         ></a
       >
-      <div class="status">
+      <label class="model-picker">Model<select id="modelSelect" disabled><option>Loading models…</option></select></label><div class="status">
         <span id="activity" class="dot"></span
         ><span id="activityText">Connecting</span>
       </div>
@@ -23,38 +25,28 @@
     <div class="layout">
       <aside>
         <div class="section-label">YOUR LAB</div>
-        <h2>Run history</h2>
+        <h2>Experiments</h2>
         <p class="muted">
           Raw evidence, including the attempts that didn't work.
         </p>
         <button id="refresh" class="secondary">Refresh runs</button>
         <div id="runs" class="run-list"></div>
         <div class="sidebar-note">
-          Local files only. No cloud inference, telemetry, or weight edits.
+          Local inference. Original checkpoints preserved. No telemetry.
         </div>
       </aside>
       <main>
-        <section class="intro">
-          <div>
-            <div class="eyebrow">OBSERVE · INTERVENE · COMPARE</div>
-            <h1>
-              Make a little mischief.<br /><span>Keep the evidence.</span>
-            </h1>
-            <p>
-              Explore LFM3 behavior, compare the original with a push, and
-              record what actually changed.
-            </p>
-          </div>
-          <span class="pill">LFM3 · 1.7B · BF16</span>
-        </section>
-        <nav class="tabs" aria-label="Workbench">
-          <button data-tab="review" class="selected">Compare & review</button
-          ><button data-tab="launch">Configure a run</button
-          ><button data-tab="logs">Job logs</button>
-        </nav>
+
+        <nav class="tabs" aria-label="Lab workspace"><button data-tab="chat" class="selected">Chat &amp; Try</button><button data-tab="review">Saved Comparisons</button><button data-tab="library">Persona Library</button><button data-tab="atlas">Effect Atlas</button><button data-tab="performance">Performance</button><button data-tab="launch">Run Experiments</button><button data-tab="logs">Logs</button></nav>
         <div id="message" role="status"></div>
-        <section id="review" class="tab-panel">
-          <div class="panel-title">
+        <section id="chat" class="tab-panel chat-workspace">
+          <div class="panel-title"><div><h2>One prompt. Default versus edited.</h2><p class="muted">Local greedy inference. Both branches are saved with their own messages and timing.</p></div><button id="newChat" class="secondary">New conversation</button></div>
+          <div class="chat-settings"><label>Exact recipe<select id="liveRecipe" disabled><option>Loading recipes…</option></select></label><label>Output cap<select id="liveTokens"><option>64</option><option selected>256</option><option>512</option><option>1024</option></select></label><label class="thinking-toggle"><input id="liveThinking" type="checkbox"> Thinking</label><details><summary>System instruction</summary><label>Shared system instruction<textarea id="liveSystem" rows="2">You are a helpful assistant. Answer clearly and concisely.</textarea></label></details></div>
+          <p id="chatStatus" role="status" class="muted">Choose a recipe and send a prompt. An unchanged control runs the same model twice.</p>
+          <div id="chatColumns" class="chat-columns"></div>
+          <form id="chatForm" class="chat-compose"><label>Prompt<textarea id="chatPrompt" rows="2" required placeholder="Give us a dramatic speech about a stolen cookie."></textarea></label><div><button id="sendChat" type="submit">Run both replies</button><button id="stopChat" type="button" class="secondary" disabled>Stop</button></div></form>
+        </section>
+        <div id="runContext"><div class="panel-title">
             <div>
               <h2 id="runTitle">Select a run</h2>
               <p class="muted" id="runSubtitle">
@@ -62,13 +54,22 @@
               </p>
             </div>
             <button id="export" class="secondary">Export run JSON</button>
-          </div>
+          </div></div><section id="review" class="tab-panel compare-workspace">
+<div class="compare-controls"><label>Prompt<select id="promptFilter" disabled><option>Loading prompts…</option></select></label><label>Prompt group<select id="cohortFilter" disabled><option>Loading groups…</option></select></label><label>Edit A<select id="compareA" disabled><option>Loading edits…</option></select></label><label>Edit B / control<select id="compareB" disabled><option>Loading controls…</option></select></label></div>
+<div class="view-options"><label><input type="checkbox" id="showDiff"> Highlight changes</label><label><input type="checkbox" id="rawOutput"> Raw model text</label><details><summary>Refine recipes</summary><div class="filters"><label>Intended style<select id="personaFilter"><option value="all">All</option><option>hamster</option><option>villain</option></select></label><label>Change type<select id="conditionFilter"></select></label><label>Layer<select id="layerFilter"></select></label><label>Strength<select id="doseFilter"></select></label><label>Control role<select id="roleFilter"></select></label></div></details></div>
+<p id="promptText" class="prompt-text">Select an experiment and prompt.</p><div id="comparisonColumns" class="comparison-columns"><div class="empty-state">Default and edited replies will appear here.</div></div></section>
+<section id="library" class="tab-panel hidden library-workspace"><div class="panel-title"><div><h2>Persona Library</h2><p id="libraryCount" class="muted">Exact changes, observed names and evidence.</p></div><button id="refreshPersonas" class="secondary">Refresh library</button></div><div class="library-grid"><div class="library-browser"><label>Find a persona or recipe<input id="personaSearch" type="search" placeholder="Name, ID, method, or family"></label><div id="personaList" class="persona-list"></div></div><article id="personaDetail" class="persona-detail"></article></div></section>
+<section id="performance" class="tab-panel hidden"><div class="panel-title"><div><h2>Performance at context</h2><p id="identityStatus" class="muted">Identity and actual token counts.</p></div><button id="refreshPerformance" class="secondary">Refresh measurements</button></div><div class="notice">Single local timings. Prefill, first-token and decode costs differ. GPU allocated/reserved memory differ; host RSS is a snapshot, not peak usage.</div><div id="performanceData" class="table-scroll"></div></section>
+<section id="atlas" class="tab-panel hidden">
+
           <div class="metrics" id="metrics"></div>
           <div class="notice">
             Exploratory evidence. Keyword hits are browsing aids, not persona
             scores. Token-cap hits are not automatically loops. Correctness
             needs separate review.
           </div>
+          <details class="panel">
+            <summary>Charts &amp; effect grid</summary>
           <div class="chart-grid">
             <article class="panel">
               <h3>Reply length by condition</h3>
@@ -106,39 +107,15 @@
             </div>
             <div id="heatmap"></div>
           </article>
-          <div class="filters">
-            <label>Prompt<select id="promptFilter"></select></label
-            ><label
-              >Persona<select id="personaFilter">
-                <option value="all">All personas</option>
-                <option>hamster</option>
-                <option>villain</option>
-              </select></label
-            ><label>Condition<select id="conditionFilter"></select></label
-            ><label>Layer<select id="layerFilter"></select></label
-            ><label>Dose<select id="doseFilter"></select></label>
-            <label>Role<select id="roleFilter"></select></label>
-            <label>Prompt cohort<select id="cohortFilter"></select></label>
-          </div>
-          <article id="featurePanel" class="panel hidden">
-            <h3>Sparse profile channel map</h3>
-            <p class="muted">Top ranked channels from paired fixed texts. Associations, not proven neuron functions. Rankings cover all 24 layers; generation tests cover four.</p>
+          </details>
+
+          <details id="featurePanel" class="panel hidden">
+            <summary>Sparse profile channel map</summary>
+            <p class="muted">Top ranked channels from paired fixed texts. Associations, not proven neuron functions. Rankings cover all 24 layers; generation tests cover four. Green: positive contrast; purple: negative contrast. Bar length shows magnitude.</p>
             <div class="filters"><label>Character<select id="featurePersona"></select></label><label>Layer<select id="featureLayer"></select></label></div>
             <div id="featureMap"></div>
-          </article>
-          <article class="panel">
-            <h3>Direct comparison tray</h3>
-            <p class="muted">Pin up to three replies for the selected prompt. Baseline stays alongside them; pins are local to this browser session.</p>
-            <div id="comparisonTray" class="comparison-grid"></div>
-          </article>
-          <div class="comparison">
-            <article class="panel original">
-              <div class="section-label">UNSTEERED REFERENCE</div>
-              <h3 id="baselinePrompt">Original response</h3>
-              <pre id="baselineText">Select a run and prompt.</pre>
-            </article>
-            <div><div id="outputs"></div></div>
-          </div>
+          </details>
+
           <details class="panel">
             <summary>Provenance & checks</summary>
             <pre id="provenance"></pre>
@@ -262,10 +239,7 @@
           <div id="jobs"></div>
           <pre id="jobLog" class="log">No managed jobs yet.</pre>
         </section>
-        <footer>
-          Latent Mischief · Small models. Strange behaviors. Reproducible
-          experiments.
-        </footer>
+
       </main>
     </div>
   </body>

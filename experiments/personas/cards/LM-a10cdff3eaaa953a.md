@@ -1,0 +1,59 @@
+# Mischief-A10CDF
+
+Recipe: `LM-a10cdff3eaaa953a` · unreviewed
+
+L22 N6754 · gain 2.0
+
+No observed persona nickname has been assigned.
+
+## Exact intervention
+
+```json
+{
+  "schema": 1,
+  "model": {
+    "model_id": "LiquidAI/LFM3-1.7B",
+    "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+    "dtype": "bfloat16",
+    "attention": "eager"
+  },
+  "family": "channel-gain",
+  "operations": [
+    {
+      "layer": 22,
+      "kind": "gain",
+      "channels": [
+        6754
+      ],
+      "gain": 2.0
+    }
+  ],
+  "positions": "all prompt positions and every decode position",
+  "hook_location": "gated MLP input before w2 and post_ffn_norm",
+  "hook_function_ast_sha256": "5859ec6944a28515d8ba3e971a95e60d3bb6afd987ff966e7881db508f4fd79c"
+}
+```
+
+## Differences from matched default
+
+Each row is a separate run/cohort; numbers are descriptive, not personality scores.
+
+| Run / cohort | n | Changed | Mean tokens: default → edit | EOS: default → edit | Exact checks: default → edit |
+|---|---:|---:|---|---|---|
+| `20261106T190341875119Z-MAP-004-channel-exploration` / exploration | 3 | 1 | 86.67 → 101.00 | 2 → 2 | not measured |
+
+## Methodology and evidence
+
+Method derivation, intended character, source runs and local vector references:
+
+```json
+[
+  {
+    "run": "20261106T190341875119Z-MAP-004-channel-exploration",
+    "intended_character": null,
+    "selection": "See frozen source configuration and extraction artifacts."
+  }
+]
+```
+
+Full source configurations, hashes, prompts/settings and per-run provenance are keyed by run in [registry.json](../registry.json). Raw responses remain local and are browsable in the workbench. A missing nickname or no effect is a retained outcome.

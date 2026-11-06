@@ -64,11 +64,23 @@ class ViewerTests(unittest.TestCase):
         self.assertEqual(self.request('/does-not-exist')[0], 404)
 
     def test_assets_are_local_and_serve_expected_types(self):
-        for path, mime in [('/', 'text/html'), ('/app.js', 'text/javascript'), ('/style.css', 'text/css')]:
+        for path, mime in [('/', 'text/html'), ('/bootstrap.js', 'text/javascript'),
+                           ('/compare.js', 'text/javascript'), ('/workflow.js', 'text/javascript'),
+                           ('/app.js', 'text/javascript'), ('/style.css', 'text/css')]:
             with urlopen(self.base + path) as response:
                 self.assertTrue(response.headers['Content-Type'].startswith(mime))
                 self.assertIn("default-src 'self'", response.headers['Content-Security-Policy'])
                 self.assertGreater(len(response.read()), 100)
+
+    def test_every_script_referenced_by_page_is_served(self):
+        html = (viewer.WEB / 'index.html').read_text(encoding='utf-8')
+        scripts = re.findall(r'<script\b[^>]*\bsrc="([^"]+)"', html)
+        self.assertTrue(scripts)
+        for script in scripts:
+            with self.subTest(script=script), urlopen(self.base + script) as response:
+                self.assertEqual(response.status, 200)
+                self.assertTrue(response.headers['Content-Type'].startswith('text/javascript'))
+                self.assertNotEqual(response.read().lstrip()[:1], b'{')
 
     def test_static_workbench_controls_have_unique_html_targets(self):
         class IDs(HTMLParser):
@@ -79,7 +91,9 @@ class ViewerTests(unittest.TestCase):
                 self.ids.extend(value for key, value in attrs if key == 'id')
         parser = IDs()
         parser.feed((viewer.WEB / 'index.html').read_text(encoding='utf-8'))
-        references = set(re.findall(r'\$\("([A-Za-z0-9_-]+)"\)', (viewer.WEB / 'app.js').read_text(encoding='utf-8')))
+        references = set()
+        for script in ['app.js', 'workflow.js']:
+            references.update(re.findall(r'''\$\(["']([A-Za-z0-9_-]+)["']\)''', (viewer.WEB / script).read_text(encoding='utf-8')))
         self.assertEqual(len(parser.ids), len(set(parser.ids)))
         self.assertFalse(references - set(parser.ids), references - set(parser.ids))
 
@@ -110,6 +124,29 @@ class ViewerTests(unittest.TestCase):
             code, data = self.request('/api/jobs', {"mode": "smoke"})
             self.assertEqual(code, 400)
             self.assertIn('already running', data['error'])
+
+    def test_live_rejects_cross_model_recipe_and_invalid_settings(self):
+        recipe={'id':'lfm-only','recipe':{'model':{'model_id':'LiquidAI/LFM3-1.7B'}}}
+        with patch.object(viewer,'persona_catalog',return_value={'recipes':[recipe]}):
+            code,data=self.request('/api/live',{'model_key':'qwen08','recipe_id':'lfm-only','prompt':'hello'})
+            self.assertEqual(code,400)
+            self.assertIn('different model',data['error'])
+        for changes in [{'model_key':'unknown'},{'max_new_tokens':0},{'thinking':'false'},{'prompt':''},
+                        {'history_default':[{'role':'system','content':'bad history'}]}]:
+            body={'model_key':'lfm3','recipe_id':'default','prompt':'test',**changes}
+            self.assertEqual(self.request('/api/live',body)[0],400)
+
+    def test_batch_designs_do_not_silently_run_lfm_under_qwen(self):
+        self.assertEqual(self.request('/api/jobs',{'mode':'smoke','model_key':'qwen08'})[0],400)
+
+    def test_stopping_live_preserves_partial_reply(self):
+        folder=viewer.RUNS/'test-LIVE-lfm3';folder.mkdir(exist_ok=True)
+        viewer.write_json(folder/'job.json',{'status':'running','branches':{'baseline':{'text':'partial','partial':True}}})
+        with patch.object(viewer,'LIVE_PROCESS',None),patch.object(viewer,'LIVE_LOG',None):
+            self.assertEqual(self.request('/api/live/stop',{})[0],200)
+        result=viewer.read_json(folder/'job.json')
+        self.assertEqual(result['status'],'cancelled')
+        self.assertEqual(result['branches']['baseline']['text'],'partial')
 
     def test_calibrated_launch_is_frozen_and_requires_completed_screen(self):
         class FakeProcess:

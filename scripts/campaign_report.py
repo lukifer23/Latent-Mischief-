@@ -123,13 +123,16 @@ def plot(data,destination):
     import matplotlib.pyplot as plt
     import numpy as np
     destination.mkdir(parents=True,exist_ok=True)
-    plt.rcParams.update({'font.family':'DejaVu Sans','font.size':9,'svg.fonttype':'none','axes.spines.top':False,'axes.spines.right':False})
+    plt.rcParams.update({'font.family':'DejaVu Sans','font.size':9,'svg.fonttype':'none','svg.hashsalt':'latent-mischief','axes.spines.top':False,'axes.spines.right':False})
     def save(fig,name):
-        for extension in ['png','svg']: fig.savefig(destination/f'{name}.{extension}',dpi=165,facecolor='white')
+        for extension in ['png','svg']:
+            path=destination/f'{name}.{extension}'
+            fig.savefig(path,dpi=165,facecolor='white',metadata={'Date':None} if extension=='svg' else None)
+            if extension=='svg': path.write_text('\n'.join(line.rstrip() for line in path.read_text(encoding='utf-8').splitlines())+'\n',encoding='utf-8')
         plt.close(fig)
     def color(name):
         if name=='baseline': return '#777777'
-        if 'random' in name: return '#a8a8a8'
+        if 'random' in name or (data['experiment']=='MAP-006' and name.split('@')[0] not in ['L04N5848','L20N0472']): return '#a8a8a8'
         return '#b74c33' if 'villain' in name or name.startswith('L04N5848') else '#247c9e'
     groups=data['groups']; groups=sorted(groups,key=lambda x:(x['condition']!='baseline',x['condition']))
     if data['experiment']=='MAP-006':
@@ -143,7 +146,7 @@ def plot(data,destination):
         ax.barh(y,[x[key] for x in groups],color=colors)
         ax.set(xlabel=title,yticks=y,yticklabels=labels)
         if key in ['eos','exact_pass']: ax.set_xlim(0,(groups[0]['n'] if key=='eos' else groups[0]['exact_n'])+.7)
-        for i,row in enumerate(groups): ax.text(row[key],i,(' '+str(row[key]) if key in ['eos','exact_pass'] else f' {row[key]:.2f}'),va='center',fontsize=7)
+        for i,row in enumerate(groups): ax.text(row[key],i,(' '+str(row[key]) if key in ['eos','exact_pass'] else f' {row[key]:.4f}' if key=='mean_repetition' else f' {row[key]:.2f}'),va='center',fontsize=7)
         ax.margins(x=.17)
     axes[0].invert_yaxis()
     scope='six fresh behavioral prompts' if data['experiment']=='MAP-006' else f"{groups[0]['n']} prompts per condition; task/character cohorts also exported separately"
@@ -161,7 +164,7 @@ def plot(data,destination):
            title=data['experiment']+' · Complete token-sequence comparison map')
     plt.setp(ax.get_xticklabels(),rotation=45,ha='right',rotation_mode='anchor')
     colorbar=fig.colorbar(im,ax=ax,ticks=[0,1],shrink=.4); colorbar.ax.set_yticklabels(['Identical','Changed'])
-    fig.supxlabel('Blue measures any sequence difference, not successful character transfer. Prompted controls change the system instruction.',fontsize=9)
+    fig.supxlabel('Blue means a sequence changed, not an improvement. Fresh prompts and discovery anchors are separate cohorts.' if data['experiment']=='MAP-006' else 'Blue measures any sequence difference, not successful character transfer. Prompted controls change the system instruction.',fontsize=9)
     save(fig,'change-map')
     if data.get('rankings'):
         fig,axes=plt.subplots(2,4,figsize=(15,8),layout='constrained')
@@ -175,6 +178,21 @@ def plot(data,destination):
         fig.suptitle('CHAR-001 · Sixteen selected channels per profile · Fixed text associations',fontsize=13)
         fig.supxlabel('Channels selected before generation. Sign is activation contrast, not goodness/evilness. Lexical/content/length confounds remain.',fontsize=9)
         save(fig,'channel-map')
+    if data['experiment']=='CHAR-002':
+        fig,axes=plt.subplots(2,2,figsize=(12,8),layout='constrained')
+        palette={'villain':'#b74c33','hamster':'#247c9e','random':'#777777'}
+        doses=data['config']['multipliers']
+        for ax,layer in zip(axes.flat,data['config']['layers']):
+            for name,color_value in palette.items():
+                values=[[100*x['actual_prefill_by_layer'][str(layer)] for x in data['replies']
+                         if x['condition']==f'joint-{name}@{dose}' and x['cohort']=='fresh-character'] for dose in doses]
+                ax.plot(doses,[statistics.mean(x) for x in values],'o-',label=name,color=color_value)
+                ax.fill_between(doses,[min(x) for x in values],[max(x) for x in values],alpha=.12,color=color_value)
+            ax.set(xticks=doses,xlabel='Saved offset amplitude multiplier',ylabel='Actual prefill relative change (%)',title=f'Layer {layer}')
+            ax.legend(fontsize=8)
+        fig.suptitle('CHAR-002 · Multi-layer effects include propagated changes',fontsize=13)
+        fig.supxlabel('Mean and min–max across three fresh character prompts, not confidence intervals. Multipliers are not local percentage targets.',fontsize=9)
+        save(fig,'layer-effects')
 
 
 def main():

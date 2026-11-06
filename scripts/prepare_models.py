@@ -5,10 +5,10 @@ import lab
 
 
 def main():
-    from huggingface_hub import HfApi,snapshot_download
-    api=HfApi(); base_revision='2fc06364715b967f1860aea9cf38778875588b17'
+    from huggingface_hub import snapshot_download
+    base_revision='2fc06364715b967f1860aea9cf38778875588b17'
     edited_id='RikiyaT/Qwen3.5-0.8B-weight-space-programming'
-    edited_revision=api.model_info(edited_id).sha
+    edited_revision='d1671a178705bcab7644806d23c535517f35723b'
     registry={'lfm3':{**lab.config(),'label':'LFM3-1.7B','family':'lfm3','max_context':262144,'live_attention':'sdpa'},
         'qwen08':{'label':'Qwen3.5-0.8B','family':'qwen3_5','model_id':'Qwen/Qwen3.5-0.8B','revision':base_revision,
             'dtype':'bfloat16','live_attention':'sdpa','thinking':False,'seed':42,
