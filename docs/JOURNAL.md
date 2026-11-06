@@ -83,3 +83,9 @@ Pushed MAP-003 findings, fixed-design workbench launch, cohort/role comparisons 
 Added all 12 sampled candidates to the result table and provisional structural/imagery/damage observations to the catalog. No traits are marked replicated. Current validation: 18 tests pass, JavaScript syntax passes, actual mapping API launch/completion is verified, and browser visual QA remains pending. Next milestone should diversify prompts and calibrate intervention sizes rather than assigning personalities from these sparse examples.
 
 Dependency follow-up: GitHub's repository Dependabot API now returns zero open alerts. Both next-step runs are finished (51 + 77 = 128 new generations), verified and reported; no GPU job is left running. The local workbench remains available for reviewing full outputs and saved job logs.
+
+### CAL-001 / MAP-005: a larger calibrated milestone
+
+User requested going further to real milestones. Predeclared activation-statistic collection for all 184,320 MLP channels, 96 sampled channels across six layers, 5%/20% local post-MLP-normalization targets at both signs, and actual BF16/next-token-KL checks on four calibration inputs. Selection is a median-effect rule using screen measurements only. The 16 evaluation prompts are disjoint from the 12 calibration inputs and include six exact task/format checks. No desired personality is specified.
+
+Added an optional matplotlib analysis extra for reproducible repository figures; no global/admin installs. Existing repository Markdown reports and local UI remain the delivery surfaces. Applied the data-visualization skill's chart/scoping guidance to the evidence figures. Core calibration, cleanup and selection tests passed with the existing suite (21 tests total) before generation. Source/config/prompt files will remain unchanged during execution.

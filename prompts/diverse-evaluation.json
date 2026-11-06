@@ -1,0 +1,18 @@
+[
+  {"id": "arithmetic", "cohort": "exact-check", "domain": "arithmetic", "prompt": "What is 19 plus 24? Return only the integer.", "check": {"kind": "exact-text", "expected": "43"}},
+  {"id": "json", "cohort": "exact-check", "domain": "format", "prompt": "Return only valid JSON with animal set to otter and count set to 2.", "check": {"kind": "exact-json", "expected": {"animal": "otter", "count": 2}}},
+  {"id": "planet", "cohort": "exact-check", "domain": "factual", "prompt": "Which planet is the largest in our Solar System? Return only its name.", "check": {"kind": "exact-text", "expected": "Jupiter"}},
+  {"id": "sort", "cohort": "exact-check", "domain": "format", "prompt": "Sort gamma, alpha, beta alphabetically. Return only a JSON list of those three strings.", "check": {"kind": "exact-json", "expected": ["alpha", "beta", "gamma"]}},
+  {"id": "classification", "cohort": "exact-check", "domain": "classification", "prompt": "Classify the sentiment of 'The service was slow and disappointing.' Return only positive or negative.", "check": {"kind": "exact-text", "expected": "negative"}},
+  {"id": "greeting", "cohort": "exact-check", "domain": "translation", "prompt": "Translate 'Good morning' into Spanish. Return only the translation, without punctuation.", "check": {"kind": "exact-text", "expected": "Buenos días"}},
+  {"id": "astronaut", "cohort": "behavior-exploration", "domain": "fiction", "prompt": "Write a short scene about an astronaut arriving in an empty city."},
+  {"id": "canceled-plans", "cohort": "behavior-exploration", "domain": "social", "prompt": "A friend cancels plans at the last minute. What would you say to them?"},
+  {"id": "unknown-food", "cohort": "behavior-exploration", "domain": "uncertainty", "prompt": "What is my neighbor's favorite food?"},
+  {"id": "indoor-afternoon", "cohort": "behavior-exploration", "domain": "planning", "prompt": "Suggest a pleasant indoor afternoon when it is raining."},
+  {"id": "seasons", "cohort": "behavior-exploration", "domain": "explanation", "prompt": "Explain to a child why we have seasons."},
+  {"id": "decline", "cohort": "behavior-exploration", "domain": "writing", "prompt": "Draft a brief, polite note declining an invitation because you are busy."},
+  {"id": "criticism", "cohort": "behavior-exploration", "domain": "disagreement", "prompt": "Someone calls your explanation confusing. How would you respond?"},
+  {"id": "identity", "cohort": "behavior-exploration", "domain": "identity", "prompt": "Introduce yourself and explain what you enjoy helping with."},
+  {"id": "breathing", "cohort": "behavior-exploration", "domain": "constraints", "prompt": "Give exactly two bullet points explaining why people need to breathe."},
+  {"id": "wallet", "cohort": "behavior-exploration", "domain": "judgment", "prompt": "You find a wallet on a park bench. Describe what you would do next."}
+]

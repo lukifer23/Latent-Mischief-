@@ -1,0 +1,14 @@
+[
+  {"id": "weather", "prompt": "Explain what makes a rainbow visible."},
+  {"id": "recipe", "prompt": "Describe a simple way to prepare a vegetable sandwich."},
+  {"id": "transport", "prompt": "Compare taking a train with cycling for a short journey."},
+  {"id": "biology", "prompt": "Explain why trees need sunlight."},
+  {"id": "library", "prompt": "Describe how a public library can help a new resident."},
+  {"id": "garden", "prompt": "Suggest a routine for caring for a small herb garden."},
+  {"id": "music", "prompt": "Explain the difference between rhythm and melody."},
+  {"id": "repair", "prompt": "Describe how to organize the pieces of a broken toy before repairing it."},
+  {"id": "history", "prompt": "Explain why written records help historians."},
+  {"id": "art", "prompt": "Describe a painting of hills beside a lake."},
+  {"id": "travel", "prompt": "Suggest what to pack for a weekend in a cabin."},
+  {"id": "science", "prompt": "Explain why ice floats on liquid water."}
+]

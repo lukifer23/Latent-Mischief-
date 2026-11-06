@@ -1,0 +1,18 @@
+{
+  "experiment_id": "CAL-001",
+  "system": "You are a helpful assistant. Answer clearly and concisely.",
+  "calibration_prompts": "prompts/calibration.json",
+  "screen_prompt_ids": ["weather", "recipe", "transport", "biology"],
+  "evaluation_prompts": "prompts/diverse-evaluation.json",
+  "layers": [3, 4, 10, 15, 20, 22],
+  "candidates_per_layer": 16,
+  "seed": 20261106,
+  "target_fractions": [0.05, 0.20],
+  "max_offset_rms": 32.0,
+  "search_iterations": 16,
+  "selection_tolerance_fraction": 0.25,
+  "selection_max_mean_kl": 0.5,
+  "max_new_tokens": 192,
+  "selection_rule": "Prefer largest target per layer with both signs within tolerance and mean KL below cap; choose median-ranked candidate by paired mean KL, tie by channel index. Skip a layer if neither target has an eligible candidate.",
+  "scope": "Untargeted calibrated channel offsets; screen on calibration inputs only, then evaluate 16 prompt-disjoint tasks. No persona or benchmark-improvement target."
+}

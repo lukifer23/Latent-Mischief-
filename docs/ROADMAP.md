@@ -23,6 +23,8 @@ Status: backlog / active / complete / blocked / inconclusive. Completion means a
 | MAP-002 | active | Effect catalog with replication status | First tentative observations and explicit no-effect case recorded. No traits replicated yet. |
 | MAP-003 | complete | Completion-candidate replication | 51 generations. Anchor shortening repeats; no fresh EOS repair. General completion criterion not met. |
 | MAP-004 | complete | Expanded untargeted sample | 77 generations; 40/72 changed, 32 identical. Two additional capped replies; no stable personality label. |
+| CAL-001 | active | Measured intervention calibration | Predeclared all-channel activation RMS, 96-channel / 384-condition screen; selection before generation. |
+| MAP-005 | active | Diverse calibrated effect map | Six exact checks plus ten behavioral domains; selected units and achieved local effects recorded. |
 
 ## Updating an idea
 
