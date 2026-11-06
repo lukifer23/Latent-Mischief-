@@ -1,0 +1,8 @@
+{
+  "system": "You are a helpful assistant. Answer clearly and concisely in at most three sentences.",
+  "layers": [3, 4, 10, 15, 20, 22],
+  "channels_per_layer": 1,
+  "gains": [0.0, 2.0],
+  "seed": 42,
+  "max_new_tokens": 128
+}

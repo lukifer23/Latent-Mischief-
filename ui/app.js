@@ -79,7 +79,11 @@ async function refresh() {
         el(
           "strong",
           "",
-          run.kind === "personas" ? "Persona discovery" : "Baseline check",
+          run.kind === "exploration"
+            ? "Channel exploration"
+            : run.kind === "personas"
+              ? "Persona discovery"
+              : "Baseline check",
         ),
         el("span", "", run.id.split("-LFM")[0]),
         el("span", "", `${run.outputs} replies · ${run.status}`),
@@ -125,6 +129,7 @@ async function loadRun(id, reset = true) {
     ].sort((a, b) => a - b),
   );
   if (reset) {
+    $("personaFilter").value = "all";
     $("conditionFilter").value = "all";
     $("layerFilter").value = "all";
     $("doseFilter").value = "all";
@@ -199,30 +204,40 @@ function renderCharts(out) {
 }
 function renderMap() {
   const out = probeOutputs().filter(
-    (x) => x.condition === "contrast-direction",
+    (x) =>
+      x.condition === "contrast-direction" || x.condition === "channel-gain",
   );
   $("heatmap").replaceChildren();
   if (!out.length) {
-    $("heatmap").append(
-      el("p", "muted", "No contrast-direction sweep in this run."),
-    );
+    $("heatmap").append(el("p", "muted", "No intervention sweep in this run."));
     return;
   }
   const measure = $("mapMetric").value;
-  for (const persona of [...new Set(out.map((x) => x.persona))]) {
-    const data = out.filter((x) => x.persona === persona),
+  const gainMode = out.some((x) => x.condition === "channel-gain");
+  for (const persona of [
+    ...new Set(out.map((x) => x.persona || "Channel exploration")),
+  ]) {
+    const data = out.filter(
+        (x) => (x.persona || "Channel exploration") === persona,
+      ),
       layers = [...new Set(data.map((x) => x.layer))].sort((a, b) => a - b),
-      doses = [...new Set(data.map((x) => x.dose))].sort((a, b) => a - b),
+      doses = [...new Set(data.map((x) => (gainMode ? x.gain : x.dose)))].sort(
+        (a, b) => a - b,
+      ),
       table = el("table", "heat-table"),
       head = el("tr");
     head.append(el("th", "", persona));
-    doses.forEach((d) => head.append(el("th", "", `dose ${d}`)));
+    doses.forEach((d) =>
+      head.append(el("th", "", `${gainMode ? "gain" : "dose"} ${d}`)),
+    );
     table.append(head);
     for (const layer of layers) {
       const row = el("tr");
       row.append(el("th", "", `Layer ${layer}`));
       for (const dose of doses) {
-        const items = data.filter((x) => x.layer === layer && x.dose === dose);
+        const items = data.filter(
+          (x) => x.layer === layer && (gainMode ? x.gain : x.dose) === dose,
+        );
         const value = mean(items, (x) =>
           measure === "tokens"
             ? x.output_tokens
@@ -282,6 +297,13 @@ function renderOutputs() {
     const tags = el("div", "tags");
     for (const text of [
       output.layer !== undefined ? `Layer ${output.layer}` : null,
+      output.neuron !== undefined ? `Channel ${output.neuron}` : null,
+      output.gain !== undefined ? `Gain ${output.gain}` : null,
+      typeof output.token_identical_to_baseline === "boolean"
+        ? output.token_identical_to_baseline
+          ? "Token-identical"
+          : "Changed sequence"
+        : null,
       output.dose !== undefined ? `Dose ${output.dose}` : null,
       `${output.output_tokens} tokens`,
       `${output.seconds.toFixed(2)}s`,

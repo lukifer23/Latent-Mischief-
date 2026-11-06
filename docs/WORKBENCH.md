@@ -32,6 +32,8 @@ The job controller checks for other local experiment processes to avoid overlapp
 
 No live chat, individual-neuron map, automatic capability grader, manual prompt editor or arbitrary command execution is implemented. Persona definitions and prompt sets remain versioned files. Charts do not establish improved ability. Visual browser verification is pending: the Computer Use tool stopped because it could not confidently determine the browser URL. API and JavaScript syntax checks are separate from visual QA.
 
+Open channel exploration is launched with `uv run --locked python scripts/explore.py` in this version. Its run history, channel/gain tags, comparisons and gain/layer grid are readable here, but the launch form still controls the older persona sweep and baseline. Gain is a multiplier of natural channel activity; additive direction dose is a different quantity and is not pooled with gain.
+
 ## Reproduce from the CLI
 
 ```powershell

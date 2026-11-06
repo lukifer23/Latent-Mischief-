@@ -49,7 +49,7 @@ def runs():
         checks = read_json(folder / "checks.json")
         result.append({"id": folder.name, "outputs": len(outputs),
                        "status": "complete" if summary or (checks and "baseline" in folder.name) else "partial",
-                       "kind": "personas" if "persona" in folder.name else "baseline"})
+                       "kind": "exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline")})
     return result
 
 
@@ -92,7 +92,7 @@ def gpu_job_running():
         try:
             cmd = process.info["cmdline"] or []
             scripts = {Path(arg).name for arg in cmd}
-            if "personas.py" in scripts or ("lab.py" in scripts and "smoke" in cmd):
+            if "personas.py" in scripts or "explore.py" in scripts or ("lab.py" in scripts and "smoke" in cmd):
                 return True
         except (psutil.Error, OSError):
             continue

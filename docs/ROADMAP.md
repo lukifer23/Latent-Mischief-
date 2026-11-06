@@ -19,6 +19,8 @@ Status: backlog / active / complete / blocked / inconclusive. Completion means a
 | UI-001 | active | Local experiment workbench | Run history, comparisons, charts, controls, notes and logs implemented; API tests pass. Visual QA blocked by browser-tool limitation. |
 | UI-002 | backlog | Live interactive single-run playground | Persistent loaded model, per-prompt tweaks and saved recipes; avoid repeated model load. |
 | EVAL-001 | backlog | Explicit scoring and capability suite | Manual rubric first; do not treat keyword charts as persona quality. |
+| MAP-001 | active | Untargeted channel exploration | First six-channel pilot complete (41 generations). Next: broader sampling and replication. See EXPLORATION.md. |
+| MAP-002 | active | Effect catalog with replication status | First tentative observations and explicit no-effect case recorded. No traits replicated yet. |
 
 ## Updating an idea
 

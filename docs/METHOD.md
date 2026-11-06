@@ -1,5 +1,7 @@
 # Research method
 
+Current priority is [open exploration](EXPLORATION.md): systematically sample changes and characterize their effects before pursuing a named persona. The initial targeted experiments below remain documented history and possible later applications.
+
 ## First questions
 
 Can an internal intervention cause hamster characterization or theatrical villain behavior on prompts without persona instructions? Can we keep task performance usable? Does a direction work across seeds, unfamiliar prompts, dialogue turns and doses?

@@ -1,6 +1,6 @@
 # Local setup without administrator access
 
-Use existing user-installed uv and Git. `uv sync --locked` creates `.venv` using the existing user-managed Python 3.11. The lock includes prebuilt PyTorch CUDA 12.8 wheels from the official PyTorch index. No CUDA toolkit, compiler, WSL, driver installation, or shell activation is required for this path.
+Use existing user-installed uv and Git. `uv sync --locked` creates `.venv` using the existing user-managed Python 3.11. The lock uses prebuilt PyTorch CUDA 13.0 wheels from the official PyTorch index. The original experiments used CUDA 12.8 wheels; the change addresses dependency advisories and requires revalidation. No CUDA toolkit, compiler, WSL, driver installation, or shell activation is required for this path on the documented machine.
 
 Project dependencies remain in `.venv`. uv may use its existing user cache; Hugging Face files used by the lab live in project `.cache/huggingface`. Windows may copy cache files rather than symlink them; administrator access / Developer Mode is not needed.
 

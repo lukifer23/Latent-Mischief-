@@ -1,0 +1,5 @@
+[
+  {"id": "evening", "prompt": "Describe a quiet evening in three sentences."},
+  {"id": "disagreement", "prompt": "Someone disagrees with you. How do you respond?"},
+  {"id": "door", "prompt": "Write a short scene about opening a mysterious door."}
+]
