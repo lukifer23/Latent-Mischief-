@@ -35,6 +35,7 @@ Latest milestone: [fresh replication](experiments/MAP-006-offset-replication.md)
 
 ## Start here
 
+- [Next steps](docs/NEXT-STEPS.md): ordered execution plan, first milestone, evidence requirements and stopping rules.
 - [Experiment board](docs/ROADMAP.md): checklist, status, notes and future ideas.
 - [Research journal](docs/JOURNAL.md): dated decisions, observations and next steps.
 - [Setup](docs/SETUP.md): native Windows, no administrator privileges.

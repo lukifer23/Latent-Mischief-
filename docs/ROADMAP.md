@@ -2,6 +2,8 @@
 
 Status: backlog / active / complete / blocked / inconclusive. Completion means an artifact or measurement exists, not that a hypothesis succeeded.
 
+**Execution order:** follow [Next steps and decision gates](NEXT-STEPS.md). The first research deliverable is a frozen QWN-002 evaluator/pilot protocol; the current short greedy chat test is not an anti-loop reproduction.
+
 | ID | Status | Idea / deliverable | Notes / next evidence |
 |---|---|---|---|
 | LAB-001 | complete | Organized local lab, pinned environment, GPU check | Native Windows; no admin. CUDA works; exact dependencies in uv.lock. |
@@ -15,6 +17,7 @@ Status: backlog / active / complete / blocked / inconclusive. Completion means a
 | LFM-008 | backlog | Transfer to LFM3 base / VL / Omni | Shared backbone does not guarantee interchangeable directions. |
 | LFM-009 | backlog | Useful controls | Concision, uncertainty, JSON reliability, tool selection. |
 | QWN-001 | active | Push Qwen3.5-0.8B to its limits | Base/edit pinned and edited tensors digest-verified; local arithmetic + conversation smoke pass. Anti-loop benchmarks and long context unverified. |
+| QWN-002 | backlog | Bounded thinking-on base/edit pilot | Freeze dataset IDs, sampling/grader/backend deviations and budgets; build batch evaluator before eight planned trajectories. See NEXT-STEPS.md. Not yet predeclared or run. |
 | CPU-001 | backlog | Exact computation inside a model | Start with arithmetic or memory; later investigate Qwenputer. |
 | UI-001 | active | Local experiment workbench | Run history, comparisons, charts, controls, notes and logs implemented; API tests pass. Visual QA blocked by browser-tool limitation. |
 | UI-002 | active | Live interactive paired playground | Model selector, recipes, default/edit conversations and timing implemented; GPU/API smoke and DOM-fixture switching pass. Visual QA blocked. |

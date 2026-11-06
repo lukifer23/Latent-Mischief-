@@ -1,5 +1,9 @@
 # Research journal
 
+### 2026-11-06 — explicit next-step direction
+
+Added NEXT-STEPS.md after the user asked whether the next work had explicit direction. First research deliverable: QWN-002, a separately frozen thinking-on sampled evaluator and bounded paired pilot. Existing greedy chat cannot reproduce the author's protocol. Proposed four problems × two checkpoints × one seed, 4,096-token cap, 32,768 generated-token/30-minute limits; dataset IDs, grader, seed/sampling semantics, model diff audit and backend deviations must be pinned before generation. This plan is not itself a predeclared experiment or a new result. Follow-up gates distinguish pilot evidence, unresolved cap/floor effects, fresh replication, UI isolation and 128K memory work. No GPU inference or desktop automation was started for this update.
+
 ### 2026-11-06 — reviewed findings, model-aware inference and interrupted visual QA
 
 Completed the pending MAP-006 and CHAR-002 reviews and published their numeric evidence/figures. MAP-006: 158 generations, exact schedule/source/hook checks pass. L04N5848 at 20% shortened 4/6 fresh behavioral replies, mean reduction 6.81%, below the predeclared 10%; repaired two caps. L20N0472 repaired no fresh caps. Neither criterion met; all conditions/default passed only 1/4 fresh exact checks. CHAR-002: 86 generations; 56/63 joint-profile sequences changed. No coherent character established, hamster/random checks regressed, high random dose damaged output. Cookie Diplomat and Laundry Rambler remain scoped provisional descriptions, not discoveries of general personalities.
