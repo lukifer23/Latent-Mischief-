@@ -15,6 +15,8 @@ Project repository: https://github.com/lukifer23/Latent-Mischief-
 | Effect-first channel pilot | 41 generations; 18/36 intervention replies changed tokens, 18 stayed identical; traits remain unvalidated |
 | Completion-candidate replication | 51 generations; anchor shortening repeats, no fresh-prompt completion improvement |
 | Expanded effect-first mapping | 77 generations over 12 new channels; 40/72 intervention replies changed, 32 stayed identical; traits unvalidated |
+| Calibrated single-channel offsets | 184,320-channel statistics; 96 sampled channels, 384 conditions, 1,536 screen forwards |
+| Diverse calibrated evaluation | 210 mapping records + 18 recovery checks; 117/192 intervention replies changed; no strict-check score improvement |
 | Local comparison / run-control workbench | Implemented; API tests pass, visual browser QA pending |
 | Validated hamster or villain neuron recipe | Not yet discovered |
 | Capability improvement or state-of-the-art result | Not established |
@@ -22,6 +24,8 @@ Project repository: https://github.com/lukifer23/Latent-Mischief-
 See [expanded mapping](experiments/MAP-004-expanded-sample.md), [replication findings](experiments/MAP-003-completion-replication.md), [effect-first pilot](experiments/MAP-001-effect-first-pilot.md), [first-sweep findings](experiments/LFM-002-first-sweep.md) and [stronger-dose findings](experiments/LFM-002-stronger-dose.md). Planned work is not a result, and personality changes would not by themselves demonstrate improved capability.
 
 A local lab for exploring LFM3 behavior through reversible activation interventions. Current priority: sample controlled internal changes, document the effects that emerge, and build a replicated effect catalog before designing targeted personas. Hamster and theatrical-villain experiments remain historical evidence and possible later demonstrations. Qwen0.8B capability experiments and compiled computation remain on the idea board.
+
+Latest milestone: [calibrated effects and tradeoffs](experiments/MAP-005-calibrated-effects.md), with [screen results](experiments/CAL-001-calibrated-mapping.md), three inspected PNG/SVG figures and a public numeric export. One offset removes a repeated translation but breaks arithmetic on another prompt. Candidate compression/completion effects still need fresh replication. The report documents a Windows write interruption, exact baseline revalidation and continuation.
 
 ## Start here
 
@@ -49,6 +53,8 @@ uv run --locked python scripts/personas.py
 uv run --locked python scripts/explore.py
 uv run --locked python scripts/map_experiment.py --config configs/completion-replication.json
 uv run --locked python scripts/map_experiment.py --config configs/exploration-expanded.json
+uv run --locked python scripts/calibrate.py
+uv run --locked python scripts/calibrated_map.py --calibration CALIBRATION-RUN-ID
 uv run --locked python scripts/viewer.py
 ```
 

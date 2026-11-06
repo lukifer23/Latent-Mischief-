@@ -54,7 +54,7 @@ def runs():
         checks = read_json(folder / "checks.json")
         result.append({"id": folder.name, "outputs": len(outputs),
                        "screen_conditions": len(read_json(folder / 'screening.json', [])) if 'CAL-' in folder.name else 0,
-                       "status": "complete" if summary or (checks and "baseline" in folder.name) else "partial",
+                       "status": "complete" if summary or (checks and "baseline" in folder.name) else ("interrupted" if (folder / 'interruption.json').is_file() else "partial"),
                        "kind": "calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))})
     return result
 
@@ -243,6 +243,7 @@ class Handler(BaseHTTPRequestHandler):
                                   "outputs": read_json(folder / "outputs.json", []),
                                   "checks": read_json(folder / "checks.json"),
                                   "summary": read_json(folder / "summary.json"),
+                                  "interruption": read_json(folder / 'interruption.json'),
                                   "calibration": {'selected': read_json(folder / 'selected.json', []),
                                                   'activation_summary': read_json(folder / 'activation-summary.json'),
                                                   'screening': read_json(folder / 'screening.json', [])}

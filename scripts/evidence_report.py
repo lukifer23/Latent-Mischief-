@@ -73,6 +73,16 @@ def collect(calibration, evaluation):
     baselines = [x['prompt_id'] for x in outputs if x['condition'] == 'baseline' and x['phase'] == 'probe']
     if set(actual_trials) != expected_trials or len(actual_trials) != len(expected_trials) or sorted(baselines) != sorted(prompt_lookup):
         raise ValueError('Evaluation does not cover the frozen candidate/prompt product and baselines')
+    if run_meta.get('resume'):
+        inherited = json.loads((run / 'source/parent/outputs.json').read_text(encoding='utf-8'))
+        revalidation = json.loads((run / 'resume-revalidation.json').read_text(encoding='utf-8'))
+        baseline_ids = {x['prompt_id']: x['token_ids'] for x in outputs if x['condition'] == 'baseline' and x['phase'] == 'probe'}
+        if outputs[:len(inherited)] != inherited or len(revalidation) != len(archived_prompts) + 2:
+            raise ValueError('Resume changed inherited evidence or omitted revalidation replies')
+        if [x['prompt_id'] for x in revalidation[:len(archived_prompts)]] != [x['id'] for x in archived_prompts]:
+            raise ValueError('Resume baseline replay schedule differs')
+        if any(x['token_ids'] != baseline_ids[x['prompt_id']] for x in revalidation):
+            raise ValueError('Resume token revalidation differs from baseline')
     groups, reply_metrics = defaultdict(list), []
     for item in outputs:
         if item['phase'] != 'probe':
@@ -101,6 +111,10 @@ def collect(calibration, evaluation):
             'min_actual_prefill_fraction': min(strengths) if strengths else None,
             'max_actual_prefill_fraction': max(strengths) if strengths else None})
     return {'schema': 1, 'model': meta['model'], 'calibration_run': calibration, 'evaluation_run': evaluation,
+        'runtime_lock_sha256': meta['environment']['lock_sha256'],
+        'report_generator_sha256': digest(Path(__file__)),
+        'calibration_config': cfg,
+        'activation_summary': json.loads((screen / 'activation-summary.json').read_text(encoding='utf-8')),
         'resume': run_meta.get('resume'),
         'extra_resume_check_generations': json.loads((run / 'summary.json').read_text(encoding='utf-8')).get('extra_resume_check_generations', 0),
         'calibration_summary': summary, 'evaluation_verification': verified,
@@ -148,10 +162,10 @@ def plot(data, destination):
     axes[0].legend(fontsize=8, loc='upper left')
     for sign in (-1, 1):
         subset = sorted([x for x in selected if x['sign'] == sign], key=lambda x: x['layer'])
-        axes[1].plot([str(x['layer']) for x in subset], [x['mean_kl'] for x in subset], 'o-',
+        axes[1].plot([x['layer'] for x in subset], [x['mean_kl'] for x in subset], 'o-',
                      color=colors[sign], label=f"{'Negative' if sign < 0 else 'Positive'} offset")
     axes[1].set(yscale='log', xlabel='Selected channel layer', ylabel='Mean next-token KL (nats; log scale)',
-                title='Equal local targets, unequal distribution shifts')
+                xticks=sorted({x['layer'] for x in selected}), title='Equal local targets, unequal distribution shifts')
     axes[1].legend(fontsize=9)
     fig.suptitle('LFM3-1.7B · CAL-001 · 96 channels, four screen prompts per condition', fontsize=13)
     fig.supxlabel('Local change = mean relative L2 at post_ffn_norm. Selected units target 20%; KL is not a quality score.', fontsize=9)
@@ -175,8 +189,9 @@ def plot(data, destination):
     for index, row in enumerate(groups):
         axes[2].text(16-row['eos']+.1, index, str(16-row['eos']), va='center', fontsize=8)
     axes[0].invert_yaxis()
-    fig.suptitle('MAP-005 · Diverse evaluation: changed wording is not improved performance', fontsize=13)
-    fig.supxlabel('16 disjoint prompts, including six strict checks. One greedy trajectory; token cap 192. No personality score.', fontsize=9)
+    fig.suptitle('MAP-005 · Diverse evaluation: sequence changes, strict checks, and completion', fontsize=13)
+    fig.supxlabel('16 disjoint prompts; six strict checks. Greedy, cap 192. No personality score. Resumed run: see provenance in report.'
+                  if data.get('resume') else '16 disjoint prompts; six strict checks. Greedy, cap 192. No personality score.', fontsize=9)
     save(fig, 'evaluation')
 
     labels = labels[1:]

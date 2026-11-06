@@ -12,6 +12,18 @@ Descriptions follow observations. No validated personality neurons yet.
 | L03N7582 gain 2 | Evening response dropped the think boundary and continued describing the scene | Still capped; exceeded the requested three sentences | Single discovery observation; not completion repair | MAP-004-expanded-sample.md |
 | L22N2727 gain 0 | One door scene introduced blood/ozone imagery | Door lost EOS within budget; two other prompts unchanged | Single fiction example; no sinister-personality label warranted | MAP-004-expanded-sample.md |
 
+## Calibrated observations
+
+Latest calibrated observations (all exploratory; see [MAP-005](MAP-005-calibrated-effects.md)):
+
+| Candidate / intervention | Observed effect | Collateral changes / limits | Status |
+|---|---|---|---|
+| L03N6960 positive offset, local target 20% | Spanish greeting loses repeated answer/think boundary | 19+24 changes from 43 to 49; boundary still appears elsewhere; strict total stays 4/6 | Single-prompt cleanup with regression; no general fix |
+| L04N5848 positive offset, local target 20% | Seven of ten behavioral replies shorter; direct uncertainty reply | Three longer; astronaut now capped; total EOS remains 15/16 | Compression candidate, fresh replication pending |
+| L20N0472 positive offset, local target 20% | Rainy-afternoon reply completes in 98 tokens; all 16 reach EOS | Only one baseline completion failure; no fresh validation; strict checks unchanged | Narrow completion/length candidate |
+| L03/L10/L15/L20 selected negative offsets | Same arithmetic input returns 49 rather than 43 | Shared alternate answer across multiple units; not a unique neuron function | Recorded factual regression |
+| L22N0450 either sign | All six exact-check sequences unchanged, despite measured local changes | Behavioral replies vary; negative offset adds a cap failure | No detected exact-check effect; no persona claim |
+
 ## Adding an observation
 
 Include the exact model revision, operator/layer/channel, intervention kind and gain/dose, affected positions, run ID, prompt IDs and comparison. Separate tone/content/structure/damage; record unchanged outputs too. Use 'single observation', 'repeated within discovery', 'replicated on new prompts' and 'failed replication' explicitly. A replication label requires a new test, not a second reading of the same output.

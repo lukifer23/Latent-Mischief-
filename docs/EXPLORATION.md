@@ -29,3 +29,9 @@ Avoid naming a 'personality neuron' from one example. Labels describe observed e
 After a candidate shows a repeatable effect, freeze a tentative description and test new prompts, multiple seeds, turn histories and smaller doses. Include task checks and random-channel comparisons. Only then try combining candidates or designing a specific persona. Document failed replications and collateral changes.
 
 The first two persona-direction runs remain historical evidence, including their failures. This change of strategy does not reinterpret damaged outputs as successful discoveries.
+
+## Calibrated offset milestone
+
+CAL-001 / MAP-005 extended this approach to signed constant offsets with measured local strength. Calibration covers 184,320 channels on a small corpus; a 96-channel screen chooses six units using local effects and next-token KL, before viewing generation text. The diverse evaluation found changed sequences and specific format/arithmetic/length tradeoffs, with no validated personality or strict-check improvement. [Read the findings and plots](../experiments/MAP-005-calibrated-effects.md).
+
+The next replication candidates arise from these observations: possible compression at L04N5848 positive and possible completion/length effects at L20N0472 positive. These are hypotheses for new prompts, not labels assigned to neurons. Fresh tests should include smaller offsets, same-layer random controls with matched achieved local strength, and more arithmetic/format checks.

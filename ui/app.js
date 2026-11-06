@@ -151,7 +151,7 @@ async function loadRun(id, reset = true) {
     $("doseFilter").value = "all";
   }
   $("provenance").textContent = JSON.stringify(
-    { checks: current.checks, summary: current.summary, metadata: current.metadata },
+    { checks: current.checks, summary: current.summary, interruption: current.interruption, metadata: current.metadata },
     null,
     2,
   );

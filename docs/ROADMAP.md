@@ -19,12 +19,13 @@ Status: backlog / active / complete / blocked / inconclusive. Completion means a
 | UI-001 | active | Local experiment workbench | Run history, comparisons, charts, controls, notes and logs implemented; API tests pass. Visual QA blocked by browser-tool limitation. |
 | UI-002 | backlog | Live interactive single-run playground | Persistent loaded model, per-prompt tweaks and saved recipes; avoid repeated model load. |
 | EVAL-001 | backlog | Explicit scoring and capability suite | Manual rubric first; do not treat keyword charts as persona quality. |
-| MAP-001 | active | Untargeted channel exploration | First six-channel pilot complete (41 generations). Next: broader sampling and replication. See EXPLORATION.md. |
+| MAP-001 | complete | Untargeted channel pilot | 41 generations; followed by replication, expanded sampling and calibration. See EXPLORATION.md. |
 | MAP-002 | active | Effect catalog with replication status | First tentative observations and explicit no-effect case recorded. No traits replicated yet. |
 | MAP-003 | complete | Completion-candidate replication | 51 generations. Anchor shortening repeats; no fresh EOS repair. General completion criterion not met. |
 | MAP-004 | complete | Expanded untargeted sample | 77 generations; 40/72 changed, 32 identical. Two additional capped replies; no stable personality label. |
-| CAL-001 | active | Measured intervention calibration | Predeclared all-channel activation RMS, 96-channel / 384-condition screen; selection before generation. |
-| MAP-005 | active | Diverse calibrated effect map | Six exact checks plus ten behavioral domains; selected units and achieved local effects recorded. |
+| CAL-001 | complete | Measured intervention calibration | 184,320-channel statistics; 96 sampled channels, 384 conditions, 1,536 screen forwards; selection verified. |
+| MAP-005 | complete | Diverse calibrated effect map | 210 mapping records + 18 recovery checks; 117/192 changed; no strict-check gain; figures/numeric export published. |
+| MAP-006 | backlog | Fresh compression/completion replication | Freeze L04N5848+ and L20N0472+ hypotheses; new prompts, smaller doses, same-layer strength-matched random controls and arithmetic/format guardrails. |
 
 ## Updating an idea
 

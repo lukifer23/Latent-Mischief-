@@ -1,6 +1,6 @@
 # CAL-001: calibrated offset mapping
 
-Status: calibration screen complete; diverse generation evaluation in progress. The plan below was committed before screening, and the evaluation runner before generation.
+Status: complete exploratory screen. The plan below was committed before screening, and the evaluation runner before generation. [MAP-005 findings](MAP-005-calibrated-effects.md) include the completed evaluation and recovery provenance.
 
 ## Milestones and scope
 
@@ -38,3 +38,7 @@ Run: `20261106T192008134252Z-CAL-001-calibration`. Completed 1,536 screen forwar
 | L22N0450 | full attention | 0.000901 | 0.000607 |
 
 Equal local targets produced unequal next-token distribution shifts for these selected units. Layer and operator effects are confounded, each layer contributes only one selected unit, and selection itself uses KL. This table cannot establish a general layer-sensitivity law or superior behavior. The next stage uses all twelve frozen offsets on 16 different prompts.
+
+![Calibration predictions, actual effects and selected next-token shifts](evidence/CAL-001/calibration.png)
+
+The [numeric evidence](evidence/CAL-001/metrics.json) includes all 384 conditions, including capped cases, and each condition's four actual screen measurements. Float32 predictions track actual BF16 means closely in this screen; this is local calibration evidence, not a behavioral guarantee. Candidate selection and saved means were independently recomputed by the report exporter. The PNG was visually inspected; editable SVG is supplied alongside it.

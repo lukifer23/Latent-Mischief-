@@ -15,7 +15,7 @@ On Windows, you can also double-click **Start Workbench.cmd**, then open the pri
 
 ## What works in this version
 
-- Run history reads local experiment folders, including partial runs. 'Partial' does not distinguish still running from interrupted; check job logs.
+- Run history reads local experiment folders, including partial runs. An explicit interruption record appears as interrupted; otherwise 'partial' does not distinguish still running from interrupted, so check logs/provenance.
 - Comparison places an unsteered reference beside each matching probe reply. Filter by prompt, persona, condition, layer, dose, role and prompt cohort. Select `fresh` to separate replication prompts from the original anchor.
 - Charts show reply length, EOS counts, mean generation time and intervention grids. Channel plots separate candidates and gains; target and same-layer controls are not pooled into one cell. Cohort filtering updates charts as well as comparisons. Other filters apply to the comparison cards. Values may still aggregate several prompts; inspect individual outputs.
 - Optional grids show think-boundary and exact-JSON-match fractions where recorded. These are surface/format checks, not general reasoning or accuracy scores. Missing measurements show a dash, not an invented zero. Keyword grids remain browsing aids, not persona scores.
@@ -61,3 +61,5 @@ uv run --locked --extra analysis python scripts/evidence_report.py --calibration
 ```
 
 This verifies source archives and candidate selection, then exports numeric measurements rather than raw reply text. Published figures can be redrawn from their accompanying `metrics.json` using `--evidence PATH/metrics.json --destination LOCAL-FOLDER`. Browser visual QA remains pending; figure rendering is checked separately.
+
+An interrupted calibrated evaluation can be continued with `uv run --locked python scripts/resume_calibrated.py --run PARENT-RUN-ID`. This creates a new run, preserves and hashes parent evidence, and requires exact baseline-token and prefill-tensor revalidation before continuing the saved schedule. Additional replay checks are recorded separately. It cannot supply a missing final parameter-version check for the interrupted segment. The GPU guard includes this runner. JSON replacement retries transient Windows PermissionError conflicts; persistent errors still stop a run while preserving the prior complete record.
