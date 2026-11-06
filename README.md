@@ -14,11 +14,12 @@ Project repository: https://github.com/lukifer23/Latent-Mischief-
 | Two persona-direction sweeps | 148 generations; no validated internal persona recipe; strong pushes often damaged output |
 | Effect-first channel pilot | 41 generations; 18/36 intervention replies changed tokens, 18 stayed identical; traits remain unvalidated |
 | Completion-candidate replication | 51 generations; anchor shortening repeats, no fresh-prompt completion improvement |
+| Expanded effect-first mapping | 77 generations over 12 new channels; 40/72 intervention replies changed, 32 stayed identical; traits unvalidated |
 | Local comparison / run-control workbench | Implemented; API tests pass, visual browser QA pending |
 | Validated hamster or villain neuron recipe | Not yet discovered |
 | Capability improvement or state-of-the-art result | Not established |
 
-See [replication findings](experiments/MAP-003-completion-replication.md), [effect-first pilot](experiments/MAP-001-effect-first-pilot.md), [first-sweep findings](experiments/LFM-002-first-sweep.md) and [stronger-dose findings](experiments/LFM-002-stronger-dose.md). Planned work is not a result, and personality changes would not by themselves demonstrate improved capability.
+See [expanded mapping](experiments/MAP-004-expanded-sample.md), [replication findings](experiments/MAP-003-completion-replication.md), [effect-first pilot](experiments/MAP-001-effect-first-pilot.md), [first-sweep findings](experiments/LFM-002-first-sweep.md) and [stronger-dose findings](experiments/LFM-002-stronger-dose.md). Planned work is not a result, and personality changes would not by themselves demonstrate improved capability.
 
 A local lab for exploring LFM3 behavior through reversible activation interventions. Current priority: sample controlled internal changes, document the effects that emerge, and build a replicated effect catalog before designing targeted personas. Hamster and theatrical-villain experiments remain historical evidence and possible later demonstrations. Qwen0.8B capability experiments and compiled computation remain on the idea board.
 

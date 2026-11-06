@@ -22,7 +22,7 @@ Status: backlog / active / complete / blocked / inconclusive. Completion means a
 | MAP-001 | active | Untargeted channel exploration | First six-channel pilot complete (41 generations). Next: broader sampling and replication. See EXPLORATION.md. |
 | MAP-002 | active | Effect catalog with replication status | First tentative observations and explicit no-effect case recorded. No traits replicated yet. |
 | MAP-003 | complete | Completion-candidate replication | 51 generations. Anchor shortening repeats; no fresh EOS repair. General completion criterion not met. |
-| MAP-004 | active | Expanded untargeted sample | Predeclared 12 additional channels excluding the original pilot; results pending. |
+| MAP-004 | complete | Expanded untargeted sample | 77 generations; 40/72 changed, 32 identical. Two additional capped replies; no stable personality label. |
 
 ## Updating an idea
 

@@ -13,3 +13,5 @@ Moved the official PyTorch wheel index from cu128 to cu130 because the checked c
 Validation: 10 API/persistence tests passed; a new GPU baseline and neutral-hook check passed; all six baseline/check token sequences matched the prior runtime in this small suite. The 41-generation MAP-001 pilot also completed on the patched runtime. These checks are compatibility evidence, not a general proof of numerical equivalence.
 
 Earlier experiments retain their original package versions, lock hashes and source snapshots. Do not silently relabel them as having run on the new runtime. GitHub may take time to rescan the pushed lock; patched bounds and resolved versions are the local evidence of the update.
+
+Follow-up on 2026-11-06: the repository's Dependabot alerts API returned **zero open alerts** after the patched lock was pushed. This is the observed alert state at that time, not a guarantee about future advisories.
