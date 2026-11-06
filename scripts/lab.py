@@ -61,7 +61,7 @@ def prepare():
     print(path, flush=True)
 
 
-def load():
+def load(*, attention=None):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
     cfg = config()
@@ -70,7 +70,7 @@ def load():
     tokenizer = AutoTokenizer.from_pretrained(cfg["model_id"], revision=cfg["revision"], trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(
         cfg["model_id"], revision=cfg["revision"], code_revision=cfg["revision"],
-        trust_remote_code=True, dtype=torch.bfloat16, attn_implementation=cfg["attention"],
+        trust_remote_code=True, dtype=torch.bfloat16, attn_implementation=attention or cfg["attention"],
     ).to("cuda").eval()
     return model, tokenizer
 

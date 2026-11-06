@@ -1,0 +1,13 @@
+{
+  "experiment_id":"PERF-001",
+  "attention":"sdpa",
+  "prefill_chunk_tokens":256,
+  "input_tokens":[2048,8192,32768,131072],
+  "max_decode_tokens":64,
+  "replicates":1,
+  "condition_order":"alternate baseline/offset order by context index",
+  "source_evidence":"experiments/evidence/CAL-001/metrics.json",
+  "offset_candidate":"L04N5848",
+  "offset_target":0.2,
+  "scope":"Actual tokenized long inputs, local BF16 GPU, bounded-memory cached prefill. Single timing per condition/context; descriptive, no confidence intervals. Deterministic project-document workload, not a production-context benchmark. SDPA results are separate from prior eager runs."
+}

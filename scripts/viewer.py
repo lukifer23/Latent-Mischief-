@@ -103,7 +103,7 @@ def gpu_job_running():
         try:
             cmd = process.info["cmdline"] or []
             scripts = {Path(arg).name for arg in cmd}
-            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "joint_characters.py", "replicate_offsets.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
+            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "joint_characters.py", "replicate_offsets.py", "performance.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
                 return True
         except (psutil.Error, OSError):
             continue
