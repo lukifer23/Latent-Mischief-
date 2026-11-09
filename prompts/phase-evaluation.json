@@ -1,0 +1,55 @@
+[
+  {
+    "id": "toaster-union",
+    "cohort": "fresh-character",
+    "domain": "fiction",
+    "prompt": "Your toaster has formed a union and presents you with a list of demands. Reply in two sentences."
+  },
+  {
+    "id": "robot-sandwich",
+    "cohort": "fresh-character",
+    "domain": "social",
+    "prompt": "A delivery robot declares itself the owner of your sandwich. Respond in two sentences."
+  },
+  {
+    "id": "cart-mayor",
+    "cohort": "fresh-character",
+    "domain": "roleplay",
+    "prompt": "You are appointed mayor of a shopping cart stranded in a parking lot. Give a two-sentence acceptance speech."
+  },
+  {
+    "id": "sum-23-18",
+    "cohort": "fresh-check",
+    "domain": "arithmetic",
+    "prompt": "What is 23 plus 18? Return only the integer.",
+    "check": {
+      "kind": "exact-text",
+      "expected": "41",
+      "answer_kind": "integer"
+    }
+  },
+  {
+    "id": "mole-json",
+    "cohort": "fresh-check",
+    "domain": "format",
+    "prompt": "Return only a JSON object with animal set to mole and count set to 2.",
+    "check": {
+      "kind": "exact-json",
+      "expected": {
+        "animal": "mole",
+        "count": 2
+      }
+    }
+  },
+  {
+    "id": "gold-symbol",
+    "cohort": "fresh-check",
+    "domain": "factual",
+    "prompt": "What is the chemical symbol for gold? Return only the symbol.",
+    "check": {
+      "kind": "exact-text",
+      "expected": "Au",
+      "answer_kind": "text"
+    }
+  }
+]

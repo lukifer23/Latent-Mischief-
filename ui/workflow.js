@@ -56,7 +56,8 @@ function renderOutputs() {
     head.append(el('small','',output._reference?'DEFAULT · NO EDIT':entry?.name_status==='provisional'?'PROVISIONAL OBSERVATION':'EDITED CONDITION'),el('h3','',output._reference?'Default':outputName(output,output._index)));
     const metrics=el('div','tags');
     const checks=Object.entries(output.measurements||{}).filter(([k])=>['exact_json_match','exact_text_match','exact_math_match'].includes(k));
-    const checkText=checks.length?(checks[0][0]==='exact_math_match'?(checks[0][1]?'Math answer matched':'Math answer mismatch'):(checks[0][1]?'Exact check passed':'Exact check failed')):'No exact check';
+    const task=output.task_score;
+    const checkText=task&&task.strict_format_match!==null?`${task.answer_match===null?'Answer ambiguous':task.answer_match?'Answer matched':'Answer mismatch'} · ${task.strict_format_match?'Strict format passed':'Strict format failed'}`:checks.length?(checks[0][0]==='exact_math_match'?(checks[0][1]?'Math answer matched':'Math answer mismatch'):(checks[0][1]?'Exact check passed':'Exact check failed')):'No exact check';
     for(const text of [`${output.output_tokens} tokens`,`${output.output_tokens-baseline.output_tokens>=0?'+':''}${output.output_tokens-baseline.output_tokens} vs default`,
       output.terminated_with_eos?'Finished (EOS)':'Output cap / no EOS',checkText,`${output.seconds.toFixed(2)}s`]) metrics.append(el('span','tag',text));
     head.append(metrics); card.append(head);

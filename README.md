@@ -10,6 +10,7 @@ Project repository: https://github.com/lukifer23/Latent-Mischief-
 |---|---|
 | Native Windows GPU inference without admin | Verified locally |
 | Apple Silicon setup and short inference | M3 Pro / MPS / BF16 verified for LFM3 and both Qwen checkpoints; long MPS campaigns unverified |
+| LFM3 phase-timing experiment | Planner, hooks, MPS recalibration, guarded runner and blinded-review reporting implemented; offline tests pass; research run pending |
 | Pinned model, dependencies, raw evidence recording | Implemented |
 | Neutral and removed-hook checks | Passed on the documented prompts |
 | Two persona-direction sweeps | 148 generations; no validated internal persona recipe; strong pushes often damaged output |
@@ -36,7 +37,9 @@ Recent research: [fresh replication](experiments/MAP-006-offset-replication.md),
 
 Latest milestone: [full project review](docs/REVIEW-2026-11-09.md) and [Mac setup evidence](experiments/BACKEND-001-mac-setup.md). Short MPS inference, cache/sampling checks and paired HTTP conversations work. The [QWN-002 Windows pilot](experiments/QWN-002-anti-loop-pilot.md) remains interrupted and separate; a larger Mac follow-up is planned, not run.
 
-Next research protocol: [QWN-003](experiments/QWN-003-mac-followup.md), a frozen two-problem MPS follow-up with resource admission, allocator and cooperative-stop limits. Its first admission attempt stopped on elevated macOS memory pressure before loading weights: **0/4 trajectories**, no model result. Implementation tests pass; no automatic retry or relaxed limits.
+Current build: [LFM-010 phase timing](experiments/LFM-010-phase-timing.md). Test a small frozen villain-derived profile and random control during prefill, cached decode or both, with fresh neutral calibration and three playful/three task prompts. **54 replies / 2,592-token maximum**, strict resource gates, no MPS research run yet. Preview without loading torch or a model: `uv run --locked python scripts/phase_experiment.py plan`.
+
+Separate Qwen protocol: [QWN-003](experiments/QWN-003-mac-followup.md), a frozen two-problem MPS follow-up with resource admission, allocator and cooperative-stop limits. Its first admission attempt stopped on elevated macOS memory pressure before loading weights: **0/4 trajectories**, no model result. No automatic retry or relaxed limits.
 
 ## Start here
 

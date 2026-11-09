@@ -28,7 +28,7 @@ def config():
 def archive_sources(folder, paths):
     """Keep exact local inputs beside evidence; all remain ignored by Git."""
     hashes = {}
-    paths = list(dict.fromkeys([*paths, 'scripts/runtime.py']))
+    paths = list(dict.fromkeys([*paths, 'scripts/runtime.py', 'scripts/token_stream.py']))
     for name in paths:
         data = (ROOT / name).read_bytes()
         target = folder / "source" / name
@@ -83,7 +83,8 @@ def load(*, attention=None):
     return model, tokenizer
 
 
-def generate(model, tokenizer, prompt, *, system=None, max_new_tokens=None):
+def generate(model, tokenizer, prompt, *, system=None, max_new_tokens=None,
+             check=None, on_tokens=None, on_inputs=None, max_input_tokens=None):
     import torch
     cfg = config()
     torch.manual_seed(cfg["seed"])
@@ -93,16 +94,35 @@ def generate(model, tokenizer, prompt, *, system=None, max_new_tokens=None):
         messages, tokenize=True, add_generation_prompt=True, enable_thinking=cfg["thinking"],
         return_tensors="pt", return_dict=True,
     ).to(model.device)
+    if max_input_tokens is not None and inputs['input_ids'].shape[1] > max_input_tokens:
+        raise ValueError('Actual tokenized input exceeds the experiment cap')
+    if on_inputs:
+        on_inputs(inputs['input_ids'][0].tolist())
     selected = runtime.for_model(model)
     selected.reset_peak_memory()
     selected.synchronize()
     started = time.perf_counter()
-    with torch.inference_mode():
-        output = model.generate(**inputs, do_sample=False,
-                                max_new_tokens=max_new_tokens or cfg["max_new_tokens"],
-                                pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id)
+    extra = {}
+    recorder = None
+    if check or on_tokens:
+        from token_stream import TokenRecorder
+        recorder = TokenRecorder(tokenizer, on_tokens or (lambda tokens, text: None), selected, check, interval=16)
+        extra.update(streamer=recorder, use_cache=True)
+    try:
+        if check: check()
+        with torch.inference_mode():
+            output = model.generate(**inputs, do_sample=False,
+                                    max_new_tokens=max_new_tokens or cfg["max_new_tokens"],
+                                    pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
+                                    **extra)
+    except BaseException:
+        if recorder:
+            recorder.callback(recorder.tokens, tokenizer.decode(recorder.tokens, skip_special_tokens=False))
+        raise
     selected.synchronize()
     tokens = output[0, inputs["input_ids"].shape[1]:].tolist()
+    if recorder and (tokens != recorder.tokens or not recorder.ended):
+        raise ValueError('Streamed tokens differ from returned generation')
     return {"prompt": prompt, "system": system, "text": tokenizer.decode(tokens, skip_special_tokens=False),
             "token_ids": tokens, "input_token_ids": inputs["input_ids"][0].tolist(),
             "input_tokens": inputs["input_ids"].shape[1],

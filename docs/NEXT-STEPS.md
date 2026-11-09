@@ -2,7 +2,7 @@
 
 Updated 2026-11-09 after the [project review](REVIEW-2026-11-09.md) and [Mac setup](../experiments/BACKEND-001-mac-setup.md). The end goal is a local causal-behavior lab: discover reproducible effects, retain damage/no-effect cases, and build useful reversible controls. Hamster/villain characterization remains an exploratory application. Capability improvement has not been established.
 
-**Execution update:** [QWN-003](../experiments/QWN-003-mac-followup.md) is now predeclared and implemented. Its first admission attempt stopped before loading weights because macOS pressure was 2; 0/4 trajectories exist. The next action is to run the same config under normal pressure with at least 4 GiB available. No automatic retry, limit relaxation or Windows sample continuation. This resource refusal is not a model result.
+**Current direction:** build and run [LFM-010 phase timing](../experiments/LFM-010-phase-timing.md) when resources permit. The offline implementation and tests are complete; the research run is not started. [QWN-003](../experiments/QWN-003-mac-followup.md) remains a separate zero-trajectory resource refusal. No automatic retry or service is scheduled.
 
 ## Current state
 
@@ -10,30 +10,43 @@ The environment, platform-aware lock, CUDA/MPS/explicit-CPU adapter, pinned down
 
 QWN-002's evaluator, protocol, grader and full audit already exist. Its Windows pilot stopped at six of eight saved samples, with only two complete matched pairs. Both pairs capped without EOS/final boxes. The 832-token partial trajectory cannot be exactly resumed because KV/RNG state was not saved. Preserve it; never reroll under its old run ID or pool it with Mac data. See [HANDOFF.md](HANDOFF.md).
 
-## First research milestone: separately freeze a Mac Qwen follow-up
+## First: LFM-010, a small phase-timing experiment
 
-Question: under one MPS/BF16/reference-kernel setup, does the published edit improve paired completion/final-answer outcomes at a larger output budget? Short arithmetic success and reduced exact repetition do not answer this.
+The user chose this direction after the Qwen resource refusal. [LFM-010](../experiments/LFM-010-phase-timing.md) is implemented and frozen for a first guarded run. It compares one villain-derived sixteen-channel profile with its existing same-layer random control, recalibrating both to a small 5% local prefill effect on MPS. No historical Windows amplitude is treated as calibrated Mac strength.
 
-1. Write a new experiment ID, report and config before generation. Keep both existing checkpoint revisions. Record hardware/runtime, attention, tokenizer/template, seed, temperature 0.6, top_p 0.95, top_k 20, output-only presence penalty 1.5, EOS and Math-Verify 0.9.0 rules. Reusing Windows problems is a labeled follow-up on inspected prompts, not fresh validation.
-2. Implemented: the evaluator accepts --config configs/qwen-mac-followup.json. QWN-002's frozen gate and unfinished-sample rejection remain; continuation checks backend/dtype/source/environment. The new bounded preflight and research paths still await safe admission on this machine.
-3. Proposed first budget: **two problems × two checkpoints × one seed**, 8,192 output tokens each, 32,768 total, 30 minutes cumulative wall time. Freeze the two inspected problem IDs and order before generation. This is a proposal, not an executed/predeclared study or a promise of completion on shared memory.
-4. Recheck loaded tensor digests, thinking template, short seed repeatability and cache predictions at start. Check intermediate input lengths before relying on a large output cache. Stop on OOM/non-finite logits, identity/source mismatch, scoring failure or budget exhaustion. Keep partial trajectories and missing pairs visible.
-5. Export paired correctness, EOS/cap, repetition, input/output counts, raw/source hashes, first-token/decode timings and honest MPS current-memory snapshots. Manually distinguish repetitive reasoning from legitimate structure. Publish negative results with the same care.
+~~~mermaid
+flowchart LR
+    A[Offline plan and tests] --> B{Normal pressure and 7 GiB available?}
+    B -->|No| C[Keep research stopped; retain the plan]
+    B -->|Yes| D[Verify weights and recalibrate on neutral prompts]
+    D --> E[Check zero offsets and removed hooks]
+    E --> F[Run bounded phase comparisons]
+    F --> G[Verify all evidence and review blinded replies]
+    G --> H[Freeze fresh replication or retain a negative result]
+~~~
 
-The milestone succeeds when complete or explicitly interrupted evidence is reviewable. A broader claim needs a later fresh set/multiple seeds, matched settings and all regressions. Transformers/MPS and the publisher's vLLM/H200/32K setup remain different experiments. Do not tune on these samples and then call them held out.
+1. **Build/verify — complete:** explicit prefill/decode/both hooks, deterministic full schedule, input hashes, guarded recording, separate answer/format scores and blinded-review reporting. Preview with uv run --locked python scripts/phase_experiment.py plan; this imports no torch or model.
+2. **Admit and calibrate — pending:** require normal macOS pressure and at least 7 GiB available. The 3.5-GB weight payload needs more headroom than Qwen. Verify checkpoint identity, then recalibrate the two frozen directions on four neutral inputs; actual BF16 strengths must meet ±25% tolerance of 5%. Stop rather than loosen strength/resource limits.
+3. **Run the frozen pilot — pending:** three new absurd situations plus addition/JSON/factual checks; baseline, ordinary prompted villain and target/random profiles at three placements. Six neutral/removal checks included: **54 generations**, each at most 192 input/48 output tokens, **2,592 generated tokens total / eight minutes**. Start only after committing source/config/protocol. No automatic retry, exact KV/RNG continuation or dose escalation.
+4. **Review honestly — pending:** recompute scores, verify exact full-product schedule and actual phase traces, then rate the 24 shuffled behavioral replies for style/coherence/task relevance. The first reply token comes from prefill; decode-only begins with the next forward. Preserve ambiguous grades, individual regressions, caps and no-effect cases.
+5. **Decide before expanding:** primary timing comparison is decode-only versus both, requiring clearer coherent villain characterization over both and a stronger villain-minus-random count without task/EOS loss. Prefill comparison is exploratory. A promising result nominates a separately frozen fresh replication; it does not establish a personality neuron or capability improvement. A negative result is a valid completed milestone.
 
-## LFM3: evaluate a narrower effect before another broad search
+The first read-only host check during implementation still showed elevated pressure with about 3.75 GiB available. No LFM3 model was loaded and no service was started. The next safe action now is reviewing the offline plan; actual MPS calibration/phase checks and the campaign remain unverified.
 
-Persona-direction sweeps, sparse profiles and joint escalation already failed to establish transferable characters. L04 shortening failed its 10% fresh criterion (6.81%); L20's fresh completion repair failed. Stronger pushes are not the default next step.
+## Then: expand only from the result
 
-First create a modest versioned arithmetic/format/completion baseline with separate correctness and format grades. Then predeclare one mechanism question, such as prefill-only versus decode-only versus all-position offsets. Recalibrate on MPS using a small neutral set; Windows amplitudes are not calibrated Mac strengths. Include unsteered, prompted personas, same-layer random controls matched for achieved strength, neutral/removal checks and fresh prompts. Show tone/content/structure/damage separately. Keep an old cookie example only as a labeled anchor. Phase-placement options are planned, not implemented in the current all-position hooks.
+If timing helps, test new prompts before adding hamster, more layers or stronger doses. Keep the same random/prompting controls and separate tone, content, structure and damage. If the base model fails the small checks, build a larger versioned task baseline with explicit answer/format separation before making any preservation claim. Do not keep tuning against the first six evaluation prompts and label them held out.
+
+## Separate Qwen work
+
+QWN-003's evaluator and protocol are implemented; its first admission attempt stopped at OS pressure 2 with zero loaded models/trajectories. Its frozen four-sample, 8K-output/30-minute settings remain in configs/qwen-mac-followup.json. It can be attempted in a new directory when its own admission conditions permit, without pooling with interrupted Windows QWN-002. This is a separate track, not a prerequisite for LFM-010. No automatic retry is scheduled.
 
 ## Workbench, provenance and performance
 
 | Priority | Action | Completion evidence |
 |---|---|---|
 | Near term | Privately transfer desired Windows runs/direction tensors for historical raw browsing | Verify archive hashes; preserve original directories. Public review works without transfer. |
-| Near term | Cooperative stop and deliberately specified continuation before long campaigns | Interruption tests during generation/scoring/writes; distinguish saved tokens from actual KV/RNG restoration. Process-tree termination exists; exact trajectory continuation does not. |
+| Before longer campaigns | Extend interruption coverage and specify continuation semantics | QWN-003/LFM-010 cooperative stop and raw-token retention are implemented. Add hard-kill/write-boundary coverage before long campaigns; saved tokens are not restored KV/RNG state. Exact trajectory continuation does not exist. |
 | When an isolated browser is available | Visual/keyboard/responsive QA | Inspected screenshots and interaction outcomes on an isolated surface. No native desktop control. |
 | After small memory trials | New Mac context-performance protocol | Frozen inputs/budgets and repeated timings; shared memory is not dedicated VRAM. Do not rerun CUDA 128K/allocator designs on MPS. |
 | Later | Qwen batch launch UI, stronger evidence validation, reusable runner orchestration | Model-aware allowlisted API, complete schedule/provenance checks and meaningful regressions; keep greedy chat separate. |

@@ -15,6 +15,7 @@ from live_worker import Models
 from math_grade import grade
 from measurements import repeated_fourgrams
 from qwen_sampling import OutputPresencePenalty
+from token_stream import TokenRecorder as Recorder
 
 
 SOURCES=['scripts/qwen_eval.py','scripts/qwen_sampling.py','scripts/math_grade.py','scripts/qwen_audit.py',
@@ -39,19 +40,6 @@ def generation_config(model,tokenizer,cfg,limit):
         repetition_penalty=1.,num_beams=1,max_new_tokens=limit,min_new_tokens=0,
         eos_token_id=sorted(eos),pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
         use_cache=True)
-
-
-class Recorder:
-    def __init__(self,tokenizer,callback,selected,check=None):
-        self.tokenizer=tokenizer;self.callback=callback;self.selected=selected;self.check=check;self.tokens=[];self.prompt_seen=False;self.first=None;self.ended=False
-    def put(self,value):
-        import torch
-        if not self.prompt_seen:self.prompt_seen=True;return
-        if self.first is None:self.selected.synchronize();self.first=time.perf_counter()
-        self.tokens.extend(value.reshape(-1).tolist())
-        if len(self.tokens)%64==0:self.callback(self.tokens,self.tokenizer.decode(self.tokens,skip_special_tokens=False))
-        if self.check:self.check()
-    def end(self):self.ended=True
 
 
 def sampled(model,tokenizer,messages,cfg,limit,deadline,callback,check=None):

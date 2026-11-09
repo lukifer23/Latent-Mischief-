@@ -94,7 +94,7 @@ async function refresh() {
         el(
           "strong",
           "",
-          run.kind === "qwen-pilot" ? "Qwen sampled pilot" : run.kind === "live" ? "Live comparison" : run.kind === "exploration"
+          run.kind === "phase-timing" ? "LFM3 phase timing" : run.kind === "qwen-pilot" ? "Qwen sampled pilot" : run.kind === "live" ? "Live comparison" : run.kind === "exploration"
             ? "Channel exploration"
             : run.kind === "performance"
               ? "Context performance"

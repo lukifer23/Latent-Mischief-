@@ -2,7 +2,7 @@
 
 Status: backlog / active / complete / blocked / inconclusive. Completion means an artifact or measurement exists, not that a hypothesis succeeded.
 
-**Execution order:** follow [Next steps and decision gates](NEXT-STEPS.md). Mac setup and short compatibility checks are complete; next is a separately frozen Mac Qwen follow-up. QWN-002's evaluator/protocol exist and its Windows pilot remains interrupted. Short greedy chat is not an anti-loop reproduction.
+**Execution order:** follow [Next steps and decision gates](NEXT-STEPS.md). Current priority is LFM-010: the user chose a small phase-timing/character experiment. Offline implementation is verified; MPS execution waits for resource admission. QWN-003 stays separate after its resource refusal; QWN-002 remains interrupted.
 
 | ID | Status | Idea / deliverable | Notes / next evidence |
 |---|---|---|---|
@@ -17,6 +17,7 @@ Status: backlog / active / complete / blocked / inconclusive. Completion means a
 | LFM-007 | backlog | Capability and format regression checks | Accuracy, completion, repetition, language mixing and latency. |
 | LFM-008 | backlog | Transfer to LFM3 base / VL / Omni | Shared backbone does not guarantee interchangeable directions. |
 | LFM-009 | backlog | Useful controls | Concision, uncertainty, JSON reliability, tool selection. |
+| LFM-010 | active | Phase-specific sparse steering pilot | Implemented/offline verified: prefill/decode/both gates, fresh MPS calibration, baseline/prompt/random controls, 54 short replies and blinded review. No LFM3 research run yet; normal pressure and 7 GiB available required. See [protocol](../experiments/LFM-010-phase-timing.md). |
 | QWN-001 | active | Push Qwen3.5-0.8B to its limits | Base/edit pinned and edited tensors digest-verified; local arithmetic + conversation smoke pass. Anti-loop benchmarks and long context unverified. |
 | QWN-002 | inconclusive | Bounded thinking-on base/edit pilot | Evaluator implemented; predeclared aedb63b. User-stopped at 6/8 saved, two matched pairs, 832 partial tokens. No final-answer/completion benefit at 4K. Preserve Windows evidence; Mac follow-up needs a new protocol. |
 | QWN-003 | active | Resource-bounded MPS budget follow-up | Protocol/source precommitted 18cf314. First admission refused at OS pressure 2: 0/4 trajectories, no weights loaded. Guards/tests and numeric refusal evidence complete; actual study waits for normal pressure. See [report](../experiments/QWN-003-mac-followup.md). |

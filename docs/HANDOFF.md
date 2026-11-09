@@ -1,6 +1,6 @@
 # Device handoff — 2026-11-06
 
-**2026-11-09 update:** Mac setup and short MPS inference are verified. Read [the review](REVIEW-2026-11-09.md), [current setup](SETUP.md), [BACKEND-001](../experiments/BACKEND-001-mac-setup.md) and [next steps](NEXT-STEPS.md). The interrupted Windows state below remains unchanged. Raw Windows runs/transfer ZIP were absent from this clone; no historical raw regrading was claimed on Mac.
+**2026-11-09 update:** Mac setup and short MPS inference are verified. Current priority is [LFM-010 phase timing](../experiments/LFM-010-phase-timing.md), implemented/offline tested with MPS research execution pending normal pressure and 7 GiB available. QWN-003's first admission refused before loading weights; it stays separate. All project services remain stopped. Read [the review](REVIEW-2026-11-09.md), [current setup](SETUP.md), [BACKEND-001](../experiments/BACKEND-001-mac-setup.md) and [next steps](NEXT-STEPS.md). The interrupted Windows state below remains unchanged. Raw Windows runs/transfer ZIP were absent from this clone; no historical raw regrading was claimed on Mac.
 
 ## Read this first
 
@@ -49,7 +49,7 @@ Steps 1–3 below are complete for BACKEND-001's short tested scope. Step 4 rema
 3. Validate loading, EOS, thinking template, seeded sampling and cached versus full-prefix logits on the chosen Mac backend. At handoff the cache diagnostic was unexecuted; BACKEND-001 now runs it on MPS for both families and verifies loaded Qwen tensor digests. Short numerical differences remain recorded.
 4. Only then predeclare a separately named Mac pilot/budget follow-up. The open question is whether a larger output budget/backend changes these incomplete 4K outcomes. Keep paired prompts/settings matched and report missing samples. Do not claim an anti-loop win from the short arithmetic smoke tests.
 
-Other outstanding work: Qwen batch launching from the UI is **not implemented** (CLI works); native visual QA remains incomplete; graceful stop/KV+RNG continuation needs deliberate implementation. The local STOP was a targeted worker termination preserving the last 64-token checkpoint, not a verified graceful resume system.
+Other outstanding work: Qwen batch launching from the UI is **not implemented** (CLI works); visual QA remains incomplete; exact KV+RNG continuation needs deliberate implementation. QWN-003/LFM-010 now implement cooperative resource/manual stop with raw-token retention. The historical Windows STOP was targeted worker termination preserving the last 64-token checkpoint, not a verified graceful resume system.
 
 ## Regression work and verification
 
@@ -57,4 +57,4 @@ Adding the optional grader changed the full lock hash without changing inference
 
 Checks at the original handoff: **43 Python tests**, Node comparison/startup/model-isolation/math-label checks and dependency-light HTTP rejection checks passed. No final cache diagnostic or LFM GPU replay was run after that stop request. On 2026-11-09 the separate BACKEND-001 milestone adds Mac compatibility evidence and 51 passing tests; historical LFM findings remain unchanged: no validated evil/hamster persona, Windows 32K performance completed, Windows 128K OOM.
 
-Suggested next-agent prompt: “Read AGENTS.md, docs/REVIEW-2026-11-09.md and docs/NEXT-STEPS.md. Mac short inference is verified. Predeclare a separately named bounded Mac Qwen follow-up before research generation. Preserve interrupted Windows evidence; no rerolls, pooling, desktop control, admin actions or paid compute. Keep raw/private data local and use main only.”
+Suggested next-agent prompt: “Read AGENTS.md, docs/REVIEW-2026-11-09.md, docs/NEXT-STEPS.md and experiments/LFM-010-phase-timing.md. LFM-010 is implemented/offline verified; real MPS execution requires its unchanged admission policy. Keep services stopped unless needed/requested. Preserve the zero-trajectory QWN-003 refusal and interrupted Windows evidence separately; no rerolls, pooling, desktop control, admin actions or paid compute. Keep raw/private data local and use main only.”

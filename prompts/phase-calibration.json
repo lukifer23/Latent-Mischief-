@@ -1,0 +1,18 @@
+[
+  {
+    "id": "postcards",
+    "prompt": "Describe a practical way to sort a box of old postcards."
+  },
+  {
+    "id": "lantern",
+    "prompt": "Explain how a battery-powered lantern produces light."
+  },
+  {
+    "id": "balcony",
+    "prompt": "Suggest a simple routine for caring for mint on a balcony."
+  },
+  {
+    "id": "timetable",
+    "prompt": "Explain how to read a bus timetable."
+  }
+]
