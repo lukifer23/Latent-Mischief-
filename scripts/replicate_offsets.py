@@ -35,6 +35,9 @@ def main():
     parser.add_argument('--config',type=Path,default=lab.ROOT/'configs/offset-replication.json')
     args=parser.parse_args(); cfg_bytes=args.config.read_bytes(); cfg=json.loads(cfg_bytes)
     evidence=json.loads((lab.ROOT/cfg['source_evidence']).read_text(encoding='utf-8'))
+    # The public CAL-001 export was measured on CUDA/BF16, before the adapter.
+    from runtime import require_cuda_protocol
+    require_cuda_protocol('Frozen CAL-001 offsets')
     if evidence['model']!=lab.config() or evidence['runtime_lock_sha256']!=lab.environment()['lock_sha256']:
         raise ValueError('Model/runtime differs from frozen calibration evidence')
     selected=select_units(cfg,evidence['screening'])

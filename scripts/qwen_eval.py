@@ -9,6 +9,7 @@ from pathlib import Path
 import time
 
 import lab
+import runtime
 from live_worker import Models
 from math_grade import grade
 from measurements import repeated_fourgrams
@@ -40,12 +41,12 @@ def generation_config(model,tokenizer,cfg,limit):
 
 
 class Recorder:
-    def __init__(self,tokenizer,callback):
-        self.tokenizer=tokenizer;self.callback=callback;self.tokens=[];self.prompt_seen=False;self.first=None;self.ended=False
+    def __init__(self,tokenizer,callback,selected):
+        self.tokenizer=tokenizer;self.callback=callback;self.selected=selected;self.tokens=[];self.prompt_seen=False;self.first=None;self.ended=False
     def put(self,value):
         import torch
         if not self.prompt_seen:self.prompt_seen=True;return
-        if self.first is None:torch.cuda.synchronize();self.first=time.perf_counter()
+        if self.first is None:self.selected.synchronize();self.first=time.perf_counter()
         self.tokens.extend(value.reshape(-1).tolist())
         if len(self.tokens)%64==0:self.callback(self.tokens,self.tokenizer.decode(self.tokens,skip_special_tokens=False))
     def end(self):self.ended=True
@@ -62,18 +63,19 @@ def sampled(model,tokenizer,messages,cfg,limit,deadline,callback):
     if prompt_length+limit>maximum:raise ValueError('Input plus output exceeds model context window')
     class Deadline(StoppingCriteria):
         def __call__(self,input_ids,scores,**kwargs):return torch.full((input_ids.shape[0],),time.perf_counter()>=deadline,device=input_ids.device,dtype=torch.bool)
-    recorder=Recorder(tokenizer,callback)
-    torch.manual_seed(cfg['seed']);torch.cuda.manual_seed_all(cfg['seed']);torch.cuda.reset_peak_memory_stats();torch.cuda.synchronize()
+    selected=runtime.for_model(model)
+    recorder=Recorder(tokenizer,callback,selected)
+    torch.manual_seed(cfg['seed']);selected.reset_peak_memory();selected.synchronize()
     started=time.perf_counter();prefill_end=[]
     def forward_done(module,args,output):
-        if not prefill_end:torch.cuda.synchronize();prefill_end.append(time.perf_counter())
+        if not prefill_end:selected.synchronize();prefill_end.append(time.perf_counter())
     handle=model.register_forward_hook(forward_done)
     try:
         with torch.inference_mode():
             output=model.generate(**inputs,generation_config=generation_config(model,tokenizer,cfg,limit),
                 logits_processor=LogitsProcessorList([OutputPresencePenalty(prompt_length,cfg['presence_penalty'])]),
                 stopping_criteria=StoppingCriteriaList([Deadline()]),streamer=recorder,logits_to_keep=1)
-        torch.cuda.synchronize();ended=time.perf_counter()
+        selected.synchronize();ended=time.perf_counter()
     except BaseException:
         callback(recorder.tokens,tokenizer.decode(recorder.tokens,skip_special_tokens=False));raise
     finally:handle.remove()
@@ -87,7 +89,7 @@ def sampled(model,tokenizer,messages,cfg,limit,deadline,callback):
         'decode_tokens_after_first':max(0,len(tokens)-1),'decode_seconds_after_first':ended-recorder.first,
         'decode_tokens_per_second':(len(tokens)-1)/(ended-recorder.first) if len(tokens)>1 else None,
         'terminated_with_eos':termination=='eos','hit_token_limit':termination=='output-cap','termination':termination,
-        'peak_gpu_allocated_bytes':torch.cuda.max_memory_allocated(),'peak_gpu_reserved_bytes':torch.cuda.max_memory_reserved(),
+        'runtime':selected.identity(),**selected.memory(),
         'process_rss_end_bytes':psutil.Process().memory_info().rss,'generation_config':generation_config(model,tokenizer,cfg,limit).to_dict()}
 
 
@@ -106,6 +108,7 @@ def preflight(model,tokenizer,cfg,deadline):
     two=sampled(model,tokenizer,messages,cfg,8,deadline,lambda tokens,text:None)
     check['seeded_sample_repeat_identical']=one['token_ids']==two['token_ids']
     result={'checks':check,'max_abs_cached_logit_difference':float((a-b).abs().max()),'sample_token_ids':one['token_ids'],
+        'sample_messages':messages,'sample_settings':cfg,'samples':[one,two],
         'sanity_generated_tokens':one['output_tokens']+two['output_tokens']}
     if not all(check.values()):raise ValueError('Qwen preflight failed: '+str(check))
     return result
@@ -116,6 +119,7 @@ def main():
     import torch
     from viewer import gpu_job_running
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--resume');args=parser.parse_args()
+    selected=runtime.require_cuda_protocol('QWN-002')
     own=[os.getpid(),*[p.pid for p in psutil.Process().parents()]]
     if gpu_job_running(ignore_pids=own):raise RuntimeError('Another inference process is active; do not run concurrently')
     cfg=read(lab.ROOT/'configs/qwen-pilot.json');manifest_path=lab.ROOT/cfg['manifest'];manifest=read(manifest_path)
@@ -188,7 +192,7 @@ def main():
     finally:
         manager.model=None;manager.tokenizer=None
         import gc
-        gc.collect();torch.cuda.empty_cache()
+        gc.collect();selected.empty_cache()
 
 
 if __name__=='__main__':main()

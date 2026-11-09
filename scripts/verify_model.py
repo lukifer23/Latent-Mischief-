@@ -6,9 +6,10 @@ import lab
 
 
 def verify_identity():
-    from huggingface_hub import HfApi
+    from huggingface_hub import HfApi, snapshot_download
     cfg=lab.config()
-    snapshot=lab.ROOT/'.cache/huggingface/hub'/('models--'+cfg['model_id'].replace('/','--'))/'snapshots'/cfg['revision']
+    snapshot=Path(snapshot_download(cfg['model_id'],revision=cfg['revision'],
+        allow_patterns=['config.json','*.safetensors'],local_files_only=True))
     architecture=json.loads((snapshot/'config.json').read_text())
     info=HfApi().model_info(cfg['model_id'],revision=cfg['revision'],files_metadata=True)
     checks={'configured_liquid_lfm3':cfg['model_id']=='LiquidAI/LFM3-1.7B',

@@ -8,7 +8,7 @@ import threading
 import unittest
 import sys
 import re
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
@@ -19,6 +19,20 @@ spec.loader.exec_module(viewer)
 
 
 class ViewerTests(unittest.TestCase):
+    def test_stop_terminates_owned_children_and_escalates_only_survivors(self):
+        process=Mock(pid=123)
+        parent,child=Mock(),Mock()
+        parent.children.return_value=[child]
+        with patch('psutil.Process',return_value=parent), \
+                patch('psutil.wait_procs',side_effect=[([parent],[child]),([child],[])]) as wait:
+            viewer.terminate_process_tree(process)
+        parent.terminate.assert_called_once()
+        child.terminate.assert_called_once()
+        child.kill.assert_called_once()
+        parent.kill.assert_not_called()
+        self.assertEqual(wait.call_args_list[0].args[0],[child,parent])
+        process.wait.assert_called_once_with(timeout=5)
+
     @classmethod
     def setUpClass(cls):
         cls.temp = tempfile.TemporaryDirectory()
@@ -62,6 +76,14 @@ class ViewerTests(unittest.TestCase):
         self.assertEqual(self.request('/api/run?id=..%2F..')[0], 400)
         self.assertEqual(self.request('/api/run?id=missing')[0], 404)
         self.assertEqual(self.request('/does-not-exist')[0], 404)
+
+    def test_failed_summary_or_neutral_check_is_never_labeled_complete(self):
+        for name,files in [('failed-summary',{'summary.json':{'completed':False}}),
+                           ('failed-baseline',{'checks.json':{'neutral_hook_token_identical':False}})]:
+            folder=viewer.RUNS/name
+            viewer.write_json(folder/'metadata.json',{'experiment':'test'})
+            for filename,value in files.items():viewer.write_json(folder/filename,value)
+            self.assertEqual(next(run for run in viewer.runs() if run['id']==name)['status'],'failed')
 
     def test_assets_are_local_and_serve_expected_types(self):
         for path, mime in [('/', 'text/html'), ('/bootstrap.js', 'text/javascript'),
@@ -208,13 +230,15 @@ class ViewerTests(unittest.TestCase):
             def terminate(self):
                 self.code = -15
         process = FakeProcess()
-        with patch.object(viewer, 'gpu_job_running', return_value=False), patch.object(viewer.subprocess, 'Popen', return_value=process) as launch:
+        with patch.object(viewer, 'gpu_job_running', return_value=False), patch.object(viewer.subprocess, 'Popen', return_value=process) as launch, \
+                patch.object(viewer,'terminate_process_tree',side_effect=lambda worker:worker.terminate()) as stop:
             code, job = self.request('/api/jobs', {'mode': 'personas', 'layers': [13], 'doses': [0.15], 'max_new_tokens': 64})
             self.assertEqual(code, 201)
             cfg_path = viewer.RUNS / 'jobs' / job['id'] / 'config.json'
             self.assertEqual(viewer.read_json(cfg_path)['max_new_tokens'], 64)
             self.assertIn('--config', launch.call_args.args[0])
             self.assertEqual(self.request('/api/stop', {'id': job['id']})[0], 200)
+            stop.assert_called_once_with(process)
             self.assertTrue(cfg_path.is_file())
             states = viewer.job_states()
             self.assertEqual(next(x for x in states if x['id'] == job['id'])['status'], 'cancelled')

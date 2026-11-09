@@ -32,5 +32,15 @@ function runProgress(progress) {
   const saved=`${progress.completed??0}/${progress.planned} trajectories saved`;
   return progress.active_trial?`${saved} · ${progress.active_trial.condition} · ${(progress.active_tokens??0).toLocaleString()} generated tokens`:saved;
 }
-globalThis.LabCompare = {wordDiff,tokenComparison,offsetSetting,runProgress};
+function memoryLabel(answer) {
+  if(Number.isFinite(answer.peak_gpu_allocated_bytes))
+    return `GPU peak allocated ${(answer.peak_gpu_allocated_bytes/2**30).toFixed(2)} GiB`;
+  if(Number.isFinite(answer.mps_current_allocated_bytes))
+    return `MPS current allocated ${(answer.mps_current_allocated_bytes/2**30).toFixed(2)} GiB`;
+  return 'GPU memory unavailable';
+}
+function liveMetrics(answer) {
+  return `${answer.input_tokens} input · ${answer.output_tokens} output tokens · first token ${answer.time_to_first_token_seconds.toFixed(2)}s · decode ${answer.decode_tokens_per_second?.toFixed(1)??'—'} tok/s · ${memoryLabel(answer)} · load ${answer.load_seconds.toFixed(2)}s · ${answer.terminated_with_eos?'EOS':'output cap'}`;
+}
+globalThis.LabCompare = {wordDiff,tokenComparison,offsetSetting,runProgress,memoryLabel,liveMetrics};
 if (typeof module !== "undefined") module.exports = globalThis.LabCompare;

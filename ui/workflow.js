@@ -100,7 +100,9 @@ function renderLibrary() {
     const block=el('div','observation');block.append(el('strong','',`${personaData.runs[o.run]?.experiment||o.run} · ${o.cohort}`),
       el('p','',`${o.changed_sequences}/${o.n} sequences changed · tokens ${o.default_mean_tokens.toFixed(1)} → ${o.mean_tokens.toFixed(1)} · EOS ${o.default_eos} → ${o.eos} / ${o.n}`),
       el('small','',o.exact_n?`Exact checks ${o.default_exact_pass} → ${o.exact_pass} / ${o.exact_n}`:'Exact checks not measured'));
-    const open=el('button','secondary','Compare this evidence');open.onclick=async()=>{await loadRun(o.run);const x=current.outputs[o.output_indices[0]];$('promptFilter').value=x.prompt_id||x.id;renderOutputs();$('compareA').value=outputKey(x);renderOutputs();showTab('review');};block.append(open);panel.append(block);
+    const available=(state.runs||[]).some(run=>run.id===o.run);
+    const open=el('button','secondary',available?'Compare this evidence':'Raw run absent on this device');open.disabled=!available;
+    open.onclick=async()=>{try{await loadRun(o.run);const x=current.outputs[o.output_indices[0]];$('promptFilter').value=x.prompt_id||x.id;renderOutputs();$('compareA').value=outputKey(x);renderOutputs();showTab('review');}catch(e){message(e.message);}};block.append(open);panel.append(block);
   }
   for(const [title,value] of [['Exact change',entry.recipe],['Method derivation & sources',entry.methods],['Runtime and generation settings',entry.observations.map(o=>({run:o.run,cohort:o.cohort,system:o.system,default_system:o.default_system,generation:o.generation,environment:personaData.runs[o.run]?.environment}))]]) {
     const details=el('details','panel');details.append(el('summary','',title),el('pre','',JSON.stringify(value,null,2)));panel.append(details);
@@ -144,7 +146,7 @@ function renderLive() {
     if(answer)body.append(el('div','chat-assistant',answer.text.replace(/<\|im_end\|>|<\|endoftext\|>/g,'').trim()));
     if(!liveHistory[branch].length&&!livePrompt)body.append(el('p','muted','Your conversation will appear here.'));
     card.append(body);
-    if(answer&&!answer.partial)card.append(el('p','live-metrics',`${answer.input_tokens} input · ${answer.output_tokens} output tokens · first token ${answer.time_to_first_token_seconds.toFixed(2)}s · decode ${answer.decode_tokens_per_second?.toFixed(1)??'—'} tok/s · GPU allocated ${(answer.peak_gpu_allocated_bytes/2**30).toFixed(2)} GiB · load ${answer.load_seconds.toFixed(2)}s · ${answer.terminated_with_eos?'EOS':'output cap'}`));
+    if(answer&&!answer.partial)card.append(el('p','live-metrics',LabCompare.liveMetrics(answer)));
     $('chatColumns').append(card);
   }
 }
@@ -165,7 +167,7 @@ async function pollLive() {
       livePrompt='';liveBranches={};renderLive();
       // Keep final per-branch metrics visible after saving the conversation.
       for(const [index,branch] of ['baseline','edited'].entries()) {
-        const answer=result.branches[branch];$('chatColumns').children[index].append(el('p','live-metrics',`${answer.input_tokens} input · ${answer.output_tokens} output · first token ${answer.time_to_first_token_seconds.toFixed(2)}s · decode ${answer.decode_tokens_per_second?.toFixed(1)??'—'} tok/s · peak allocated ${(answer.peak_gpu_allocated_bytes/2**30).toFixed(2)} GiB · load ${answer.load_seconds.toFixed(2)}s · ${answer.terminated_with_eos?'EOS':'output cap'}`));
+        const answer=result.branches[branch];$('chatColumns').children[index].append(el('p','live-metrics',LabCompare.liveMetrics(answer)));
       }
       $('chatStatus').textContent='Both replies saved. Send another prompt or open Saved Comparisons.';await refresh();
     }

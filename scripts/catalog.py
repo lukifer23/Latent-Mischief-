@@ -24,6 +24,24 @@ def read(path,default=None): return json.loads(path.read_text(encoding='utf-8'))
 def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def merge_public(data):
+    """A fresh clone has reviewed recipes but no private historical raw runs."""
+    public=read(ROOT/'experiments/personas/registry.json',{})
+    entries={entry['id']:entry for entry in public.get('recipes',[])}
+    for entry in data['recipes']:
+        previous=entries.get(entry['id'])
+        if previous:
+            if previous['recipe']!=entry['recipe']:raise ValueError('Recipe ID collision')
+            methods=previous['methods']+[m for m in entry['methods'] if m not in previous['methods']]
+            replaced={(o['run'],o['cohort']) for o in entry['observations']}
+            observations=[o for o in previous['observations'] if (o['run'],o['cohort']) not in replaced]+entry['observations']
+            entry={**entry,'methods':methods,'observations':observations}
+        entries[entry['id']]=entry
+    return {**data,'recipes':sorted(entries.values(),key=lambda x:x['id']),
+            'runs':{**public.get('runs',{}),**data['runs']},
+            'run_refs':{**public.get('run_refs',{}),**data['run_refs']}}
+
+
 def implementation(folder,file,function):
     tree=ast.parse((folder/'source'/file).read_text(encoding='utf-8'))
     node=next(x for x in tree.body if isinstance(x,(ast.FunctionDef,ast.AsyncFunctionDef)) and x.name==function)
@@ -31,7 +49,9 @@ def implementation(folder,file,function):
 
 
 def build():
-    entries,run_refs,runs,skipped={}, {}, {}, []
+    public=read(ROOT/'experiments/personas/registry.json',{})
+    entries={entry['id']:{**entry,'methods':list(entry['methods']),'observations':[]} for entry in public.get('recipes',[])}
+    run_refs,runs,skipped={}, {}, []
     names=read(ROOT/'experiments/personas/names.json',{})
     models=read(ROOT/'configs/models.json',{})
     if models.get('qwen08',{}).get('published_edit'):
@@ -56,6 +76,7 @@ def build():
             if not path.is_relative_to((folder/'source').resolve()) or sha(path)!=digest: raise ValueError(f'Source integrity failure: {folder.name} {name}')
         model=meta.get('model',meta.get('config',{}))
         identity={key:model.get(key) for key in ['model_id','revision','dtype','attention']}
+        identity['dtype']=meta.get('environment',{}).get('runtime',{}).get('dtype',identity['dtype'])
         if not identity['model_id'] or not identity['revision']: raise ValueError('Model identity missing')
         experiment=meta.get('experiment') or ('LFM-002' if 'persona' in folder.name else 'unknown')
         runs[folder.name]={'experiment':experiment,'model':model,'config':meta.get('experiment_config',{}),
@@ -162,9 +183,9 @@ def build():
             'exact_pass':None,'exact_n':0,'default_exact_pass':None,'system':x['system'],'default_system':b['system'],
             'prompt_sha256':hashlib.sha256(x['prompt'].encode()).hexdigest(),'generation':{'do_sample':False,'seed':request['seed'],'max_new_tokens':request['max_new_tokens']},
             'performance':{name:{k:out.get(k) for k in ['input_tokens','time_to_first_token_seconds','decode_tokens_per_second','peak_gpu_allocated_bytes','load_seconds']} for name,out in [('default',b),('edited',x)]}})
-    return {'schema':1,'recipes':sorted(entries.values(),key=lambda x:x['id']),'runs':runs,'run_refs':run_refs,'skipped':skipped,
+    return merge_public({'schema':1,'recipes':sorted(entries.values(),key=lambda x:x['id']),'runs':runs,'run_refs':run_refs,'skipped':skipped,
         'naming_rule':'Codename is neutral and deterministic. Observed nickname is a scoped human annotation, not automatic persona validation.',
-        'limits':'Do not pool different prompt cohorts, instructions, runtimes or token caps. Historical residual vectors require local artifacts; hashes identify exact vectors.'}
+        'limits':'Do not pool different prompt cohorts, instructions, runtimes or token caps. Historical residual vectors require local artifacts; hashes identify exact vectors.'})
 
 
 def publish(data):

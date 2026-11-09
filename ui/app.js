@@ -473,20 +473,6 @@ function configureMode() {
   $("designPreview").classList.toggle("hidden", !["mapping", "calibration", "offsets", "characters", "replicate", "joint"].includes(mode));
   estimate();
 }
-document.querySelectorAll("[data-tab]").forEach(
-  (button) =>
-    (button.onclick = () => {
-      document
-        .querySelectorAll("[data-tab]")
-        .forEach((b) => b.classList.toggle("selected", b === button));
-      document
-        .querySelectorAll(".tab-panel")
-        .forEach((p) =>
-          p.classList.toggle("hidden", p.id !== button.dataset.tab),
-        );
-      if (button.dataset.tab === "logs") refreshLog();
-    }),
-);
 for (const id of [
   "promptFilter",
   "personaFilter",

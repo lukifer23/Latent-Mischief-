@@ -19,10 +19,10 @@ RUNS = ROOT / "runs"
 WEB = ROOT / "ui"
 TOKEN = secrets.token_urlsafe(32)
 JOBS = {}
-JOB_LOCK = threading.Lock()
+JOB_LOCK = threading.RLock()
 ANNOTATION_LOCK = threading.Lock()
 PERSONA_LOCK = threading.Lock()
-LIVE_LOCK = threading.Lock()
+LIVE_LOCK = JOB_LOCK
 LIVE_PROCESS = None
 LIVE_LOG = None
 MAPPING_DESIGNS = {
@@ -89,13 +89,17 @@ def runs():
         summary = read_json(folder / "summary.json")
         checks = read_json(folder / "checks.json")
         metadata = read_json(folder / 'metadata.json', {})
+        if metadata.get('experiment')=='BACKEND-001':
+            continue  # Teacher-forced diagnostic rows are not generated chat replies.
         live = '-LIVE-' in folder.name
         progress=read_json(folder/'progress.json')
+        completed=bool(summary and summary.get('completed') is True) or bool('baseline' in folder.name and checks and checks.get('neutral_hook_token_identical') is True)
+        failed=bool(summary and summary.get('completed') is False) or bool(checks and checks.get('neutral_hook_token_identical') is False)
         result.append({"id": folder.name, "outputs": len(outputs),
                        'model_id':metadata.get('model',metadata.get('config',{})).get('model_id'),
                        'model_key':metadata.get('model_key','lfm3'),'experiment':metadata.get('experiment'),'progress':progress,
                        "screen_conditions": len(read_json(folder / 'screening.json', [])) if 'CAL-' in folder.name else 0,
-                       "status": "complete" if summary or (checks and "baseline" in folder.name) else ("interrupted" if (folder / 'interruption.json').is_file() else "partial"),
+                       "status": "complete" if completed else "failed" if failed else ("interrupted" if (folder / 'interruption.json').is_file() else "partial"),
                        "kind": "qwen-pilot" if metadata.get('experiment')=='QWN-002' else "live" if live else "performance" if "-PERF-" in folder.name else ("characters" if "CHAR-" in folder.name else ("calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))))})
     return result
 
@@ -148,7 +152,7 @@ def gpu_job_running(ignore_pids=()):
             if process.info['pid'] in ignore_pids: continue
             cmd = process.info["cmdline"] or []
             scripts = {Path(arg).name for arg in cmd}
-            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "joint_characters.py", "replicate_offsets.py", "performance.py", "live_worker.py", "qwen_eval.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
+            if {"personas.py", "explore.py", "map_experiment.py", "calibrate.py", "calibrated_map.py", "resume_calibrated.py", "character_lab.py", "joint_characters.py", "replicate_offsets.py", "performance.py", "live_worker.py", "qwen_eval.py", "cache_diagnostic.py"} & scripts or ("lab.py" in scripts and "smoke" in cmd):
                 return True
         except (psutil.Error, OSError):
             continue
@@ -161,6 +165,25 @@ def live_process_ids():
     if not LIVE_PROCESS or LIVE_PROCESS.poll() is not None: return []
     try: return [LIVE_PROCESS.pid, *[p.pid for p in psutil.Process(LIVE_PROCESS.pid).children(recursive=True)]]
     except psutil.NoSuchProcess: return []
+
+
+def terminate_process_tree(process):
+    """Stop only an owned subprocess and its children, including Windows launchers."""
+    import psutil
+    try:
+        parent=psutil.Process(process.pid)
+        targets=[*reversed(parent.children(recursive=True)),parent]
+        for target in targets:
+            try:target.terminate()
+            except psutil.NoSuchProcess:continue
+        _gone,alive=psutil.wait_procs(targets,timeout=5)
+        for target in alive:
+            try:target.kill()
+            except psutil.NoSuchProcess:continue
+        psutil.wait_procs(alive,timeout=5)
+    except psutil.NoSuchProcess:
+        pass
+    process.wait(timeout=5)
 
 
 def start_live(body):
@@ -202,13 +225,7 @@ def stop_live():
     global LIVE_PROCESS,LIVE_LOG
     with LIVE_LOCK:
         if LIVE_PROCESS and LIVE_PROCESS.poll() is None:
-            import psutil
-            processes=[psutil.Process(pid) for pid in live_process_ids()]
-            for process in reversed(processes):
-                try: process.terminate()
-                except psutil.NoSuchProcess: pass
-            psutil.wait_procs(processes,timeout=10)
-            LIVE_PROCESS.wait(timeout=10)
+            terminate_process_tree(LIVE_PROCESS)
         if LIVE_LOG: LIVE_LOG.close()
         LIVE_PROCESS=LIVE_LOG=None
         for folder in RUNS.glob('*-LIVE-*'):
@@ -255,11 +272,11 @@ def start_job(body):
     if body.get('model_key','lfm3')!='lfm3': raise ValueError('These frozen research designs are LFM3-specific. Use Chat & Try for Qwen base versus published edit.')
     if mode not in ("smoke", "personas", "mapping", "calibration", "offsets", *EXTRA_DESIGNS):
         raise ValueError("Choose an allowlisted experiment mode")
-    if LIVE_PROCESS and LIVE_PROCESS.poll() is None:
-        if any(read_json(p/'job.json',{}).get('status') in ['queued','running'] for p in RUNS.glob('*-LIVE-*')):
-            raise ValueError('A live comparison is running. Wait or stop it first.')
-        stop_live()
     with JOB_LOCK:
+        if LIVE_PROCESS and LIVE_PROCESS.poll() is None:
+            if any(read_json(p/'job.json',{}).get('status') in ['queued','running'] for p in RUNS.glob('*-LIVE-*')):
+                raise ValueError('A live comparison is running. Wait or stop it first.')
+            stop_live()
         job_states()
         if any(j["state"]["status"] == "running" for j in JOBS.values()) or gpu_job_running():
             raise ValueError("An experiment is already running. Wait or stop the managed job first.")
@@ -444,14 +461,15 @@ class Handler(BaseHTTPRequestHandler):
                     write_json(RUNS/'persona-names.json',overrides)
                 return self.send({'saved':True,'id':identifier,'scope':'Local annotation; recipe and raw evidence unchanged'})
             if self.path == "/api/stop":
-                job = JOBS.get(body.get("id"))
-                if not job:
-                    raise ValueError("Managed job not found")
-                if job["process"].poll() is None:
-                    job["process"].terminate()
-                    job["state"]["status"] = "cancelled"
-                    write_json(job["folder"] / "job.json", job["state"])
-                return self.send({"jobs": job_states()})
+                with JOB_LOCK:
+                    job = JOBS.get(body.get("id"))
+                    if not job:
+                        raise ValueError("Managed job not found")
+                    if job["process"].poll() is None:
+                        terminate_process_tree(job['process'])
+                        job["state"]["status"] = "cancelled"
+                        write_json(job["folder"] / "job.json", job["state"])
+                    return self.send({"jobs": job_states()})
             if self.path == "/api/annotations":
                 folder = run_path(body.get("run", ""))
                 if not (folder / "metadata.json").is_file():

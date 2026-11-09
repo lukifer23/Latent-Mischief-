@@ -1,5 +1,7 @@
 # Dependency advisory follow-up
 
+Mac installation follow-up, 2026-11-09: preserved and validated the existing Darwin wheel-routing change. The universal lock contains PyPI torch 2.14.1 for macOS and torch 2.14.1+cu130 from the official CUDA index for the Windows path. Project Python 3.11.15 and all extras install locally. Actual MPS/BF16 compatibility is recorded in [BACKEND-001](../experiments/BACKEND-001-mac-setup.md). This did not include a new advisory scan or a Windows hardware replay; the advisory state below is historical.
+
 GitHub reported three alerts against the initial lock on 2026-11-06:
 
 | Package / advisory | Reported patched floor | Action |

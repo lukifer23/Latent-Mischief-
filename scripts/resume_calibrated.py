@@ -22,6 +22,8 @@ def main():
     if (parent / 'summary.json').exists():
         raise ValueError('Resume only an interrupted run, preserving its directory')
     metadata = json.loads((parent / 'metadata.json').read_text(encoding='utf-8'))
+    from runtime_identity import require_same_backend
+    require_same_backend(metadata['environment'],lab.environment())
     for name, expected in metadata['source_hashes'].items():
         if hashlib.sha256((parent / 'source' / name).read_bytes()).hexdigest() != expected:
             raise ValueError(f'Parent source hash mismatch: {name}')
@@ -52,7 +54,7 @@ def main():
     folder.mkdir()
     hashes = lab.archive_sources(folder, ['scripts/resume_calibrated.py', 'scripts/calibrated_map.py',
         'scripts/calibration.py', 'scripts/lab.py', 'scripts/storage.py', 'scripts/measurements.py',
-        'uv.lock', 'configs/model.json', cfg['evaluation_prompts']])
+        'scripts/runtime_identity.py', 'uv.lock', 'configs/model.json', cfg['evaluation_prompts']])
     for name, expected in metadata['source_hashes'].items():
         new_name = f'parent-source/{name}'
         destination = folder / 'source' / new_name

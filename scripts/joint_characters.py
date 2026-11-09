@@ -22,6 +22,8 @@ def main():
     parent=(lab.ROOT/'runs'/cfg['source_run']).resolve()
     if parent.parent!=(lab.ROOT/'runs').resolve(): raise ValueError('Invalid source run')
     old=json.loads((parent/'metadata.json').read_text(encoding='utf-8'))
+    from runtime_identity import require_same_backend
+    require_same_backend(old['environment'],lab.environment())
     summary=json.loads((parent/'summary.json').read_text())
     if summary.get('completed') is not True or not all(summary['checks'].values()): raise ValueError('Source run incomplete')
     if hashlib.sha256((parent/'profiles.json').read_bytes()).hexdigest()!=summary['profiles_sha256']: raise ValueError('Profiles changed')
@@ -37,7 +39,7 @@ def main():
     folder=lab.ROOT/'runs'/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'-CHAR-002-joint-characters'); folder.mkdir()
     hashes=lab.archive_sources(folder,['scripts/joint_characters.py','scripts/character_lab.py','scripts/calibrated_map.py',
         'scripts/calibration.py','scripts/lab.py','scripts/measurements.py','scripts/storage.py','scripts/personas.py',
-        'uv.lock','configs/model.json',cfg['prompt_file']])
+        'scripts/runtime_identity.py','uv.lock','configs/model.json',cfg['prompt_file']])
     for name in ['metadata.json','summary.json','profiles.json']:
         data=(parent/name).read_bytes(); path=folder/'source/parent'/name; path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(data)
         hashes['parent/'+name]=hashlib.sha256(data).hexdigest()

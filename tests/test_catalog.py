@@ -11,6 +11,24 @@ import catalog
 
 
 class RecipeIdentityTests(unittest.TestCase):
+    def test_fresh_clone_keeps_public_recipes_and_merge_does_not_duplicate_observations(self):
+        recipe={'family':'channel-gain','model':{'revision':'pinned'}}
+        identifier=recipe_id(recipe)
+        entry={'id':identifier,'recipe':recipe,'methods':[{'run':'historical'}],
+               'observations':[{'run':'historical','cohort':'fresh','n':3}]}
+        public={'recipes':[entry],'runs':{'historical':{'experiment':'MAP-001'}},'run_refs':{'historical':{'0':identifier}}}
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);path=root/'experiments/personas/registry.json';path.parent.mkdir(parents=True)
+            path.write_text(json.dumps(public))
+            (root/'runs').mkdir()
+            with patch.object(catalog,'ROOT',root):
+                built=catalog.build()
+                self.assertEqual(built['recipes'],[entry])
+                rebuilt=catalog.merge_public(built)
+                self.assertEqual(rebuilt,built)
+                self.assertIn('historical',rebuilt['runs'])
+                self.assertEqual(rebuilt['run_refs']['historical']['0'],identifier)
+
     def test_identity_is_key_order_stable_but_exact_change_sensitive(self):
         a={'model':{'revision':'abc','dtype':'bf16'},'operations':[{'layer':4,'offsets':[.2],'channels':[10]}]}
         reordered={'operations':a['operations'],'model':{'dtype':'bf16','revision':'abc'}}

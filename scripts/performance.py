@@ -10,6 +10,7 @@ from pathlib import Path
 import time
 
 import lab
+import runtime
 from calibration import offset_hook
 from verify_model import verify_identity
 
@@ -21,6 +22,7 @@ def main():
     args=parser.parse_args(); cfg_bytes=args.config.read_bytes(); cfg=json.loads(cfg_bytes)
     if cfg.get('allocator'): os.environ['PYTORCH_ALLOC_CONF']=cfg['allocator']
     import torch
+    runtime.require_cuda_protocol('PERF-001/002')
     identity=verify_identity()
     evidence=json.loads((lab.ROOT/cfg['source_evidence']).read_text(encoding='utf-8'))
     unit=next(x for x in evidence['selected'] if x['candidate']==cfg['offset_candidate'] and x['sign']==1 and x['target_fraction']==cfg['offset_target'])

@@ -9,6 +9,7 @@ Project repository: https://github.com/lukifer23/Latent-Mischief-
 | Available now | Status |
 |---|---|
 | Native Windows GPU inference without admin | Verified locally |
+| Apple Silicon setup and short inference | M3 Pro / MPS / BF16 verified for LFM3 and both Qwen checkpoints; long MPS campaigns unverified |
 | Pinned model, dependencies, raw evidence recording | Implemented |
 | Neutral and removed-hook checks | Passed on the documented prompts |
 | Two persona-direction sweeps | 148 generations; no validated internal persona recipe; strong pushes often damaged output |
@@ -31,17 +32,17 @@ See [expanded mapping](experiments/MAP-004-expanded-sample.md), [replication fin
 
 A local lab for exploring LFM3 behavior through reversible activation interventions, with a separate Qwen3.5-0.8B track for comparing the official base against a pinned published weight-space edit. Current priority: characterize changes with matched controls and honest regression checks before claiming targeted personas. Compiled computation remains on the idea board.
 
-Latest milestone: [fresh replication](experiments/MAP-006-offset-replication.md), [combined-profile findings](experiments/CHAR-002-joint-characters.md), [actual context performance and failures](experiments/PERF-001-long-context.md), and [paired LFM3/Qwen smoke tests](experiments/LIVE-001-model-comparisons.md). The three newer LFM3 campaigns total 414 generations. There is verified behavior change and useful negative evidence; no validated evil/hamster persona or capability improvement. See the [recipe library](experiments/personas/README.md) and [fresh-start QA record](docs/UI-QA.md) for exact scope and remaining gaps.
+Recent research: [fresh replication](experiments/MAP-006-offset-replication.md), [combined profiles](experiments/CHAR-002-joint-characters.md), [context performance and failures](experiments/PERF-001-long-context.md), and [paired LFM3/Qwen smoke tests](experiments/LIVE-001-model-comparisons.md). The three newer LFM3 campaigns total 414 generations. There is verified behavior change and useful negative evidence; no validated evil/hamster persona or capability improvement. See the [recipe library](experiments/personas/README.md) and [QA record](docs/UI-QA.md) for scope and remaining gaps.
 
-Latest stopping point: [QWN-002 interrupted sampled pilot](experiments/QWN-002-anti-loop-pilot.md), with an independently regraded numeric export and missing-counterpart-aware figure. Read the [device handoff](docs/HANDOFF.md) before continuing on Mac: review-only mode is implemented; Mac inference is not.
+Latest milestone: [full project review](docs/REVIEW-2026-11-09.md) and [Mac setup evidence](experiments/BACKEND-001-mac-setup.md). Short MPS inference, cache/sampling checks and paired HTTP conversations work. The [QWN-002 Windows pilot](experiments/QWN-002-anti-loop-pilot.md) remains interrupted and separate; a larger Mac follow-up is planned, not run.
 
 ## Start here
 
-- **Switching devices?** Read [the current handoff](docs/HANDOFF.md): stopped-run status, raw-data transfer, dependency-light review mode and the unimplemented Mac inference path.
+- **Switching devices?** Read [the handoff](docs/HANDOFF.md): interrupted Windows evidence, private raw-data transfer, Mac setup and verified scope.
 - [Next steps](docs/NEXT-STEPS.md): ordered execution plan, first milestone, evidence requirements and stopping rules.
 - [Experiment board](docs/ROADMAP.md): checklist, status, notes and future ideas.
 - [Research journal](docs/JOURNAL.md): dated decisions, observations and next steps.
-- [Setup](docs/SETUP.md): native Windows, no administrator privileges.
+- [Setup](docs/SETUP.md): Apple Silicon MPS and native Windows CUDA, no administrator privileges.
 - [Local workbench](docs/WORKBENCH.md): comparisons, charts, run controls, notes and logs.
 - [Persona naming](docs/PERSONAS.md): exact recipe IDs, provisional names, differences and methodology.
 - [Method](docs/METHOD.md): how we distinguish a funny output from a repeatable effect.
@@ -53,10 +54,10 @@ Latest stopping point: [QWN-002 interrupted sampled pilot](experiments/QWN-002-a
 
 ## Commands
 
-Run from this directory in PowerShell. Activation is unnecessary, so no execution-policy changes are needed.
+Run from this directory in macOS Terminal or PowerShell. Activation is unnecessary.
 
 ```powershell
-uv sync --locked
+uv sync --locked --all-extras
 uv run --locked python scripts/lab.py doctor
 uv run --locked python scripts/lab.py prepare
 uv run --locked python scripts/lab.py smoke
@@ -69,7 +70,7 @@ uv run --locked python scripts/calibrated_map.py --calibration CALIBRATION-RUN-I
 uv run --locked python scripts/viewer.py
 ```
 
-`prepare` downloads pinned source/config files. `smoke` downloads approximately 3.5 GB of model weights on first use, loads the GPU model, generates five baselines and checks a gain=1 hook for token equality. No upstream weights are modified. Raw run files go in `runs/`; model/cache files in `.cache/`.
+`prepare` downloads pinned source/config files. `smoke` downloads approximately 3.5 GB of model weights on first use, loads on CUDA or MPS, generates five baselines and checks a gain=1 hook for token equality. CPU must be selected explicitly. No upstream weights are modified. Raw run files go in `runs/`; model/cache files in `.cache/`. Runtime choices and Qwen/cache checks are in [setup](docs/SETUP.md). Frozen Windows calibration, Qwen-pilot and long-context designs have runtime gates; this command list is a workflow reference, not a request to run every campaign on a new device.
 
 `personas.py` generates paired neutral/hamster/villain responses, derives response-token contrast directions, and tests three layers and three doses on prompt-disjoint exploratory probes. It includes ordinary persona-prompt baselines, zero-dose / hook-removal checks, and two random directions per layer at dose 0.15. Random controls are matched only at 0.15; the other doses are exploratory. This run is candidate discovery, not held-out validation. See [the specification](experiments/LFM-002-persona-discovery.md).
 

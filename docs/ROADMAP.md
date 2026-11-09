@@ -2,22 +2,23 @@
 
 Status: backlog / active / complete / blocked / inconclusive. Completion means an artifact or measurement exists, not that a hypothesis succeeded.
 
-**Execution order:** follow [Next steps and decision gates](NEXT-STEPS.md). The first research deliverable is a frozen QWN-002 evaluator/pilot protocol; the current short greedy chat test is not an anti-loop reproduction.
+**Execution order:** follow [Next steps and decision gates](NEXT-STEPS.md). Mac setup and short compatibility checks are complete; next is a separately frozen Mac Qwen follow-up. QWN-002's evaluator/protocol exist and its Windows pilot remains interrupted. Short greedy chat is not an anti-loop reproduction.
 
 | ID | Status | Idea / deliverable | Notes / next evidence |
 |---|---|---|---|
 | LAB-001 | complete | Organized local lab, pinned environment, GPU check | Native Windows; no admin. CUDA works; exact dependencies in uv.lock. |
+| BACKEND-001 | complete | Mac environment and bounded compatibility | M3 Pro / 18 GiB / MPS BF16: LFM3 baselines, Qwen base/edit, loaded digests, 17-position cache checks and paired HTTP conversations pass. No long MPS study or new Windows hardware replay. See [report](../experiments/BACKEND-001-mac-setup.md). |
 | LFM-001 | complete | Pinned LFM3 source inspection and baseline | Five baselines recorded; gain=1 hook matched tokens on one prompt. See experiment report. |
 | LFM-002 | active | Hamster LFM | Two sweeps complete, no usable recipe. Next: cleaner feature extraction and targeted channel search. |
 | LFM-003 | active | Theatrical villain LFM | Stronger-dose follow-up degraded output. Next: neutral-system baseline and better feature separation. |
 | LFM-004 | active | Contrast-derived activation directions | Extraction and sweep implemented; candidate quality not validated. |
 | LFM-005 | backlog | Individual-channel causal search | Compare additive pushes, gains, ablation; use matched controls. |
-| LFM-006 | backlog | Hamster + villain mixtures | Test interaction and dose, not just cherry-picked examples. |
+| LFM-006 | backlog | Hamster + villain mixtures | CHAR-002 combined same-character profiles across layers without a stable character. A hamster-plus-villain mixture remains untested. |
 | LFM-007 | backlog | Capability and format regression checks | Accuracy, completion, repetition, language mixing and latency. |
 | LFM-008 | backlog | Transfer to LFM3 base / VL / Omni | Shared backbone does not guarantee interchangeable directions. |
 | LFM-009 | backlog | Useful controls | Concision, uncertainty, JSON reliability, tool selection. |
 | QWN-001 | active | Push Qwen3.5-0.8B to its limits | Base/edit pinned and edited tensors digest-verified; local arithmetic + conversation smoke pass. Anti-loop benchmarks and long context unverified. |
-| QWN-002 | active | Bounded thinking-on base/edit pilot | Evaluator implemented; predeclared aedb63b. User-stopped at 6/8 saved, two matched pairs, 832 partial tokens. No final-answer/completion benefit observed at 4K. See HANDOFF.md before device migration. |
+| QWN-002 | inconclusive | Bounded thinking-on base/edit pilot | Evaluator implemented; predeclared aedb63b. User-stopped at 6/8 saved, two matched pairs, 832 partial tokens. No final-answer/completion benefit at 4K. Preserve Windows evidence; Mac follow-up needs a new protocol. |
 | CPU-001 | backlog | Exact computation inside a model | Start with arithmetic or memory; later investigate Qwenputer. |
 | UI-001 | active | Local experiment workbench | Run history, comparisons, charts, controls, notes and logs implemented; API tests pass. Visual QA blocked by browser-tool limitation. |
 | UI-002 | active | Live interactive paired playground | Model selector, recipes, default/edit conversations and timing implemented; GPU/API smoke and DOM-fixture switching pass. Visual QA blocked. |

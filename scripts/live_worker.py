@@ -9,6 +9,7 @@ from pathlib import Path
 import time
 
 import lab
+import runtime
 from calibration import offset_hook
 from character_lab import sparse_hook
 from personas import direction_hook
@@ -21,23 +22,25 @@ class Models:
     def __init__(self): self.loaded=None; self.model=None; self.tokenizer=None
     def load(self,spec,attention):
         import torch
-        key=(spec['model_id'],spec['revision'],attention)
+        selected=runtime.select()
+        key=(spec['model_id'],spec['revision'],attention,selected.device,selected.dtype_name)
         if key==self.loaded: return self.model,self.tokenizer,0.
-        self.model=None; self.tokenizer=None; gc.collect(); torch.cuda.empty_cache()
+        previous=runtime.for_model(self.model) if self.model is not None else selected
+        self.model=None; self.tokenizer=None; gc.collect(); previous.empty_cache()
         from transformers import AutoTokenizer,AutoModelForCausalLM,AutoModelForMultimodalLM
         start=time.perf_counter()
         if spec['family']=='lfm3':
             # LFM3 currently ships pinned custom modeling code already inspected in this lab.
             tokenizer=AutoTokenizer.from_pretrained(spec['model_id'],revision=spec['revision'],trust_remote_code=True)
             model=AutoModelForCausalLM.from_pretrained(spec['model_id'],revision=spec['revision'],code_revision=spec['revision'],
-                trust_remote_code=True,dtype=torch.bfloat16,attn_implementation=attention).to('cuda').eval()
+                trust_remote_code=True,dtype=selected.dtype,attn_implementation=attention).to(selected.device).eval()
         else:
             tokenizer=AutoTokenizer.from_pretrained(spec['model_id'],revision=spec['revision'],trust_remote_code=False)
             model=AutoModelForMultimodalLM.from_pretrained(spec['model_id'],revision=spec['revision'],
-                trust_remote_code=False,dtype=torch.bfloat16,attn_implementation=attention).to('cuda').eval()
+                trust_remote_code=False,dtype=selected.dtype,attn_implementation=attention).to(selected.device).eval()
         actual=getattr(model.config,'model_type',None)
         if actual!=spec['family']: raise ValueError(f'Loaded model type {actual} differs from selected family {spec["family"]}')
-        torch.cuda.synchronize(); self.loaded=key; self.model,self.tokenizer=model,tokenizer
+        selected.synchronize(); self.loaded=key; self.model,self.tokenizer=model,tokenizer
         return model,tokenizer,time.perf_counter()-start
 
 
@@ -45,6 +48,8 @@ def hook_context(model,recipe,entry):
     import ast
     import inspect
     import torch
+    if str(model.dtype).removeprefix('torch.')!=recipe['model']['dtype']:
+        raise ValueError('Selected dtype differs from the exact saved recipe; use its recorded dtype')
     function=lab.gain_hook if recipe['family']=='channel-gain' else offset_hook if recipe['family']=='channel-offset' else direction_hook if recipe['family'] in ['contrast-direction','random-direction'] else sparse_hook
     node=ast.parse(inspect.getsource(function)).body[0]
     if hashlib.sha256(ast.dump(node,include_attributes=False).encode()).hexdigest()!=recipe['hook_function_ast_sha256']:
@@ -80,7 +85,8 @@ def generate(model,tokenizer,messages,request,progress):
     config=getattr(model.config,'text_config',model.config)
     maximum=getattr(config,'max_position_embeddings',0)
     if maximum and length+request['max_new_tokens']>maximum: raise ValueError('Actual tokenized context plus output exceeds selected model window')
-    torch.manual_seed(request['seed']); torch.cuda.reset_peak_memory_stats(); torch.cuda.synchronize(); start=time.perf_counter()
+    selected=runtime.for_model(model)
+    torch.manual_seed(request['seed']); selected.reset_peak_memory(); selected.synchronize(); start=time.perf_counter()
     cache=None
     eos=model.generation_config.eos_token_id
     eos=set(eos if isinstance(eos,list) else [eos])
@@ -91,20 +97,20 @@ def generate(model,tokenizer,messages,request,progress):
             out=model(input_ids=ids[:,begin:end],attention_mask=torch.ones((1,end),device=model.device,dtype=torch.long),
                 past_key_values=cache,use_cache=True,logits_to_keep=1)
             cache=out.past_key_values
-        torch.cuda.synchronize(); prefill=time.perf_counter()-start
-        generated=[out.logits[0,-1].argmax().item()]; torch.cuda.synchronize(); first=time.perf_counter()
+        selected.synchronize(); prefill=time.perf_counter()-start
+        generated=[out.logits[0,-1].argmax().item()]; selected.synchronize(); first=time.perf_counter()
         for step in range(1,request['max_new_tokens']):
             if generated[-1] in eos: break
             out=model(input_ids=torch.tensor([[generated[-1]]],device=model.device),past_key_values=cache,use_cache=True,
                 attention_mask=torch.ones((1,length+step),device=model.device,dtype=torch.long),logits_to_keep=1)
             cache=out.past_key_values; generated.append(out.logits[0,-1].argmax().item())
             if step%16==0: progress(tokenizer.decode(generated,skip_special_tokens=False))
-        torch.cuda.synchronize(); end=time.perf_counter()
+        selected.synchronize(); end=time.perf_counter()
     return {'text':tokenizer.decode(generated,skip_special_tokens=False),'token_ids':generated,'input_token_ids':ids[0].tolist(),
         'input_tokens':length,'output_tokens':len(generated),'seconds':end-start,'prefill_seconds':prefill,
         'time_to_first_token_seconds':first-start,'decode_tokens_after_first':len(generated)-1,
         'decode_tokens_per_second':(len(generated)-1)/(end-first) if len(generated)>1 else None,
-        'peak_gpu_allocated_bytes':torch.cuda.max_memory_allocated(),'peak_gpu_reserved_bytes':torch.cuda.max_memory_reserved(),
+        'runtime':selected.identity(),**selected.memory(),
         'process_rss_end_bytes':psutil.Process().memory_info().rss,'terminated_with_eos':generated[-1] in eos,
         'hit_token_limit':len(generated)==request['max_new_tokens'],'messages':messages}
 
@@ -118,6 +124,8 @@ def process(folder,manager):
     if entry and entry['recipe']['model']['model_id']!=spec['model_id']: raise ValueError('Recipe model does not match selected model')
     if not published and recipe_id!='default' and entry is None: raise ValueError('Unknown recipe')
     if entry and not published and spec['family']!='lfm3': raise ValueError('This hook adapter is LFM3-specific')
+    if entry and runtime.select().dtype_name!=entry['recipe']['model']['dtype']:
+        raise ValueError('Selected dtype differs from the exact saved recipe; use its recorded dtype')
     attention=entry['recipe']['model']['attention'] if entry else spec['live_attention']
     state={'status':'running','model_key':request['model_key'],'recipe_id':recipe_id,'stage':'loading','branches':{}}
     lab.write_json(folder/'job.json',state)

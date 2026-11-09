@@ -21,6 +21,8 @@ flowchart LR
 
 `scripts/lab.py` owns model loading, baseline generation, environment capture and the MLP gain hook. Model/cache files live under project .cache by default. `HF_HOME` can be overridden explicitly by the caller.
 
+`scripts/runtime.py` owns CUDA/MPS/explicit-CPU device and dtype policy, synchronization, cache release and memory semantics. Source archives automatically include it. Actual backend/dtype and MPS policy flags are recorded; calibration reuse checks these separately from lock identity. Frozen QWN-002/PERF protocols remain CUDA/BF16-specific. Backend diagnostics use timestamped directories and are excluded from generated-reply history. Catalog rebuilding merges public recipes with local observations, retaining the historical library when old raw runs are absent.
+
 `scripts/personas.py` owns contrast discovery and the additive decoder-output hook. It records actual configuration and hashes, saves directions, checks hook neutrality/cleanup and writes every completed generation. Its initial candidate is a difference between generated-response means; it is not a discovered single neuron.
 
 `scripts/explore.py` preserves the original pilot workflow. `scripts/map_experiment.py` handles newer versioned mapping and replication designs, with `design.py` selecting candidates and controls and `measurements.py` recording transparent surface checks. Cohort and role labels distinguish fresh prompts, discovery anchors, target candidates and random controls. `verify_run.py` checks completed mapping records against archived hashes and their shuffled trial schedule. `summarize.py` keeps these groups separate.

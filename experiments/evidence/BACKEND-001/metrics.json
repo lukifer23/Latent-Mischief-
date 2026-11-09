@@ -1,0 +1,1017 @@
+{
+  "schema": 1,
+  "experiment": "BACKEND-001",
+  "date": "2026-11-09",
+  "hardware": {
+    "chip": "Apple M3 Pro",
+    "architecture": "arm64",
+    "system_memory_bytes": 19327352832
+  },
+  "models": {
+    "lfm3": {
+      "model_id": "LiquidAI/LFM3-1.7B",
+      "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+      "dtype": "bfloat16",
+      "attention": "eager",
+      "max_new_tokens": 192,
+      "seed": 42,
+      "thinking": false,
+      "label": "LFM3-1.7B",
+      "family": "lfm3",
+      "max_context": 262144,
+      "live_attention": "sdpa"
+    },
+    "qwen08": {
+      "label": "Qwen3.5-0.8B",
+      "family": "qwen3_5",
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "dtype": "bfloat16",
+      "live_attention": "sdpa",
+      "thinking": false,
+      "seed": 42,
+      "published_edit": {
+        "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+        "revision": "d1671a178705bcab7644806d23c535517f35723b",
+        "label": "Published anti-loop weight-space edit",
+        "source": "https://huggingface.co/RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+        "expected_tensor_sha256": {
+          "model.language_model.layers.15.mlp.down_proj.weight": "82e2d733ea64feaeb4af93a1e065641d3df98b494a8b7576ef2f52e90fe2ee53",
+          "model.language_model.layers.19.mlp.down_proj.weight": "8ef3c61bc36af113ad58e89dbb0a4a14dcba5a45cb750c15ab515c82ddd12eb2"
+        }
+      }
+    }
+  },
+  "lfm_identity": {
+    "configured_liquid_lfm3": true,
+    "pinned_revision_resolves": true,
+    "model_type_lfm3": true,
+    "architecture_lfm3": true,
+    "cached_weights_match_hub": true
+  },
+  "qwen_full_audit": {
+    "tensor_count": 488,
+    "checks": {
+      "all_tensor_keys_match": true,
+      "all_shapes_dtypes_match": true,
+      "only_expected_tensors_changed": true,
+      "edited_tensor_digests_match": true,
+      "exactly_64_columns_each": true,
+      "exactly_131072_elements_in_changed_columns": true
+    },
+    "equals_published_audit": true,
+    "sha256": "d9c0ac7d72c268f491cb3344c8ce67fa613cc33712d22aae13f5582635405c37"
+  },
+  "baseline": {
+    "run": "20261109T193533110500Z-LFM-001-baseline",
+    "environment": {
+      "python": "3.11.15 (main, Jun  2 2026, 22:36:57) [Clang 22.1.3 ]",
+      "platform": "macOS-27.3-arm64-arm-64bit",
+      "architecture": "arm64",
+      "system_memory_bytes": 19327352832,
+      "runtime": {
+        "device": "mps",
+        "backend": "mps",
+        "dtype": "bfloat16",
+        "mps_cpu_fallback": "0",
+        "mps_fast_math": "0"
+      },
+      "mps_available": true,
+      "packages": {
+        "torch": "2.14.1",
+        "transformers": "5.22.2",
+        "huggingface-hub": "1.33.0",
+        "accelerate": "1.15.0",
+        "safetensors": "0.8.0"
+      },
+      "cuda_available": false,
+      "torch_cuda": null,
+      "gpu": null,
+      "gpu_memory_bytes": null,
+      "lock_sha256": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924"
+    },
+    "source_hashes": {
+      "scripts/lab.py": "21d6aa20037d3aaecf53d3642fd24bef9b78c51920b13c397fe78001c520f2e2",
+      "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+      "uv.lock": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924",
+      "configs/model.json": "430d6432d5895b986a45815a329c6d6a5a5e32f19856d3aab2fb56e549d1fa8b",
+      "prompts/baseline.json": "926cdd81f02ee954e37a3cb42fee5285dc79c154b17be272b10012dc81f393d8",
+      "scripts/runtime.py": "20d6ed1cc788a56badc67d0f8f7d16516bc030dd7647e66b5c5456a0a8592766"
+    },
+    "raw_outputs_sha256": "d86113ec885529be46f48057d544703ebc79ed6c0544fcce096ce7bf49ac8de7",
+    "checks": {
+      "neutral_hook_token_identical": true,
+      "hook": "model.layers.12.feed_forward.w2 input",
+      "gain": 1.0,
+      "all_baselines_reached_eos": false,
+      "note": "One-prompt neutral check only; persona interventions not tested"
+    },
+    "rows": [
+      {
+        "id": "identity",
+        "condition": "baseline",
+        "input_tokens": 18,
+        "output_tokens": 48,
+        "seconds": 5.334902374999729,
+        "terminated_with_eos": true,
+        "hit_token_limit": false
+      },
+      {
+        "id": "fact",
+        "condition": "baseline",
+        "input_tokens": 23,
+        "output_tokens": 8,
+        "seconds": 0.3568530840002495,
+        "terminated_with_eos": true,
+        "hit_token_limit": false
+      },
+      {
+        "id": "arithmetic",
+        "condition": "baseline",
+        "input_tokens": 25,
+        "output_tokens": 96,
+        "seconds": 3.0617277919991466,
+        "terminated_with_eos": false,
+        "hit_token_limit": true
+      },
+      {
+        "id": "format",
+        "condition": "baseline",
+        "input_tokens": 31,
+        "output_tokens": 18,
+        "seconds": 0.7732936669999617,
+        "terminated_with_eos": true,
+        "hit_token_limit": false
+      },
+      {
+        "id": "story",
+        "condition": "baseline",
+        "input_tokens": 26,
+        "output_tokens": 96,
+        "seconds": 3.1139012090006872,
+        "terminated_with_eos": false,
+        "hit_token_limit": true
+      },
+      {
+        "id": "identity",
+        "condition": "gain-1-neutral",
+        "input_tokens": 18,
+        "output_tokens": 48,
+        "seconds": 1.5557435840000835,
+        "terminated_with_eos": true,
+        "hit_token_limit": false
+      }
+    ]
+  },
+  "cache_diagnostics": [
+    {
+      "run": "20261109T193729827265Z-BACKEND-001-cache-qwen08",
+      "model_key": "qwen08",
+      "attention": "sdpa",
+      "environment": {
+        "python": "3.11.15 (main, Jun  2 2026, 22:36:57) [Clang 22.1.3 ]",
+        "platform": "macOS-27.3-arm64-arm-64bit",
+        "architecture": "arm64",
+        "system_memory_bytes": 19327352832,
+        "runtime": {
+          "device": "mps",
+          "backend": "mps",
+          "dtype": "bfloat16",
+          "mps_cpu_fallback": "0",
+          "mps_fast_math": "0"
+        },
+        "mps_available": true,
+        "packages": {
+          "torch": "2.14.1",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": false,
+        "torch_cuda": null,
+        "gpu": null,
+        "gpu_memory_bytes": null,
+        "lock_sha256": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924"
+      },
+      "source_hashes": {
+        "scripts/cache_diagnostic.py": "6e12e7d97d8f8b9aca86418a4e206086123f4cd930a48abe2bfb83993571f8f8",
+        "scripts/live_worker.py": "1de91d3b993328ba1fc282254602c1589217c1674588a00adb8106a50c1c98c0",
+        "scripts/lab.py": "21d6aa20037d3aaecf53d3642fd24bef9b78c51920b13c397fe78001c520f2e2",
+        "scripts/qwen_eval.py": "556733cf6391225a81f195c0c773f2eb0f51e979e99465a069410debb329fe1b",
+        "scripts/qwen_sampling.py": "4d353b85c374c689e271916f188ddbb6020ba88722288e1c94f450355c5f081f",
+        "scripts/math_grade.py": "ac6c1f8dbc6335d11e98a214c8413031a313e43e7287013b7124efe8cf18135f",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/calibrated_map.py": "4b666a4ec7e5de886e72dddb0f1a9594580f0c401aa0f99edf6de60454392345",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "configs/models.json": "fa00a61ed28c418a61c9c471d8d076bceba35d359d08bee60b61ef3defda2fff",
+        "configs/model.json": "430d6432d5895b986a45815a329c6d6a5a5e32f19856d3aab2fb56e549d1fa8b",
+        "configs/qwen-pilot.json": "36f5ef7e88921925eebb7e42db4eb4cc2eae89f66ce9abe5c88327e588535319",
+        "pyproject.toml": "251409125be330f377ba03bc5903438fd4c3406a7f3616f52bed34c605c79cdf",
+        "uv.lock": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924",
+        "experiments/evidence/QWN-002/weights.json": "d9c0ac7d72c268f491cb3344c8ce67fa613cc33712d22aae13f5582635405c37",
+        "scripts/runtime.py": "20d6ed1cc788a56badc67d0f8f7d16516bc030dd7647e66b5c5456a0a8592766"
+      },
+      "raw_outputs_sha256": "0d46091c1784bb396f410e900ba963ba1fdbbac2cd868d4bdb5b5e5432c0129c",
+      "checks": {
+        "all_logits_finite": true,
+        "all_cached_argmax_identical": true,
+        "parameter_versions_unchanged": true
+      },
+      "rows": [
+        {
+          "condition": "baseline",
+          "model_id": "Qwen/Qwen3.5-0.8B",
+          "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+          "loaded_tensor_sha256": {
+            "model.language_model.layers.15.mlp.down_proj.weight": "ef60d2c687bab19464dca9c8bfd7777e46ad226df0c9e25643b0bab04b5a1cca",
+            "model.language_model.layers.19.mlp.down_proj.weight": "638eedeb701b94aa861f4438e615c07ec6c60ee703db1bfee2de577bb6498c3e"
+          },
+          "points": [
+            {
+              "prefix_tokens": 5,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.15625,
+              "reference_to_cached_kl_nats": 0.00020357687026262283,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 6,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1640625,
+              "reference_to_cached_kl_nats": 0.0003748377785086632,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 7,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.15625,
+              "reference_to_cached_kl_nats": 0.0008736152667552233,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 8,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": 0.0012579383328557014,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 9,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.15625,
+              "reference_to_cached_kl_nats": 0.001003042794764042,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 10,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.109375,
+              "reference_to_cached_kl_nats": 3.735612699529156e-05,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 11,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.15625,
+              "reference_to_cached_kl_nats": 0.00037956004962325096,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 12,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": 0.0018895044922828674,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 13,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.15625,
+              "reference_to_cached_kl_nats": 0.00017075124196708202,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 14,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1796875,
+              "reference_to_cached_kl_nats": 0.00014868646394461393,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 15,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": -6.645645100888942e-08,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 16,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.28125,
+              "reference_to_cached_kl_nats": -1.2830390083706789e-09,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 17,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.546875,
+              "reference_to_cached_kl_nats": 1.3286732610140461e-05,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 18,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.34375,
+              "reference_to_cached_kl_nats": 0.0005220104940235615,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 19,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.33203125,
+              "reference_to_cached_kl_nats": 8.65987385623157e-06,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 20,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.43359375,
+              "reference_to_cached_kl_nats": 8.478182280668989e-06,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 21,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.36328125,
+              "reference_to_cached_kl_nats": 0.0005317907780408859,
+              "finite": true
+            }
+          ],
+          "parameter_versions_unchanged": true,
+          "sampling_checks": {
+            "thinking_template_differs": true,
+            "thinking_prefix_open": true,
+            "cached_first_argmax_identical": true,
+            "logits_finite": true,
+            "seeded_sample_repeat_identical": true
+          },
+          "sampling_tokens": 16
+        },
+        {
+          "condition": "published-checkpoint",
+          "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+          "revision": "d1671a178705bcab7644806d23c535517f35723b",
+          "loaded_tensor_sha256": {
+            "model.language_model.layers.15.mlp.down_proj.weight": "82e2d733ea64feaeb4af93a1e065641d3df98b494a8b7576ef2f52e90fe2ee53",
+            "model.language_model.layers.19.mlp.down_proj.weight": "8ef3c61bc36af113ad58e89dbb0a4a14dcba5a45cb750c15ab515c82ddd12eb2"
+          },
+          "points": [
+            {
+              "prefix_tokens": 5,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.140625,
+              "reference_to_cached_kl_nats": 0.0002622469328343868,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 6,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.140625,
+              "reference_to_cached_kl_nats": 0.0017107035964727402,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 7,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": 0.0025914437137544155,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 8,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": 0.0016939695924520493,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 9,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.125,
+              "reference_to_cached_kl_nats": 0.0007839601021260023,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 10,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1328125,
+              "reference_to_cached_kl_nats": 0.0011896248906850815,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 11,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.125,
+              "reference_to_cached_kl_nats": 0.0002729032130446285,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 12,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": 0.0013869162648916245,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 13,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.15625,
+              "reference_to_cached_kl_nats": 5.694577703252435e-05,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 14,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1484375,
+              "reference_to_cached_kl_nats": 0.0017358064651489258,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 15,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": 7.204839675978292e-07,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 16,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.3125,
+              "reference_to_cached_kl_nats": 1.019866431306582e-07,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 17,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.46875,
+              "reference_to_cached_kl_nats": 3.848789674520958e-06,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 18,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.34375,
+              "reference_to_cached_kl_nats": 6.563050555996597e-05,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 19,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.21875,
+              "reference_to_cached_kl_nats": 5.277117907098727e-07,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 20,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.375,
+              "reference_to_cached_kl_nats": 0.001552459318190813,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 21,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.3203125,
+              "reference_to_cached_kl_nats": 0.0017450199229642749,
+              "finite": true
+            }
+          ],
+          "parameter_versions_unchanged": true,
+          "sampling_checks": {
+            "thinking_template_differs": true,
+            "thinking_prefix_open": true,
+            "cached_first_argmax_identical": true,
+            "logits_finite": true,
+            "seeded_sample_repeat_identical": true
+          },
+          "sampling_tokens": 16
+        }
+      ]
+    },
+    {
+      "run": "20261109T193758035031Z-BACKEND-001-cache-lfm3",
+      "model_key": "lfm3",
+      "attention": "sdpa",
+      "environment": {
+        "python": "3.11.15 (main, Jun  2 2026, 22:36:57) [Clang 22.1.3 ]",
+        "platform": "macOS-27.3-arm64-arm-64bit",
+        "architecture": "arm64",
+        "system_memory_bytes": 19327352832,
+        "runtime": {
+          "device": "mps",
+          "backend": "mps",
+          "dtype": "bfloat16",
+          "mps_cpu_fallback": "0",
+          "mps_fast_math": "0"
+        },
+        "mps_available": true,
+        "packages": {
+          "torch": "2.14.1",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": false,
+        "torch_cuda": null,
+        "gpu": null,
+        "gpu_memory_bytes": null,
+        "lock_sha256": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924"
+      },
+      "source_hashes": {
+        "scripts/cache_diagnostic.py": "6e12e7d97d8f8b9aca86418a4e206086123f4cd930a48abe2bfb83993571f8f8",
+        "scripts/live_worker.py": "1de91d3b993328ba1fc282254602c1589217c1674588a00adb8106a50c1c98c0",
+        "scripts/lab.py": "21d6aa20037d3aaecf53d3642fd24bef9b78c51920b13c397fe78001c520f2e2",
+        "scripts/qwen_eval.py": "556733cf6391225a81f195c0c773f2eb0f51e979e99465a069410debb329fe1b",
+        "scripts/qwen_sampling.py": "4d353b85c374c689e271916f188ddbb6020ba88722288e1c94f450355c5f081f",
+        "scripts/math_grade.py": "ac6c1f8dbc6335d11e98a214c8413031a313e43e7287013b7124efe8cf18135f",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/calibrated_map.py": "4b666a4ec7e5de886e72dddb0f1a9594580f0c401aa0f99edf6de60454392345",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "configs/models.json": "fa00a61ed28c418a61c9c471d8d076bceba35d359d08bee60b61ef3defda2fff",
+        "configs/model.json": "430d6432d5895b986a45815a329c6d6a5a5e32f19856d3aab2fb56e549d1fa8b",
+        "configs/qwen-pilot.json": "36f5ef7e88921925eebb7e42db4eb4cc2eae89f66ce9abe5c88327e588535319",
+        "pyproject.toml": "251409125be330f377ba03bc5903438fd4c3406a7f3616f52bed34c605c79cdf",
+        "uv.lock": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924",
+        "scripts/runtime.py": "20d6ed1cc788a56badc67d0f8f7d16516bc030dd7647e66b5c5456a0a8592766"
+      },
+      "raw_outputs_sha256": "094e8812870ad7a2f1ce7b819dc1348791a6f772f177bfa66d4d2a9e2aac53ed",
+      "checks": {
+        "all_logits_finite": true,
+        "all_cached_argmax_identical": true,
+        "parameter_versions_unchanged": true
+      },
+      "rows": [
+        {
+          "condition": "baseline",
+          "model_id": "LiquidAI/LFM3-1.7B",
+          "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+          "loaded_tensor_sha256": {},
+          "points": [
+            {
+              "prefix_tokens": 5,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.296875,
+              "reference_to_cached_kl_nats": 0.0007810869719833136,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 6,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.328125,
+              "reference_to_cached_kl_nats": 0.00017511023906990886,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 7,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.265625,
+              "reference_to_cached_kl_nats": 0.00020467453578021377,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 8,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.2578125,
+              "reference_to_cached_kl_nats": 0.004216232802718878,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 9,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.30859375,
+              "reference_to_cached_kl_nats": 0.0015353079652413726,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 10,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.2890625,
+              "reference_to_cached_kl_nats": 0.0028834629338234663,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 11,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.21484375,
+              "reference_to_cached_kl_nats": 0.0014107590541243553,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 12,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.28125,
+              "reference_to_cached_kl_nats": 0.0019356838893145323,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 13,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": 8.878084918251261e-05,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 14,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.25,
+              "reference_to_cached_kl_nats": 0.0008993617375381291,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 15,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.36474609375,
+              "reference_to_cached_kl_nats": 0.0019404002232477069,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 16,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.125,
+              "reference_to_cached_kl_nats": 8.977658580988646e-05,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 17,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.28125,
+              "reference_to_cached_kl_nats": 0.0014404200483113527,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 18,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.1875,
+              "reference_to_cached_kl_nats": 0.0014831009320914745,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 19,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.3125,
+              "reference_to_cached_kl_nats": 0.0027954108081758022,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 20,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.265625,
+              "reference_to_cached_kl_nats": 0.0028463080525398254,
+              "finite": true
+            },
+            {
+              "prefix_tokens": 21,
+              "argmax_identical": true,
+              "max_abs_logit_difference": 0.25,
+              "reference_to_cached_kl_nats": 0.0014772090362384915,
+              "finite": true
+            }
+          ],
+          "parameter_versions_unchanged": true,
+          "sampling_checks": null,
+          "sampling_tokens": 0
+        }
+      ]
+    }
+  ],
+  "live_smoke": [
+    {
+      "run": "20261109T193831150180Z-LIVE-lfm3",
+      "model_key": "lfm3",
+      "recipe_id": "default",
+      "same_tokens": true,
+      "parameter_version_checks": true,
+      "environment": {
+        "python": "3.11.15 (main, Jun  2 2026, 22:36:57) [Clang 22.1.3 ]",
+        "platform": "macOS-27.3-arm64-arm-64bit",
+        "architecture": "arm64",
+        "system_memory_bytes": 19327352832,
+        "runtime": {
+          "device": "mps",
+          "backend": "mps",
+          "dtype": "bfloat16",
+          "mps_cpu_fallback": "0",
+          "mps_fast_math": "0"
+        },
+        "mps_available": true,
+        "packages": {
+          "torch": "2.14.1",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": false,
+        "torch_cuda": null,
+        "gpu": null,
+        "gpu_memory_bytes": null,
+        "lock_sha256": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924"
+      },
+      "source_hashes": {
+        "scripts/live_worker.py": "1de91d3b993328ba1fc282254602c1589217c1674588a00adb8106a50c1c98c0",
+        "scripts/lab.py": "21d6aa20037d3aaecf53d3642fd24bef9b78c51920b13c397fe78001c520f2e2",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+        "scripts/catalog.py": "9ae972a184b1acd13139d939ffd45e6885a3af18ad1638897dc6fbc20f9b2e2e",
+        "configs/models.json": "fa00a61ed28c418a61c9c471d8d076bceba35d359d08bee60b61ef3defda2fff",
+        "uv.lock": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924",
+        "scripts/runtime.py": "20d6ed1cc788a56badc67d0f8f7d16516bc030dd7647e66b5c5456a0a8592766"
+      },
+      "raw_outputs_sha256": "d50119476b04cfe7c8cd57bb275aeddd3b5bf608743608262c61bf3b18d406ed",
+      "rows": [
+        {
+          "condition": "baseline",
+          "input_tokens": 33,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "runtime": {
+            "device": "mps:0",
+            "backend": "mps",
+            "dtype": "bfloat16",
+            "mps_cpu_fallback": "0",
+            "mps_fast_math": "0"
+          },
+          "mps_current_allocated_bytes": 3463217920,
+          "peak_gpu_allocated_bytes": null
+        },
+        {
+          "condition": "edited",
+          "input_tokens": 33,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "runtime": {
+            "device": "mps:0",
+            "backend": "mps",
+            "dtype": "bfloat16",
+            "mps_cpu_fallback": "0",
+            "mps_fast_math": "0"
+          },
+          "mps_current_allocated_bytes": 3463217920,
+          "peak_gpu_allocated_bytes": null
+        }
+      ]
+    },
+    {
+      "run": "20261109T193837681226Z-LIVE-lfm3",
+      "model_key": "lfm3",
+      "recipe_id": "LM-ce653aca7838eb58",
+      "same_tokens": false,
+      "parameter_version_checks": true,
+      "environment": {
+        "python": "3.11.15 (main, Jun  2 2026, 22:36:57) [Clang 22.1.3 ]",
+        "platform": "macOS-27.3-arm64-arm-64bit",
+        "architecture": "arm64",
+        "system_memory_bytes": 19327352832,
+        "runtime": {
+          "device": "mps",
+          "backend": "mps",
+          "dtype": "bfloat16",
+          "mps_cpu_fallback": "0",
+          "mps_fast_math": "0"
+        },
+        "mps_available": true,
+        "packages": {
+          "torch": "2.14.1",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": false,
+        "torch_cuda": null,
+        "gpu": null,
+        "gpu_memory_bytes": null,
+        "lock_sha256": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924"
+      },
+      "source_hashes": {
+        "scripts/live_worker.py": "1de91d3b993328ba1fc282254602c1589217c1674588a00adb8106a50c1c98c0",
+        "scripts/lab.py": "21d6aa20037d3aaecf53d3642fd24bef9b78c51920b13c397fe78001c520f2e2",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+        "scripts/catalog.py": "9ae972a184b1acd13139d939ffd45e6885a3af18ad1638897dc6fbc20f9b2e2e",
+        "configs/models.json": "fa00a61ed28c418a61c9c471d8d076bceba35d359d08bee60b61ef3defda2fff",
+        "uv.lock": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924",
+        "scripts/runtime.py": "20d6ed1cc788a56badc67d0f8f7d16516bc030dd7647e66b5c5456a0a8592766"
+      },
+      "raw_outputs_sha256": "5695acf1e091357cc2ea1f97c650d7d6e5fd2d085231068d6385b4c095f44c7a",
+      "rows": [
+        {
+          "condition": "baseline",
+          "input_tokens": 45,
+          "output_tokens": 54,
+          "terminated_with_eos": true,
+          "runtime": {
+            "device": "mps:0",
+            "backend": "mps",
+            "dtype": "bfloat16",
+            "mps_cpu_fallback": "0",
+            "mps_fast_math": "0"
+          },
+          "mps_current_allocated_bytes": 3464637184,
+          "peak_gpu_allocated_bytes": null
+        },
+        {
+          "condition": "edited",
+          "input_tokens": 45,
+          "output_tokens": 35,
+          "terminated_with_eos": true,
+          "runtime": {
+            "device": "mps:0",
+            "backend": "mps",
+            "dtype": "bfloat16",
+            "mps_cpu_fallback": "0",
+            "mps_fast_math": "0"
+          },
+          "mps_current_allocated_bytes": 3464211200,
+          "peak_gpu_allocated_bytes": null
+        }
+      ]
+    },
+    {
+      "run": "20261109T193847017965Z-LIVE-qwen08",
+      "model_key": "qwen08",
+      "recipe_id": "LM-c83b96326de3b919",
+      "same_tokens": true,
+      "parameter_version_checks": true,
+      "environment": {
+        "python": "3.11.15 (main, Jun  2 2026, 22:36:57) [Clang 22.1.3 ]",
+        "platform": "macOS-27.3-arm64-arm-64bit",
+        "architecture": "arm64",
+        "system_memory_bytes": 19327352832,
+        "runtime": {
+          "device": "mps",
+          "backend": "mps",
+          "dtype": "bfloat16",
+          "mps_cpu_fallback": "0",
+          "mps_fast_math": "0"
+        },
+        "mps_available": true,
+        "packages": {
+          "torch": "2.14.1",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": false,
+        "torch_cuda": null,
+        "gpu": null,
+        "gpu_memory_bytes": null,
+        "lock_sha256": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924"
+      },
+      "source_hashes": {
+        "scripts/live_worker.py": "1de91d3b993328ba1fc282254602c1589217c1674588a00adb8106a50c1c98c0",
+        "scripts/lab.py": "21d6aa20037d3aaecf53d3642fd24bef9b78c51920b13c397fe78001c520f2e2",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+        "scripts/catalog.py": "9ae972a184b1acd13139d939ffd45e6885a3af18ad1638897dc6fbc20f9b2e2e",
+        "configs/models.json": "fa00a61ed28c418a61c9c471d8d076bceba35d359d08bee60b61ef3defda2fff",
+        "uv.lock": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924",
+        "scripts/runtime.py": "20d6ed1cc788a56badc67d0f8f7d16516bc030dd7647e66b5c5456a0a8592766"
+      },
+      "raw_outputs_sha256": "d1dd8f3cdd6efaea03f483d1394a75b5f313e4a5d66bdb50f47c145b7ef20c9f",
+      "rows": [
+        {
+          "condition": "baseline",
+          "input_tokens": 45,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "runtime": {
+            "device": "mps:0",
+            "backend": "mps",
+            "dtype": "bfloat16",
+            "mps_cpu_fallback": "0",
+            "mps_fast_math": "0"
+          },
+          "mps_current_allocated_bytes": 1732582400,
+          "peak_gpu_allocated_bytes": null
+        },
+        {
+          "condition": "edited",
+          "input_tokens": 45,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "runtime": {
+            "device": "mps:0",
+            "backend": "mps",
+            "dtype": "bfloat16",
+            "mps_cpu_fallback": "0",
+            "mps_fast_math": "0"
+          },
+          "mps_current_allocated_bytes": 1732582400,
+          "peak_gpu_allocated_bytes": null
+        }
+      ]
+    },
+    {
+      "run": "20261109T193850745832Z-LIVE-qwen08",
+      "model_key": "qwen08",
+      "recipe_id": "LM-c83b96326de3b919",
+      "same_tokens": true,
+      "parameter_version_checks": true,
+      "environment": {
+        "python": "3.11.15 (main, Jun  2 2026, 22:36:57) [Clang 22.1.3 ]",
+        "platform": "macOS-27.3-arm64-arm-64bit",
+        "architecture": "arm64",
+        "system_memory_bytes": 19327352832,
+        "runtime": {
+          "device": "mps",
+          "backend": "mps",
+          "dtype": "bfloat16",
+          "mps_cpu_fallback": "0",
+          "mps_fast_math": "0"
+        },
+        "mps_available": true,
+        "packages": {
+          "torch": "2.14.1",
+          "transformers": "5.22.2",
+          "huggingface-hub": "1.33.0",
+          "accelerate": "1.15.0",
+          "safetensors": "0.8.0"
+        },
+        "cuda_available": false,
+        "torch_cuda": null,
+        "gpu": null,
+        "gpu_memory_bytes": null,
+        "lock_sha256": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924"
+      },
+      "source_hashes": {
+        "scripts/live_worker.py": "1de91d3b993328ba1fc282254602c1589217c1674588a00adb8106a50c1c98c0",
+        "scripts/lab.py": "21d6aa20037d3aaecf53d3642fd24bef9b78c51920b13c397fe78001c520f2e2",
+        "scripts/calibration.py": "4d15e26e2ea2aea7ed3be1ca90832595048633fea1da3d31595b735340c04016",
+        "scripts/character_lab.py": "5fa9db50c5ba059b404de730a5876a70436a7141360075e859cf1b90bd7f1f55",
+        "scripts/personas.py": "ab43581f62466068d67cacf4d24fe771119e6bfab76cfe1e712e8ff35dcf6b71",
+        "scripts/storage.py": "5952b52192589235a884446b18d068dbd4cccc834c7a7fb66dadbb17baad261a",
+        "scripts/measurements.py": "31bfc88628edc8ed54c52ce5581b3430e502cde9fb0162b8cb33c7319940a3c3",
+        "scripts/catalog.py": "9ae972a184b1acd13139d939ffd45e6885a3af18ad1638897dc6fbc20f9b2e2e",
+        "configs/models.json": "fa00a61ed28c418a61c9c471d8d076bceba35d359d08bee60b61ef3defda2fff",
+        "uv.lock": "e15ccc2726e294f79a0c3c78af8a05f92949446fea6b6d556da57d6e94809924",
+        "scripts/runtime.py": "20d6ed1cc788a56badc67d0f8f7d16516bc030dd7647e66b5c5456a0a8592766"
+      },
+      "raw_outputs_sha256": "4a7ea6731abaca55acdf666adff3e3d62b013d85ca371f70d31bf5e14e0083f2",
+      "rows": [
+        {
+          "condition": "baseline",
+          "input_tokens": 68,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "runtime": {
+            "device": "mps:0",
+            "backend": "mps",
+            "dtype": "bfloat16",
+            "mps_cpu_fallback": "0",
+            "mps_fast_math": "0"
+          },
+          "mps_current_allocated_bytes": 1732865536,
+          "peak_gpu_allocated_bytes": null
+        },
+        {
+          "condition": "edited",
+          "input_tokens": 68,
+          "output_tokens": 3,
+          "terminated_with_eos": true,
+          "runtime": {
+            "device": "mps:0",
+            "backend": "mps",
+            "dtype": "bfloat16",
+            "mps_cpu_fallback": "0",
+            "mps_fast_math": "0"
+          },
+          "mps_current_allocated_bytes": 1732865536,
+          "peak_gpu_allocated_bytes": null
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Short MPS/BF16 compatibility checks; no anti-loop, capability or performance-improvement claim.",
+    "No historic Windows raw runs transferred; numeric exports reviewed without claiming raw regrading.",
+    "MPS current allocations are snapshots, not CUDA-equivalent peak metrics.",
+    "Windows hardware replay, long MPS campaigns, full checkpoint CPU inference and visual browser QA remain unverified."
+  ]
+}

@@ -14,6 +14,7 @@ import sys
 import time
 
 from storage import write_json
+import runtime
 
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("HF_HOME", str(ROOT / ".cache" / "huggingface"))
@@ -27,6 +28,7 @@ def config():
 def archive_sources(folder, paths):
     """Keep exact local inputs beside evidence; all remain ignored by Git."""
     hashes = {}
+    paths = list(dict.fromkeys([*paths, 'scripts/runtime.py']))
     for name in paths:
         data = (ROOT / name).read_bytes()
         target = folder / "source" / name
@@ -38,8 +40,15 @@ def archive_sources(folder, paths):
 
 def environment():
     import torch
+    import psutil
+    try:
+        selected = runtime.select().identity()
+    except (RuntimeError, ValueError) as error:
+        selected = {'device': None, 'selection_error': str(error)}
     return {
         "python": sys.version, "platform": platform.platform(),
+        'architecture': platform.machine(), 'system_memory_bytes': psutil.virtual_memory().total,
+        'runtime': selected, 'mps_available': torch.backends.mps.is_available(),
         "packages": {p: importlib.metadata.version(p) for p in
                      ("torch", "transformers", "huggingface-hub", "accelerate", "safetensors")},
         "cuda_available": torch.cuda.is_available(), "torch_cuda": torch.version.cuda,
@@ -65,13 +74,12 @@ def load(*, attention=None):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
     cfg = config()
-    if not torch.cuda.is_available():
-        raise RuntimeError("CUDA is unavailable. Run doctor; CPU fallback must be chosen explicitly in a future config.")
+    selected = runtime.select()
     tokenizer = AutoTokenizer.from_pretrained(cfg["model_id"], revision=cfg["revision"], trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(
         cfg["model_id"], revision=cfg["revision"], code_revision=cfg["revision"],
-        trust_remote_code=True, dtype=torch.bfloat16, attn_implementation=attention or cfg["attention"],
-    ).to("cuda").eval()
+        trust_remote_code=True, dtype=selected.dtype, attn_implementation=attention or cfg["attention"],
+    ).to(selected.device).eval()
     return model, tokenizer
 
 
@@ -85,18 +93,21 @@ def generate(model, tokenizer, prompt, *, system=None, max_new_tokens=None):
         messages, tokenize=True, add_generation_prompt=True, enable_thinking=cfg["thinking"],
         return_tensors="pt", return_dict=True,
     ).to(model.device)
-    torch.cuda.synchronize()
+    selected = runtime.for_model(model)
+    selected.reset_peak_memory()
+    selected.synchronize()
     started = time.perf_counter()
     with torch.inference_mode():
         output = model.generate(**inputs, do_sample=False,
                                 max_new_tokens=max_new_tokens or cfg["max_new_tokens"],
-                                pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id)
-    torch.cuda.synchronize()
+                                pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id)
+    selected.synchronize()
     tokens = output[0, inputs["input_ids"].shape[1]:].tolist()
     return {"prompt": prompt, "system": system, "text": tokenizer.decode(tokens, skip_special_tokens=False),
             "token_ids": tokens, "input_token_ids": inputs["input_ids"][0].tolist(),
             "input_tokens": inputs["input_ids"].shape[1],
             "output_tokens": len(tokens), "seconds": time.perf_counter() - started,
+            'runtime': selected.identity(), **selected.memory(),
             "hit_token_limit": len(tokens) == (max_new_tokens or cfg["max_new_tokens"]),
             "terminated_with_eos": bool(tokens and tokens[-1] == tokenizer.eos_token_id)}
 

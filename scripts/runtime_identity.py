@@ -30,6 +30,8 @@ def inference_lock_identity(data):
 
 
 def calibration_runtime_check(metadata,source_lock,current_lock):
+    import lab
+    require_same_backend(metadata['environment'],lab.environment())
     source_bytes=Path(source_lock).read_bytes();current_bytes=Path(current_lock).read_bytes()
     if hashlib.sha256(source_bytes).hexdigest()!=metadata['environment']['lock_sha256']:raise ValueError('Archived calibration lock differs from recorded digest')
     before=inference_lock_identity(source_bytes);after=inference_lock_identity(current_bytes)
@@ -46,3 +48,12 @@ def calibration_runtime_check(metadata,source_lock,current_lock):
         'locked_inference_graph_sha256':before['sha256'],'inference_package_count':before['package_count'],
         'full_lock_identical':source_bytes==current_bytes,'installed_recorded_and_transitive_versions_match':True,
         'scope':'Only unrelated optional-tool dependencies may differ. This is calibration reuse, not permission to resume a changed experiment.'}
+
+
+def require_same_backend(previous,current):
+    # Older evidence predates the adapter and was exclusively CUDA/BF16.
+    before=previous.get('runtime',{'backend':'cuda','dtype':'bfloat16','mps_cpu_fallback':'0','mps_fast_math':'0'})
+    after=current['runtime']
+    keys=('backend','dtype','mps_cpu_fallback','mps_fast_math')
+    if any(before.get(key)!=after.get(key) for key in keys):
+        raise ValueError('Backend/dtype policy differs from frozen evidence; create a separate experiment')

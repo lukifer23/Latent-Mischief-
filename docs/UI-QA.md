@@ -1,5 +1,7 @@
 # Fresh-start workbench QA — 2026-11-06
 
+**Mac update, 2026-11-09:** 51 Python tests and Node comparison/startup/model-isolation checks pass on M3 Pro, including startup against the real loopback API. Four new MPS/BF16 paired HTTP cases pass; see [BACKEND-001](../experiments/BACKEND-001-mac-setup.md). Missing memory is no longer displayed as zero, catalog rebuild retains public cards, and absent raw-evidence buttons are disabled. No isolated browser tool was available; visual/keyboard/responsive QA below remains incomplete. No native desktop control was used.
+
 Status: clean server/API and script-initialization checks passed. **The requested visual end-to-end UI/UX test is incomplete.** No new workbench screenshot was accepted in this attempt, so this is a QA record rather than a completed screenshot-based design audit.
 
 The native Chrome attempt changed desktop focus and disrupted the user's other work. The user explicitly objected; all desktop/browser automation stopped. Future testing must use an isolated surface that does not touch their existing windows, or remain CLI/API/DOM-fixture-only. This preference is recorded in AGENTS.md. Do not repeat a native desktop attempt simply to complete the screenshot checklist below.

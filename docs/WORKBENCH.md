@@ -2,7 +2,7 @@
 
 ## Launch
 
-For dependency-light review, especially during a Mac handoff, use `uv run --no-project --python 3.11 --with psutil==7.2.2 python scripts/viewer.py --read-only`. This bypasses the CUDA project environment and rejects all POST routes, including inference and annotation writes. Tested headlessly on Windows; macOS/visual verification remains pending. See [HANDOFF.md](HANDOFF.md).
+For dependency-light review use `uv run --no-project --python 3.11 --with psutil==7.2.2 python scripts/viewer.py --read-only`. It rejects all POST routes, including inference and annotation writes. HTTP/API checks pass on Windows and Mac; visual verification remains pending. The full project environment supports short MPS inference; see [SETUP.md](SETUP.md).
 
 From the project directory:
 
@@ -15,13 +15,15 @@ Open http://127.0.0.1:8765 in your browser. No frontend build, administrator pri
 
 On Windows, you can also double-click **Start Workbench.cmd**, then open the printed URL. This uses the existing user-installed uv and the project environment.
 
+On Mac use **Start Workbench.command** or the CLI command. No browser opens automatically. CUDA peak memory and MPS current allocation have separate labels; missing metrics are unavailable, not zero. The 135 reviewed recipes survive a fresh-clone catalog rebuild. Old raw-evidence buttons are disabled when their run is absent; historical vector recipes still require their original artifacts.
+
 If the header stays at **Connecting** and every menu is empty, refresh after restarting the viewer when its Python routes change. A missing JavaScript asset previously stopped initialization before any data loaded. The server now serves all required scripts; startup failures display an error, and pending menus show disabled loading labels. Startup chooses a run with recorded replies, skipping performance-only entries. `node tests/test_ui_startup.js --live` exercises script initialization against the running server without GPU inference; this is a DOM fixture check, not visual browser QA.
 
 ## What works in this version
 
 - **Chat & Try** is the first workspace. Select LFM3-1.7B or Qwen3.5-0.8B in the header, choose an exact recipe, enter a prompt and run both replies. The unchanged control runs the same model twice. Each branch maintains its own conversation history; changing the model/recipe or choosing New conversation clears in-page history. Saved run files remain local. Reloading the page clears in-page chat history.
 - LFM3 recipes use reversible hooks on the pinned original weights; historical vector recipes require their local discovery artifacts. Hook implementation fingerprints are checked before applying a saved recipe. Qwen uses the pinned official base versus the separately downloaded published edit; LFM3 channel indices are never applied to Qwen. The published anti-loop edit is distinct from the 4B Evil Qwen recipe.
-- Live cards report actual input/output tokens, first-token latency, decode rate, peak allocated GPU memory and loading time. Model loading is separate from first-token latency. A worker retains one loaded checkpoint for up to 90 idle seconds; Qwen base/edit comparisons swap checkpoints and can require two loads. Stop terminates this server's worker and preserves saved/partial evidence. Windows virtualenv launcher children are included in worker tracking.
+- Live cards report actual input/output tokens, first-token latency, decode rate, backend-appropriate memory and loading time. Model loading is separate from first-token latency. A worker retains one checkpoint for up to 90 idle seconds; Qwen base/edit swaps can require two loads. Stop terminates this server's process tree, including Windows launcher children, preserving saved/partial evidence. It does not checkpoint KV/RNG state. Managed and live HTTP launches share a lock to keep them serial.
 - The header's model selection filters saved runs, recipes and context-performance results. Frozen batch designs remain LFM3-specific and are disabled under Qwen; Qwen interactive comparisons are recorded as runs. The Performance workspace shows completed context measurements, rather than extrapolating from chat speed.
 - **Saved Comparisons** provides default plus Edit A and optional Edit B/control, with word-change highlighting. **Persona Library** exposes stable recipe IDs, exact methodology, per-cohort differences and local nickname/evidence editing. Names are annotations, not automatic discoveries or scores. See [naming rules](PERSONAS.md).
 
