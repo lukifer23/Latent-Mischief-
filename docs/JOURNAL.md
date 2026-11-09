@@ -1,5 +1,13 @@
 # Research journal
 
+### 2026-11-09 — QWN-003 admission refused without loading weights
+
+Committed and pushed protocol/source as 18cf314 before the actual admission attempt. Run 20261109T200027330848Z-QWN-003-anti-loop-pilot stopped with ResourceLimitError / exit code 2 at stage starting. OS dispatch pressure was 2 (warning/urgent), available memory 4.085 GiB, existing swap 4.029 GiB, RSS 313.3 MiB, MPS driver allocation 8.47 MiB, no reported thermal warning. Available memory met its 4-GiB start floor, but independent pressure gate correctly refused. No weights loaded, no preflight/sanity/research tokens generated, no active trial, no completed summary. Cleanup records zero MPS tensor allocation and no retained model; process exited. No automatic retry, other-app changes or relaxed limits.
+
+Verified 24 archived source/input files and exported numeric admission/interruption/cleanup evidence with zero rows/pairs and both planned pairs marked missing. No model-quality conclusion or fresh benchmark claim. Fifty-eight Python tests, Node comparison/startup/model-isolation checks, syntax/lock/whitespace checks pass. New capped-run intermediate prefill/sampling remains implemented but unexecuted. Next actual research attempt should use a new timestamped directory with unchanged settings only after normal pressure and adequate headroom return; preserve this resource refusal and the interrupted Windows pilot separately.
+
+Final checks repeat all 58 Python tests and Node checks, validate local documentation/JSON targets and the exported predeclared commit. Restarted only the idle loopback viewer to load current Qwen labels; real-API DOM startup passes and QWN-003 appears as interrupted with zero replies. Inference remains idle; no automatic retry or background experiment is left running.
+
 ### 2026-11-09 — predeclare QWN-003 with resource limits
 
 User requested the next step while respecting system pressure. Prepared a separate MPS/BF16 follow-up on QWN-002's two lowest-level inspected problems, selected by original level/order. Hypothesis: an 8K output budget may permit a paired completion/final-answer difference. This is not fresh validation or continuation of the interrupted Windows pilot. Four planned samples in base-L1/edit-L1/edit-L2/base-L2 order; 32,768 research-token and 30-minute ceilings plus 32 sanity tokens. Exact sampling/prompt/model/dataset pins and grader retained. All new code/config/protocol will be committed before preflight or research generation.

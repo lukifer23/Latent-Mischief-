@@ -68,6 +68,7 @@ def collect(name):
     active=read(folder/'active.json') if interruption and interruption.get('active_trial') and (folder/'active.json').exists() else None
     partial={'trial':active['trial'],'output_tokens':len(active['token_ids']),'text_sha256':hashlib.sha256(active['text'].encode()).hexdigest()} if active else None
     return {'schema':1,'experiment':cfg['experiment_id'],'run':folder.name,'model':meta['model'],'config':cfg,'environment':meta['environment'],
+        'predeclared_commit':meta.get('git_commit'),
         'reporter_sha256':sha(Path(__file__)),'math_verify_version':meta['math_verify_version'],
         'source_hashes':meta['source_hashes'],'outputs_sha256':sha(folder/'outputs.json'),'preflight':preflight,
         'summary':summary,'interruption':interruption,'partial':partial,'resources':resources,

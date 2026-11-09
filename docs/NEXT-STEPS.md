@@ -2,6 +2,8 @@
 
 Updated 2026-11-09 after the [project review](REVIEW-2026-11-09.md) and [Mac setup](../experiments/BACKEND-001-mac-setup.md). The end goal is a local causal-behavior lab: discover reproducible effects, retain damage/no-effect cases, and build useful reversible controls. Hamster/villain characterization remains an exploratory application. Capability improvement has not been established.
 
+**Execution update:** [QWN-003](../experiments/QWN-003-mac-followup.md) is now predeclared and implemented. Its first admission attempt stopped before loading weights because macOS pressure was 2; 0/4 trajectories exist. The next action is to run the same config under normal pressure with at least 4 GiB available. No automatic retry, limit relaxation or Windows sample continuation. This resource refusal is not a model result.
+
 ## Current state
 
 The environment, platform-aware lock, CUDA/MPS/explicit-CPU adapter, pinned downloads, short LFM3/Qwen MPS inference, cache checks, Qwen seeded sampling and paired workbench API are implemented and checked on the M3 Pro. Long-context MPS behavior, a Mac anti-loop pilot, full CPU checkpoint inference and visual browser QA remain unverified. Python/Node checks pass; Windows dispatch is tested without claiming a new Windows hardware run.
@@ -13,7 +15,7 @@ QWN-002's evaluator, protocol, grader and full audit already exist. Its Windows 
 Question: under one MPS/BF16/reference-kernel setup, does the published edit improve paired completion/final-answer outcomes at a larger output budget? Short arithmetic success and reduced exact repetition do not answer this.
 
 1. Write a new experiment ID, report and config before generation. Keep both existing checkpoint revisions. Record hardware/runtime, attention, tokenizer/template, seed, temperature 0.6, top_p 0.95, top_k 20, output-only presence penalty 1.5, EOS and Math-Verify 0.9.0 rules. Reusing Windows problems is a labeled follow-up on inspected prompts, not fresh validation.
-2. Extend the evaluator CLI to accept the separately versioned protocol. Preserve QWN-002's frozen gate and unfinished-sample rejection. Check backend/dtype/source/environment on continuation; a lock hash alone does not identify a backend.
+2. Implemented: the evaluator accepts --config configs/qwen-mac-followup.json. QWN-002's frozen gate and unfinished-sample rejection remain; continuation checks backend/dtype/source/environment. The new bounded preflight and research paths still await safe admission on this machine.
 3. Proposed first budget: **two problems × two checkpoints × one seed**, 8,192 output tokens each, 32,768 total, 30 minutes cumulative wall time. Freeze the two inspected problem IDs and order before generation. This is a proposal, not an executed/predeclared study or a promise of completion on shared memory.
 4. Recheck loaded tensor digests, thinking template, short seed repeatability and cache predictions at start. Check intermediate input lengths before relying on a large output cache. Stop on OOM/non-finite logits, identity/source mismatch, scoring failure or budget exhaustion. Keep partial trajectories and missing pairs visible.
 5. Export paired correctness, EOS/cap, repetition, input/output counts, raw/source hashes, first-token/decode timings and honest MPS current-memory snapshots. Manually distinguish repetitive reasoning from legitimate structure. Publish negative results with the same care.

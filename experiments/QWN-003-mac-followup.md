@@ -1,6 +1,16 @@
 # QWN-003: resource-bounded Mac budget follow-up
 
-Status: predeclared, not yet executed. This protocol and implementation will be committed before model preflight or research generation. A resource admission refusal is a valid recorded stopping point, not a failed model answer. This is a new MPS experiment, not continuation of interrupted Windows QWN-002.
+Status: **admission attempted and refused by system pressure; 0/4 research trajectories, no model preflight or checkpoint loading**. Protocol/source were committed and pushed as **18cf314** before the attempt. This is a new MPS experiment, not continuation of interrupted Windows QWN-002.
+
+## Admission result — 2026-11-09
+
+Run `20261109T200027330848Z-QWN-003-anti-loop-pilot` exited with the intended resource-stop code 2 before loading either checkpoint. macOS reported pressure value **2**, versus the required normal value 1. Available memory was 4.085 GiB, existing swap 4.029 GiB, process RSS 313.3 MiB and MPS driver allocation 8.47 MiB; no thermal/performance warning was reported. Swap growth in this brief admission check was zero. The available-memory floor was met; the independent OS-pressure gate refused the run. Apple's [sysctl conversion](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/kern_memorystatus_notify.c) reports dispatch pressure levels; value 2 covers warning/urgent pressure, rather than normal. No pressure-setting command was used.
+
+The initial resource sample, interruption, empty outputs and cleanup are preserved locally. Cleanup reports zero MPS tensor allocation and no retained model; the process exited. There is no preflight/active-trial file and no completed-study summary. Both planned pairs are missing. **No model-answer, repetition, anti-loop, capability or timing result exists from this attempt.**
+
+[Numeric admission evidence](evidence/QWN-003/metrics.json) verifies all 24 archived source/input files and records the actual resource sample, zero saved rows and two missing pairs. Public export contains no generated traces. Fifty-eight Python tests and Node comparison/startup/model-isolation checks pass; guard boundaries, stop latching, partial-token preservation, paired schedules and empty-result exports are tested. Intermediate prefill/sampling under the new capped runner remains unexecuted because admission stopped first.
+
+No automatic retry was performed and limits were not loosened. The next action is a new timestamped attempt of this unchanged config when macOS returns to normal pressure and at least 4 GiB is available. Preserve this refusal. With no research sample begun, a later admission attempt is not a reroll; an active unfinished trajectory would still be protected against rerolling. Updated report text changes its current hash, so strict archived-source continuation of this directory is intentionally not implied.
 
 ## Question and hypothesis
 
