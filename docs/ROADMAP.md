@@ -19,6 +19,7 @@ Status: backlog / active / complete / blocked / inconclusive. Completion means a
 | LFM-009 | backlog | Useful controls | Concision, uncertainty, JSON reliability, tool selection. |
 | QWN-001 | active | Push Qwen3.5-0.8B to its limits | Base/edit pinned and edited tensors digest-verified; local arithmetic + conversation smoke pass. Anti-loop benchmarks and long context unverified. |
 | QWN-002 | inconclusive | Bounded thinking-on base/edit pilot | Evaluator implemented; predeclared aedb63b. User-stopped at 6/8 saved, two matched pairs, 832 partial tokens. No final-answer/completion benefit at 4K. Preserve Windows evidence; Mac follow-up needs a new protocol. |
+| QWN-003 | active | Resource-bounded MPS budget follow-up | Separately frozen two inspected problems, four paired 8K-cap trajectories, 30-minute maximum; admission/runtime memory, swap, thermal and allocator guards. No generation yet. See [protocol](../experiments/QWN-003-mac-followup.md). |
 | CPU-001 | backlog | Exact computation inside a model | Start with arithmetic or memory; later investigate Qwenputer. |
 | UI-001 | active | Local experiment workbench | Run history, comparisons, charts, controls, notes and logs implemented; API tests pass. Visual QA blocked by browser-tool limitation. |
 | UI-002 | active | Live interactive paired playground | Model selector, recipes, default/edit conversations and timing implemented; GPU/API smoke and DOM-fixture switching pass. Visual QA blocked. |

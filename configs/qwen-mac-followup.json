@@ -1,0 +1,81 @@
+{
+  "experiment_id": "QWN-003",
+  "dataset_revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be",
+  "manifest": ".cache/qwn003/problems.json",
+  "manifest_sha256": "be27e07a9c5f88521202b5108bd62403e1aac121853fe37334783417948aabcb",
+  "audit_sha256": "d9c0ac7d72c268f491cb3344c8ce67fa613cc33712d22aae13f5582635405c37",
+  "models": [
+    {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17"
+    },
+    {
+      "model_id": "RikiyaT/Qwen3.5-0.8B-weight-space-programming",
+      "revision": "d1671a178705bcab7644806d23c535517f35723b"
+    }
+  ],
+  "schedule": [
+    {
+      "condition": "baseline",
+      "prompt_id": "test/counting_and_probability/14.json",
+      "seed": 0
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/counting_and_probability/14.json",
+      "seed": 0
+    },
+    {
+      "condition": "published-checkpoint",
+      "prompt_id": "test/algebra/1349.json",
+      "seed": 0
+    },
+    {
+      "condition": "baseline",
+      "prompt_id": "test/algebra/1349.json",
+      "seed": 0
+    }
+  ],
+  "prompt_suffix": "\nPlease reason step by step, and put your final answer within \\boxed{}.",
+  "seed": 0,
+  "temperature": 0.6,
+  "top_p": 0.95,
+  "top_k": 20,
+  "presence_penalty": 1.5,
+  "max_new_tokens": 8192,
+  "total_generated_tokens": 32768,
+  "separate_preflight_token_budget": 32,
+  "wall_seconds": 1800,
+  "grader_timeout_seconds": 15,
+  "backend": "transformers-sdpa",
+  "dtype": "bfloat16",
+  "thinking": true,
+  "system": null,
+  "required_backend": "mps",
+  "scope": "Two inspected QWN-002 problems, separately frozen MPS/BF16 budget follow-up; not fresh validation or upstream benchmark reproduction.",
+  "cpu_threads": 2,
+  "resources": {
+    "sample_interval_seconds": 1,
+    "start_min_available_bytes": 4294967296,
+    "running_min_available_bytes": 2147483648,
+    "max_swap_growth_bytes": 268435456,
+    "max_process_rss_bytes": 4294967296,
+    "max_mps_driver_bytes": 4294967296,
+    "mps_memory_fraction": 0.25,
+    "minimum_disk_free_bytes": 5368709120,
+    "max_pressure_level": 1,
+    "require_no_thermal_warning": true,
+    "preflight_input_tokens": [
+      256,
+      1024,
+      2048
+    ],
+    "preflight_chunk_tokens": 256
+  },
+  "protocol_report": "experiments/QWN-003-mac-followup.md",
+  "selected_problem_ids": [
+    "test/counting_and_probability/14.json",
+    "test/algebra/1349.json"
+  ],
+  "manifest_selection": "QWN-003: reuse the two lowest-level problems from the already inspected QWN-002 selection. No fresh validation or outcome-based replacement."
+}

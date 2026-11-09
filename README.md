@@ -36,6 +36,8 @@ Recent research: [fresh replication](experiments/MAP-006-offset-replication.md),
 
 Latest milestone: [full project review](docs/REVIEW-2026-11-09.md) and [Mac setup evidence](experiments/BACKEND-001-mac-setup.md). Short MPS inference, cache/sampling checks and paired HTTP conversations work. The [QWN-002 Windows pilot](experiments/QWN-002-anti-loop-pilot.md) remains interrupted and separate; a larger Mac follow-up is planned, not run.
 
+Next protocol: [QWN-003](experiments/QWN-003-mac-followup.md), a separately frozen two-problem MPS follow-up with resource admission, allocator and cooperative-stop limits. Its implementation is tested; research generation has not started.
+
 ## Start here
 
 - **Switching devices?** Read [the handoff](docs/HANDOFF.md): interrupted Windows evidence, private raw-data transfer, Mac setup and verified scope.

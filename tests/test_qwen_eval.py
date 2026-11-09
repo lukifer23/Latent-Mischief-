@@ -23,6 +23,30 @@ class GradingTests(unittest.TestCase):
 
 
 class SamplingTests(unittest.TestCase):
+    def test_followup_schedule_requires_complete_pairs_and_frozen_mps_policy(self):
+        import copy,json
+        from qwen_eval import validate_design
+        from runtime import Runtime
+        cfg=json.loads((Path(__file__).resolve().parents[1]/'configs/qwen-mac-followup.json').read_text())
+        manifest={'problems':[{'unique_id':x} for x in dict.fromkeys(t['prompt_id'] for t in cfg['schedule'])]}
+        from unittest.mock import patch
+        with patch('platform.system',return_value='Darwin'):
+            validate_design(cfg,manifest,Runtime('mps','bfloat16'))
+            broken=copy.deepcopy(cfg);broken['schedule'][-1]=broken['schedule'][0]
+            with self.assertRaisesRegex(ValueError,'exactly once'):validate_design(broken,manifest,Runtime('mps','bfloat16'))
+            with self.assertRaisesRegex(ValueError,'MPS/BF16'):validate_design(cfg,manifest,Runtime('cpu','bfloat16'))
+
+    def test_streamer_preserves_the_current_token_before_resource_interruption(self):
+        import torch
+        from qwen_eval import Recorder
+        from resource_guard import ResourceLimitError
+        from unittest.mock import Mock
+        def stop():raise ResourceLimitError('pressure')
+        selected=Mock()
+        recorder=Recorder(Mock(),lambda tokens,text:None,selected,stop)
+        recorder.put(torch.tensor([[1,2]]))
+        with self.assertRaises(ResourceLimitError):recorder.put(torch.tensor([7]))
+        self.assertEqual(recorder.tokens,[7])
     def test_saved_schedule_prefix_rejects_duplicate_or_changed_trials(self):
         from qwen_eval import validate_prefix
         schedule=[{'condition':c,'prompt_id':'p','seed':0} for c in ['baseline','published-checkpoint']]

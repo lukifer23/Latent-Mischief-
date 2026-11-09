@@ -55,13 +55,26 @@ def collect(name):
             'tokens':{'baseline':base['output_tokens'],'edited':edited['output_tokens']}})
     summary=read(folder/'summary.json') if (folder/'summary.json').exists() else None
     if summary and (summary['generations']!=len(rows) or len(rows)!=len(cfg['schedule'])):raise ValueError('Completed schedule count mismatch')
-    return {'schema':1,'experiment':'QWN-002','run':folder.name,'model':meta['model'],'config':cfg,'environment':meta['environment'],
+    preflight=read(folder/'preflight.json') if (folder/'preflight.json').exists() else {}
+    if cfg['experiment_id']=='QWN-003':
+        preflight={condition:{k:v for k,v in item.items() if k not in ['samples','sample_messages','sample_token_ids','intermediate_prefill','sample_settings']} for condition,item in preflight.items()}
+        if summary:summary={**summary,'preflight_checks':preflight}
+    resources=[]
+    if (folder/'resources.jsonl').exists():
+        for line in (folder/'resources.jsonl').read_text().splitlines():
+            row=json.loads(line)
+            resources.append({k:v for k,v in row.items() if k not in ['thermal_report','monotonic_seconds']})
+    interruption=read(folder/'interruption.json') if (folder/'interruption.json').exists() else None
+    active=read(folder/'active.json') if interruption and interruption.get('active_trial') and (folder/'active.json').exists() else None
+    partial={'trial':active['trial'],'output_tokens':len(active['token_ids']),'text_sha256':hashlib.sha256(active['text'].encode()).hexdigest()} if active else None
+    return {'schema':1,'experiment':cfg['experiment_id'],'run':folder.name,'model':meta['model'],'config':cfg,'environment':meta['environment'],
         'reporter_sha256':sha(Path(__file__)),'math_verify_version':meta['math_verify_version'],
-        'source_hashes':meta['source_hashes'],'outputs_sha256':sha(folder/'outputs.json'),'preflight':read(folder/'preflight.json'),
-        'summary':summary,'interruption':read(folder/'interruption.json') if (folder/'interruption.json').exists() else None,
+        'source_hashes':meta['source_hashes'],'outputs_sha256':sha(folder/'outputs.json'),'preflight':preflight,
+        'summary':summary,'interruption':interruption,'partial':partial,'resources':resources,
+        'cleanup':read(folder/'cleanup.json') if (folder/'cleanup.json').exists() else None,
         'rows':rows,'pairs':pairs,'missing_or_wall_interrupted_pairs':missing,
         'verification':{'source_files':len(meta['source_hashes']),'regraded_rows':len(rows),'matched_tokenized_pairs':len(pairs)},
-        'limits':'Four stratified problems, one sample per checkpoint; 4096 cap and Transformers/reference kernels differ from upstream. No benchmark percentage replication or speedup claim.'}
+        'limits':cfg.get('scope','Four stratified problems, one sample per checkpoint; 4096 cap/reference kernels differ from upstream. No benchmark percentage replication or speedup claim.')}
 
 
 def plot(data,destination):
@@ -86,7 +99,7 @@ def plot(data,destination):
         if key=='output_tokens':ax.axhline(data['config']['max_new_tokens'],linestyle=':',color='#b74c33',label='output cap')
         ax.legend(fontsize=8)
     state='Completed' if data['summary'] else 'Interrupted / partial'
-    fig.suptitle(f"QWN-002 · {state} · {len(data['rows'])}/8 saved · {len(data['pairs'])} matched pairs")
+    fig.suptitle(f"{data['experiment']} · {state} · {len(data['rows'])}/{len(data['config']['schedule'])} saved · {len(data['pairs'])} matched pairs")
     fig.supxlabel('A cap is not automatically a reasoning loop; EOS is not correctness. No benchmark or speedup claim.',fontsize=9)
     for extension in ['png','svg']:
         path=destination/f'comparisons.{extension}'
@@ -97,7 +110,7 @@ def plot(data,destination):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('run');args=parser.parse_args()
-    data=collect(args.run);destination=lab.ROOT/'experiments/evidence/QWN-002';destination.mkdir(exist_ok=True)
+    data=collect(args.run);destination=lab.ROOT/'experiments/evidence'/data['experiment'];destination.mkdir(exist_ok=True)
     lab.write_json(destination/'metrics.json',data);plot(data,destination)
     print(json.dumps({'verification':data['verification'],'missing_pairs':data['missing_or_wall_interrupted_pairs'],
         'rows':[{k:r[k] for k in ['condition','level','output_tokens','correct','termination','repeated_fourgram_fraction']} for r in data['rows']]},indent=2))

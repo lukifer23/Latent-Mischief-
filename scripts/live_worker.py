@@ -20,6 +20,10 @@ def read(path): return json.loads(path.read_text(encoding='utf-8'))
 
 class Models:
     def __init__(self): self.loaded=None; self.model=None; self.tokenizer=None
+    def release(self):
+        selected=runtime.for_model(self.model) if self.model is not None else None
+        self.loaded=None; self.model=None; self.tokenizer=None; gc.collect()
+        if selected:selected.empty_cache()
     def load(self,spec,attention):
         import torch
         selected=runtime.select()
