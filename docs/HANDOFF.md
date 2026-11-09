@@ -1,6 +1,6 @@
 # Device handoff — 2026-11-06
 
-**2026-11-09 update:** Mac setup and short MPS inference are verified. Current priority is [LFM-010 phase timing](../experiments/LFM-010-phase-timing.md), implemented/offline tested with MPS research execution pending normal pressure and 7 GiB available. QWN-003's first admission refused before loading weights; it stays separate. All project services remain stopped. Read [the review](REVIEW-2026-11-09.md), [current setup](SETUP.md), [BACKEND-001](../experiments/BACKEND-001-mac-setup.md) and [next steps](NEXT-STEPS.md). The interrupted Windows state below remains unchanged. Raw Windows runs/transfer ZIP were absent from this clone; no historical raw regrading was claimed on Mac.
+**2026-11-09 update:** Mac setup and short MPS inference are verified. Current priority is [LFM-010 phase timing](../experiments/LFM-010-phase-timing.md), implemented/offline tested; its first admission refused before loading weights at 6.395 GiB estimated available (0/54 replies). MPS research execution still requires normal pressure and 7 GiB available inside the initialized runner. QWN-003's first admission refused before loading weights; it stays separate. All project services remain stopped. Read [the review](REVIEW-2026-11-09.md), [current setup](SETUP.md), [BACKEND-001](../experiments/BACKEND-001-mac-setup.md) and [next steps](NEXT-STEPS.md). The interrupted Windows state below remains unchanged. Raw Windows runs/transfer ZIP were absent from this clone; no historical raw regrading was claimed on Mac.
 
 ## Read this first
 

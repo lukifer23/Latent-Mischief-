@@ -1,6 +1,6 @@
 # LFM-010: when does a sparse character intervention act?
 
-Status: **implemented and verified offline; MPS research execution pending**. No LFM3 weight loading, calibration or research generation in this experiment yet. Existing MPS compatibility evidence is BACKEND-001. The protocol and implementation must be committed before inference. QWN-003 remains a separate, resource-refused study.
+Status: **implemented and verified offline; first admission refused before model loading; MPS research execution pending**. No LFM3 weight loading, calibration or research generation in this experiment yet. Existing MPS compatibility evidence is BACKEND-001. The protocol and implementation must be committed before inference. QWN-003 remains a separate, resource-refused study.
 
 ## Question and fixed choice
 
@@ -94,3 +94,13 @@ Local evidence includes source snapshots, predeclared commit, config, trial orde
 Offline checks cover one-token prefill, full prompt positions, exact prefill/decode/all placement, one-token EOS with no decode intervention, invalid decode shapes, zero offsets, exception cleanup and unchanged weights/inputs. Tiny randomly initialized CPU Hugging Face models verify that streaming matches ordinary generation and resource cancellation retains the actual generated token; these are test models, not LFM3 results. Report tests reject duplicated schedule rows, changed cohort labels, wrong-phase intervention traces and incorrect intervened-position counts, keep manual review pending, require complete unique ratings, and block a nomination after an individual format loss. A separate primary-comparison test rejects ties with both-phase steering and completion losses against both. The planner is tested in a separate process to confirm it imports no torch.
 
 The initial read-only host check reported elevated pressure 2 and about 3.75 GiB available, below this experiment's start floor. No LFM3 research run or automatic retry was attempted while building. Real MPS calibration, phase neutrality and the 54-reply campaign remain unverified until the guarded run is admitted. Services remain shut down after implementation; the CLI plan is available without loading weights.
+
+## 2026-11-09: first admission attempt
+
+Predeclared implementation/protocol commit: `293992b`. Run `20261109T214535812054Z-LFM-010-phase-timing` exited 2 with `ResourceLimitError` at stage `starting`: **0/54 replies**, no active trial, no model identity check, no weights loaded, no calibration and no completed summary. The frozen hypothesis and settings are unchanged; this is a host-resource observation, not a model result.
+
+A separate lightweight check reported 7.2765 GiB estimated available memory and normal pressure. At the actual initialized runner's admission snapshot, available memory was **6.3949 GiB**, below the unchanged 7-GiB floor; pressure remained 1, thermal warning false, existing swap 1.9442 GiB, swap growth zero, process RSS 313.156 MiB and MPS driver allocation 8.469 MiB. The snapshot difference cannot be attributed wholly to runner initialization: its RSS is only part of the change, and other workloads/caches can change between measurements. Available memory here is psutil's macOS inactive-plus-free estimate, not empty physical RAM or guaranteed allocatable model space.
+
+Cleanup recorded zero MPS tensor allocation and 0.469 MiB residual driver allocation, with the model reference absent; the process exited. The verifier checked all 22 archived source/input files, the complete frozen schedule and zero-row prefix. Reviewed numeric evidence is in [metrics.json](evidence/LFM-010/metrics.json); raw telemetry/source snapshots remain local. No scientific quality/style inference or human-rating result exists, and review is not applicable to this zero-output attempt. No automatic retry, relaxed limit, viewer restart or other-app termination occurred.
+
+The next run needs the same 7-GiB gate **after runtime initialization**, with normal pressure and all other original limits. Releasing unused application memory is relevant; deleting package/model files does not supply equivalent RAM headroom. A later attempt uses a new timestamped directory and preserves this refusal.

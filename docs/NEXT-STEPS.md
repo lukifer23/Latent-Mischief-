@@ -2,7 +2,7 @@
 
 Updated 2026-11-09 after the [project review](REVIEW-2026-11-09.md) and [Mac setup](../experiments/BACKEND-001-mac-setup.md). The end goal is a local causal-behavior lab: discover reproducible effects, retain damage/no-effect cases, and build useful reversible controls. Hamster/villain characterization remains an exploratory application. Capability improvement has not been established.
 
-**Current direction:** build and run [LFM-010 phase timing](../experiments/LFM-010-phase-timing.md) when resources permit. The offline implementation and tests are complete; the research run is not started. [QWN-003](../experiments/QWN-003-mac-followup.md) remains a separate zero-trajectory resource refusal. No automatic retry or service is scheduled.
+**Current direction:** build and run [LFM-010 phase timing](../experiments/LFM-010-phase-timing.md) when resources permit. The offline implementation and tests are complete; the first admission attempt refused before loading weights (0/54 replies). [QWN-003](../experiments/QWN-003-mac-followup.md) remains a separate zero-trajectory resource refusal. No automatic retry or service is scheduled.
 
 ## Current state
 
@@ -31,7 +31,7 @@ flowchart LR
 4. **Review honestly — pending:** recompute scores, verify exact full-product schedule and actual phase traces, then rate the 24 shuffled behavioral replies for style/coherence/task relevance. The first reply token comes from prefill; decode-only begins with the next forward. Preserve ambiguous grades, individual regressions, caps and no-effect cases.
 5. **Decide before expanding:** primary timing comparison is decode-only versus both, requiring clearer coherent villain characterization over both and a stronger villain-minus-random count without task/EOS loss. Prefill comparison is exploratory. A promising result nominates a separately frozen fresh replication; it does not establish a personality neuron or capability improvement. A negative result is a valid completed milestone.
 
-The first read-only host check during implementation still showed elevated pressure with about 3.75 GiB available. No LFM3 model was loaded and no service was started. The next safe action now is reviewing the offline plan; actual MPS calibration/phase checks and the campaign remain unverified.
+The first actual admission attempt is preserved as `20261109T214535812054Z-LFM-010-phase-timing`: normal pressure, but 6.395 GiB estimated available after runtime initialization against the 7-GiB floor; 0/54 replies, no weights loaded. An earlier lightweight snapshot showed 7.28 GiB, illustrating why admission must run inside the actual process. The runner used about 313 MiB RSS, so its initialization does not explain the whole snapshot change. Available memory includes inactive pages; it is not empty RAM. Release unused application memory before another explicitly initiated attempt; keep the same limits and use a new directory. No automatic retry or UI startup. MPS calibration/phase checks remain unverified.
 
 ## Then: expand only from the result
 
