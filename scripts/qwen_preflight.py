@@ -31,8 +31,9 @@ def bounded_prefill(model, tokenizer, policy, check, emit):
             for start in range(0, length, policy['preflight_chunk_tokens']):
                 check()
                 end = min(start + policy['preflight_chunk_tokens'], length)
-                out = model(input_ids=ids[:, start:end], past_key_values=cache, use_cache=True,
-                            attention_mask=torch.ones((1, end), device=model.device, dtype=torch.long), logits_to_keep=1)
+                # Batch of one without padding: omit attention_mask. After a generate() call, Qwen3.5's multimodal
+                # wrapper derives position ids from a full-length mask and mismatches the chunk (verified on real weights).
+                out = model(input_ids=ids[:, start:end], past_key_values=cache, use_cache=True, logits_to_keep=1)
                 cache = out.past_key_values
             cached = out.logits[0, -1].float()
             record = {'input_tokens': length, 'input_token_ids': tokens,
