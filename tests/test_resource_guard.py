@@ -100,3 +100,18 @@ class CudaPolicyTests(unittest.TestCase):
         self.assertIsNone(cuda_thermal_warning(head+'40, [N/A], Not Active, Not Active, Not Active'))
         self.assertIsNone(cuda_thermal_warning(head+'40, Not Active'))
         self.assertIsNone(cuda_thermal_warning(''))
+
+
+class RealTelemetryTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == 'win32', 'native Windows CUDA telemetry')
+    def test_real_cuda_snapshot_accepts_path_roots_on_windows(self):
+        import torch
+        if not torch.cuda.is_available():
+            self.skipTest('no CUDA device')
+        import runtime
+        from resource_guard import snapshot
+        with tempfile.TemporaryDirectory() as tmp:
+            row=snapshot(Path(tmp),runtime.select('cuda'))
+        self.assertIsInstance(row['thermal_warning'],bool)
+        self.assertGreater(row['gpu_free_bytes'],0)
+        self.assertGreater(row['disk_free_bytes'],0)

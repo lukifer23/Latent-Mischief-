@@ -59,7 +59,7 @@ def cuda_snapshot(root, selected, thermal=None):
     return {'monotonic_seconds': time.perf_counter(), 'available_bytes': memory.available,
             'swap_used_bytes': psutil.swap_memory().used, 'process_rss_bytes': psutil.Process().memory_info().rss,
             'pressure_level': None, 'thermal_warning': cuda_thermal_warning(thermal), 'thermal_report': thermal,
-            'disk_free_bytes': psutil.disk_usage(root).free, 'gpu_free_bytes': free, 'gpu_total_bytes': total,
+            'disk_free_bytes': psutil.disk_usage(str(root)).free, 'gpu_free_bytes': free, 'gpu_total_bytes': total,
             **selected.memory()}
 
 
@@ -75,7 +75,7 @@ def snapshot(root, selected, thermal=None):
     return {'monotonic_seconds': time.perf_counter(), 'available_bytes': memory.available,
             'swap_used_bytes': psutil.swap_memory().used, 'process_rss_bytes': psutil.Process().memory_info().rss,
             'pressure_level': int(pressure.stdout.strip()), 'thermal_warning': thermal_warning(thermal),
-            'thermal_report': thermal, 'disk_free_bytes': psutil.disk_usage(root).free, **selected.memory()}
+            'thermal_report': thermal, 'disk_free_bytes': psutil.disk_usage(str(root)).free, **selected.memory()}
 
 
 def violation(row, policy, initial_swap, *, starting=False):
