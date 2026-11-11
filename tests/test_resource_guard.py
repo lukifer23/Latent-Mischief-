@@ -71,7 +71,7 @@ class ResourceTests(unittest.TestCase):
 class CudaPolicyTests(unittest.TestCase):
     def policy(self):
         import json
-        return json.loads((Path(__file__).resolve().parents[1]/'configs/lfm-phase-timing-cuda.json').read_text())['resources']|{'backend':'cuda'}
+        return json.loads((Path(__file__).resolve().parents[1]/'configs/lfm-phase-timing-cuda.json').read_text())['resources']
 
     def healthy(self):
         return {'available_bytes':30*2**30,'pressure_level':None,'thermal_warning':False,'swap_used_bytes':2**30,
@@ -80,7 +80,7 @@ class CudaPolicyTests(unittest.TestCase):
 
     def test_cuda_policy_has_no_pressure_level_but_enforces_ram_gpu_thermal_and_disk(self):
         policy=self.policy();row=self.healthy()
-        self.assertTrue(policy['cuda_memory_fraction']<=.5)
+        self.assertEqual(policy['backend'],'cuda');self.assertTrue(policy['cuda_memory_fraction']<=.5)
         self.assertIsNone(violation(row,policy,row['swap_used_bytes'],starting=True))
         for change in [{'available_bytes':8*2**30},{'thermal_warning':None},{'thermal_warning':True},
                        {'peak_gpu_reserved_bytes':8*2**30},{'peak_gpu_reserved_bytes':None},

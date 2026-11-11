@@ -42,6 +42,7 @@
   "wall_seconds": 480,
   "cpu_threads": 2,
   "resources": {
+    "backend": "cuda",
     "sample_interval_seconds": 1,
     "start_min_available_bytes": 12884901888,
     "running_min_available_bytes": 6442450944,
