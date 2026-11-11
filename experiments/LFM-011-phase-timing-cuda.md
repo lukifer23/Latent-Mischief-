@@ -28,13 +28,13 @@ uv run --locked python scripts/phase_report.py RUN-ID
 uv run --locked python scripts/phase_report.py RUN-ID --blind-review
 ```
 
-Reviewed metrics publish to `experiments/evidence/LFM-011/` only after human ratings exist. Until then the report states **manual review required**; no persona verdict is inferred from vocabulary hits.
+Numeric metrics were published to `experiments/evidence/LFM-011/` before human ratings existed, with `manual_review` stating **required**; re-publish with `--ratings` after review. No persona verdict is inferred from vocabulary hits.
 
 ## Evidence status
 
-- Implemented: backend-aware runner/report/guard (default MPS behavior unchanged), CUDA resource policy, CUDA thermal parser.
-- Verified offline: unit tests for the CUDA policy and thermal parsing (see JOURNAL).
-- Not yet verified: CUDA calibration within tolerance, phase neutrality on real LFM3 weights, the 54-reply campaign, any behavioral result.
+- Implemented and verified: backend-aware runner/report/guard (default MPS behavior unchanged), CUDA resource policy, CUDA thermal parser, real-snapshot Windows test (75 tests pass).
+- Verified on real LFM3 weights (CUDA): calibration within tolerance, phase neutrality/removal checks, full 54-reply schedule and traces.
+- Pending: blinded human style review. Behavioral reading below is the author's direct observation, not a rating.
 
 ## 2026-11-11: results (run `20261111T162206863981Z-LFM-011-phase-timing`)
 
