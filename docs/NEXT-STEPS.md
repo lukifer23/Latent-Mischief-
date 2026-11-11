@@ -2,7 +2,9 @@
 
 Updated 2026-11-09 after the [project review](REVIEW-2026-11-09.md) and [Mac setup](../experiments/BACKEND-001-mac-setup.md). The end goal is a local causal-behavior lab: discover reproducible effects, retain damage/no-effect cases, and build useful reversible controls. Hamster/villain characterization remains an exploratory application. Capability improvement has not been established.
 
-**Current direction:** build and run [LFM-010 phase timing](../experiments/LFM-010-phase-timing.md) when resources permit. The offline implementation and tests are complete; the first admission attempt refused before loading weights (0/54 replies). [QWN-003](../experiments/QWN-003-mac-followup.md) remains a separate zero-trajectory resource refusal. No automatic retry or service is scheduled.
+**Update 2026-11-11:** LFM-011 (the LFM-010 design on native Windows CUDA) completed 54/54 with a likely negative result; see [LFM-011](../experiments/LFM-011-phase-timing-cuda.md). The Mac LFM-010 run is no longer needed for the primary question.
+
+**Earlier direction:** build and run [LFM-010 phase timing](../experiments/LFM-010-phase-timing.md) when resources permit. The offline implementation and tests are complete; the first admission attempt refused before loading weights (0/54 replies). [QWN-003](../experiments/QWN-003-mac-followup.md) remains a separate zero-trajectory resource refusal. No automatic retry or service is scheduled.
 
 ## Current state
 
