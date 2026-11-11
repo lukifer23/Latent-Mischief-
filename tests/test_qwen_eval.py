@@ -77,3 +77,22 @@ class SamplingTests(unittest.TestCase):
         logits=torch.tensor([values],dtype=torch.float64);ids=torch.tensor([[0]])
         for warper in [TemperatureLogitsWarper(temperature),TopKLogitsWarper(k),TopPLogitsWarper(p)]:logits=warper(ids,logits)
         torch.testing.assert_close(logits.softmax(-1),torch.tensor([expected],dtype=torch.float64))
+
+
+class CudaFollowupTests(unittest.TestCase):
+    def test_qwn004_is_cuda_only_and_keeps_the_frozen_budget(self):
+        import copy,json
+        from qwen_eval import validate_design
+        from runtime import Runtime
+        from unittest.mock import patch
+        cfg=json.loads((Path(__file__).resolve().parents[1]/'configs/qwen-cuda-followup.json').read_text())
+        manifest={'problems':[{'unique_id':x} for x in dict.fromkeys(t['prompt_id'] for t in cfg['schedule'])]}
+        with patch('sys.platform','win32'):
+            validate_design(cfg,manifest,Runtime('cuda','bfloat16'))
+            with self.assertRaisesRegex(ValueError,'CUDA/BF16'):validate_design(cfg,manifest,Runtime('mps','bfloat16'))
+            with self.assertRaisesRegex(ValueError,'CUDA/BF16'):validate_design(cfg,manifest,Runtime('cuda','float16'))
+            for key,value in [('max_new_tokens',4096),('wall_seconds',1800)]:
+                broken=copy.deepcopy(cfg);broken[key]=value
+                with self.assertRaises(ValueError):validate_design(broken,manifest,Runtime('cuda','bfloat16'))
+        with patch('sys.platform','darwin'):
+            with self.assertRaisesRegex(ValueError,'CUDA/BF16'):validate_design(cfg,manifest,Runtime('cuda','bfloat16'))

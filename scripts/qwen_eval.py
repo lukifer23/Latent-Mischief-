@@ -120,6 +120,16 @@ def validate_design(cfg, manifest, selected):
             raise ValueError('QWN-003 frozen backend/token budget changed')
         if cfg['wall_seconds'] != 1800 or len(manifest['problems']) != 2:
             raise ValueError('QWN-003 requires two problems and a 30-minute ceiling')
+    elif cfg['experiment_id'] == 'QWN-004':
+        import sys
+        if sys.platform != 'win32' or selected.backend != 'cuda' or selected.dtype_name != 'bfloat16':
+            raise ValueError('QWN-004 requires the separately frozen native Windows CUDA/BF16 runtime')
+        if cfg['required_backend'] != 'cuda' or cfg['resources'].get('backend') != 'cuda':
+            raise ValueError('QWN-004 requires the CUDA resource policy')
+        if cfg['max_new_tokens'] != 8192 or cfg['total_generated_tokens'] != 32768:
+            raise ValueError('QWN-004 frozen token budget changed')
+        if cfg['wall_seconds'] != 3600 or len(manifest['problems']) != 2:
+            raise ValueError('QWN-004 requires two problems and a 60-minute ceiling')
     else:
         raise ValueError('Unknown versioned Qwen protocol')
     ids=[p['unique_id'] for p in manifest['problems']]
@@ -196,8 +206,12 @@ def main():
     if cfg.get('resources'):
         torch.set_num_threads(cfg['cpu_threads'])
         torch.set_num_interop_threads(1)
-        os.nice(10)
-        torch.mps.set_per_process_memory_fraction(cfg['resources']['mps_memory_fraction'])
+        if cfg['resources'].get('backend') == 'cuda':
+            psutil.Process().nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
+            torch.cuda.set_per_process_memory_fraction(cfg['resources']['cuda_memory_fraction'], selected.device)
+        else:
+            os.nice(10)
+            torch.mps.set_per_process_memory_fraction(cfg['resources']['mps_memory_fraction'])
     current_environment=lab.environment()
     schedule=cfg['schedule']
     outputs=[]
@@ -222,7 +236,9 @@ def main():
             'git_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=lab.ROOT,text=True).strip(),
             'process_nice':psutil.Process().nice(),'torch_cpu_threads':torch.get_num_threads(),
             'scope':cfg.get('scope','Four-problem sampled Windows pilot; not exact upstream reproduction.')}
-        if cfg.get('resources'):
+        if cfg.get('resources', {}).get('backend') == 'cuda':
+            metadata['cuda_allocator_limit_bytes'] = int(torch.cuda.get_device_properties(selected.device).total_memory * cfg['resources']['cuda_memory_fraction'])
+        elif cfg.get('resources'):
             metadata['mps_recommended_bytes']=torch.mps.recommended_max_memory()
             metadata['mps_allocator_limit_bytes']=int(metadata['mps_recommended_bytes']*cfg['resources']['mps_memory_fraction'])
         lab.write_json(folder/'metadata.json',metadata)
@@ -300,7 +316,7 @@ def main():
             resource_check()
             if guard:guard.stage='grading'
             scoring=grade(result['text'],problem['answer'],timeout=cfg['grader_timeout_seconds'])
-            result.update(trial,phase='probe',cohort='inspected-followup' if cfg['experiment_id']=='QWN-003' else 'pilot-math',
+            result.update(trial,phase='probe',cohort='inspected-followup' if cfg['experiment_id'] in ('QWN-003','QWN-004') else 'pilot-math',
                 prompt=prompt,system=None,expected_answer=problem['answer'],model_id=variants[trial['condition']]['model_id'],
                 revision=variants[trial['condition']]['revision'],grading=scoring,
                 measurements={'exact_math_match':scoring['correct'],'repeated_fourgram_fraction':repeated_fourgrams(result['token_ids'])},

@@ -29,7 +29,7 @@ def main():
     manifest={'dataset':repo,'revision':revision,'file':filename,'file_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
         'selection':'One problem each at levels 1,2,3,4: minimum SHA256 of 20261109:<unique_id>. No generated outcomes inspected.',
         'problems':selected}
-    if cfg.get('experiment_id')=='QWN-003':
+    if cfg.get('experiment_id') in ('QWN-003','QWN-004'):
         lookup={x['unique_id']:x for x in selected}
         manifest['problems']=[lookup[key] for key in cfg['selected_problem_ids']]
         manifest['selection']=cfg['manifest_selection']

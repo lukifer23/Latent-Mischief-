@@ -56,7 +56,7 @@ def collect(name):
     summary=read(folder/'summary.json') if (folder/'summary.json').exists() else None
     if summary and (summary['generations']!=len(rows) or len(rows)!=len(cfg['schedule'])):raise ValueError('Completed schedule count mismatch')
     preflight=read(folder/'preflight.json') if (folder/'preflight.json').exists() else {}
-    if cfg['experiment_id']=='QWN-003':
+    if cfg['experiment_id'] in ('QWN-003','QWN-004'):
         preflight={condition:{k:v for k,v in item.items() if k not in ['samples','sample_messages','sample_token_ids','intermediate_prefill','sample_settings']} for condition,item in preflight.items()}
         if summary:summary={**summary,'preflight_checks':preflight}
     resources=[]
