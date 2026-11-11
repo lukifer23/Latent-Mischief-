@@ -107,7 +107,7 @@ def run(plan):
         guard.stage = 'loading model'
         model, tokenizer = lab.load()
         guard.check()
-        if model.config.model_type != 'lfm3' or model.generation_config.num_beams != 1:
+        if model.config.model_type != 'lfm3' or model.generation_config.num_beams not in (None, 1):
             raise ValueError('Unexpected model or beam policy')
         versions = {name: p._version for name, p in model.named_parameters()}
         write_json(folder / 'generation-defaults.json', {**model.generation_config.to_dict(),
