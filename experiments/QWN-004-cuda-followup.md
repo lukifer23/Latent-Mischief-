@@ -1,6 +1,6 @@
 # QWN-004: Qwen3.5-0.8B base vs published edit, 8K budget, native Windows CUDA
 
-Status: **implemented; admission/run pending at the time of writing** (see the results section if present). This is a new CUDA experiment. It is not a continuation of the interrupted Windows QWN-002 and is not pooled with the Mac-targeted, resource-refused [QWN-003](QWN-003-mac-followup.md).
+Status: **complete (4/4 at 8K, verified). No completion or correctness benefit observed; edit shows lower repetition only.** This is a new CUDA experiment. It is not a continuation of the interrupted Windows QWN-002 and is not pooled with the Mac-targeted, resource-refused [QWN-003](QWN-003-mac-followup.md).
 
 ## Question and scope
 
@@ -21,3 +21,20 @@ uv run --locked python scripts/qwen_report.py RUN-ID
 ```
 
 No automatic retry, dose or budget escalation, rerolling of an unfinished trajectory, or exact KV/RNG continuation. A resource/wall stop preserves partial tokens as interrupted, never as a complete pair.
+
+## 2026-11-11: results (run `20261111T163309240974Z-QWN-004-anti-loop-pilot`)
+
+Predeclared at `b01f997`. Runtime-only fixes before the completed run (`eeef1ff` audit digest pin, then the preflight fix below); protocol, prompts, sampling and limits unchanged. **Complete: 4/4 trajectories, 32,768 generated tokens, 1,280 s total** (about 316 s each, 25.9 decode tokens/s on the RTX 2000 Ada with the PyTorch reference fallbacks for the linear-attention kernels). Reporter verified 25 archived source files, regraded all 4 rows, matched actual tokenized inputs for both pairs, no missing pairs. Preflight checks (tensor digests, thinking template, seeded repeat, cached prefill at 256/1,024/2,048) passed.
+
+| Problem | Variant | Tokens | Termination | Boxed answer | Repeated 4-gram fraction |
+|---|---|---:|---|---|---:|
+| L1 counting/14 | base | 8,192 | output cap | none | 0.80 |
+| L1 counting/14 | edit | 8,192 | output cap | none | 0.62 |
+| L2 algebra/1349 | base | 8,192 | output cap | none | 0.68 |
+| L2 algebra/1349 | edit | 8,192 | output cap | none | 0.58 |
+
+**Observation.** All four trajectories reached the 8,192 cap with no final box and no EOS, so correctness and completion are 0/2 for both variants; the two top panels of the figure are blank because every value is zero. The edit's repeated-4-gram fraction is lower in both pairs (0.18 and 0.10 absolute), but the protocol states reduced repetition alone is insufficient and one seed on two inspected problems gives no significance estimate. The edit L2 trajectory contains one think-close marker yet still produced no box. **No completion or correctness benefit was observed at 8K**, extending the Windows 4K partial pilot (QWN-002) to a complete 8K pair; budgets, backend and seeds still differ across experiments, so nothing is pooled. Hypothesis, not observation: much larger budgets or different sampling might change completion; that would be a separately frozen experiment.
+
+## Preflight bug found (affects QWN-003 too)
+
+The first two attempts stopped before any trajectory: a wrong audit digest copied from the Mac config (no run directory, fails closed), then a crash in the chunked-prefill check. After `generate()`, Qwen3.5's multimodal wrapper builds position ids from a full-length attention mask, so passing `attention_mask` with a cache and a 256-token chunk raised a 256 vs 512 shape error. Reproduced on real weights and verified that omitting the mask (batch of one, no padding) matches direct prefill (argmax identical; max logit difference 0.1875). The QWN-003 Mac attempt never reached this check, so QWN-003 would have failed the same way; the fix is in `scripts/qwen_preflight.py` and applies to it once retried. Failed-attempt run directory: `20261111T162559293523Z-QWN-004-anti-loop-pilot` (0 trajectories).
