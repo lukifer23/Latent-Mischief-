@@ -39,7 +39,7 @@ def collect(folder):
         raise ValueError('Required source provenance is incomplete')
     if {k: meta['model'].get(k) for k in cfg['model']} != cfg['model']:
         raise ValueError('Recorded model differs from frozen identity')
-    if any(meta['environment']['runtime'].get(k) != v for k, v in {'backend': 'mps', 'dtype': 'bfloat16'}.items()):
+    if any(meta['environment']['runtime'].get(k) != v for k, v in {'backend': cfg.get('backend', 'mps'), 'dtype': 'bfloat16'}.items()):
         raise ValueError('Recorded backend/dtype differs from the protocol')
     if plan['config_sha256'] != meta['experiment_config_sha256'] or cfg != meta['experiment_config']:
         raise ValueError('Recorded config differs from its archive')
@@ -126,7 +126,7 @@ def collect(folder):
             'answer_pass': sum(x['task_score']['answer_match'] is True for x in scored),
             'answer_ungraded': sum(x['task_score']['answer_match'] is None for x in scored),
             'strict_pass': sum(x['task_score']['strict_format_match'] is True for x in scored), 'task_n': len(scored)})
-    return {'schema': 1, 'experiment': 'LFM-010', 'run': folder.name, 'model': meta['model'], 'config': cfg,
+    return {'schema': 1, 'experiment': cfg['experiment_id'], 'run': folder.name, 'model': meta['model'], 'config': cfg,
         'report_generator_sha256': sha(Path(__file__)),
         'environment': meta['environment'], 'predeclared_commit': meta['git_commit'], 'source_hashes': meta['source_hashes'],
         'outputs_sha256': sha(folder / 'outputs.json'), 'checks': checks, 'summary': summary, 'profiles': profiles,
@@ -152,7 +152,7 @@ def verify_profiles(profiles, plan):
             raise ValueError('Incomplete calibration screen')
         actual = statistics.mean(x['actual_fraction'] for x in row['screen'])
         if not math.isclose(actual, row['mean_actual_fraction'], abs_tol=1e-9) or abs(actual / cfg['target_fraction'] - 1) > cfg['calibration_tolerance_fraction']:
-            raise ValueError('MPS screen is outside the matched strength tolerance')
+            raise ValueError('Calibration screen is outside the matched strength tolerance')
 
 
 def review_results(data, outputs, ratings_path):
@@ -206,7 +206,7 @@ def review_results(data, outputs, ratings_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('run')
-    parser.add_argument('--publish', action='store_true', help='Write reviewed numeric metrics into experiments/evidence/LFM-010')
+    parser.add_argument('--publish', action='store_true', help='Write reviewed numeric metrics into experiments/evidence/<experiment>')
     parser.add_argument('--blind-review', action='store_true')
     parser.add_argument('--ratings', type=Path)
     args = parser.parse_args()
@@ -228,7 +228,7 @@ def main():
                        'task_relevance': ['does not answer', 'partly addresses request', 'answers the actual request']}})
     if args.ratings:
         data['manual_review'] = review_results(data, outputs, args.ratings)
-    destination = ROOT / 'experiments/evidence/LFM-010/metrics.json' if args.publish else folder / 'analysis.json'
+    destination = ROOT / 'experiments/evidence' / data['experiment'] / 'metrics.json' if args.publish else folder / 'analysis.json'
     write_json(destination, data)
     print(json.dumps({'destination': str(destination), 'verification': data['verification'], 'groups': data['groups'],
                       'manual_review': data['manual_review']}, indent=2))

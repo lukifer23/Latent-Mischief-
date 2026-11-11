@@ -100,7 +100,7 @@ def runs():
                        'model_key':metadata.get('model_key','lfm3'),'experiment':metadata.get('experiment'),'progress':progress,
                        "screen_conditions": len(read_json(folder / 'screening.json', [])) if 'CAL-' in folder.name else 0,
                        "status": "complete" if completed else "failed" if failed else ("interrupted" if (folder / 'interruption.json').is_file() else "partial"),
-                       "kind": "phase-timing" if metadata.get('experiment')=='LFM-010' else "qwen-pilot" if str(metadata.get('experiment','')).startswith('QWN-') else "live" if live else "performance" if "-PERF-" in folder.name else ("characters" if "CHAR-" in folder.name else ("calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))))})
+                       "kind": "phase-timing" if metadata.get('experiment') in ('LFM-010','LFM-011') else "qwen-pilot" if str(metadata.get('experiment','')).startswith('QWN-') else "live" if live else "performance" if "-PERF-" in folder.name else ("characters" if "CHAR-" in folder.name else ("calibration" if "CAL-" in folder.name else ("exploration" if "MAP-" in folder.name else ("personas" if "persona" in folder.name else "baseline"))))})
     return result
 
 

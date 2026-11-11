@@ -45,10 +45,11 @@ def run(plan):
     from verify_model import verify_identity
     from viewer import gpu_job_running
     cfg = plan['config']
+    backend = cfg.get('backend', 'mps')
     selected = runtime.select()
-    if sys.platform != 'darwin' or selected.backend != 'mps' or selected.dtype_name != 'bfloat16':
-        raise ValueError('This frozen experiment requires macOS MPS/BF16')
-    if selected.identity()['mps_cpu_fallback'] != '0' or selected.identity()['mps_fast_math'] != '0':
+    if selected.backend != backend or selected.dtype_name != 'bfloat16' or sys.platform != {'mps': 'darwin', 'cuda': 'win32'}[backend]:
+        raise ValueError('This frozen experiment requires ' + {'mps': 'macOS MPS', 'cuda': 'native Windows CUDA'}[backend] + '/BF16')
+    if backend == 'mps' and (selected.identity()['mps_cpu_fallback'] != '0' or selected.identity()['mps_fast_math'] != '0'):
         raise ValueError('Default math and no MPS CPU fallback are required')
     own = [os.getpid(), *[p.pid for p in psutil.Process().parents()]]
     if gpu_job_running(ignore_pids=own):
@@ -60,17 +61,23 @@ def run(plan):
         raise ValueError('Commit the frozen implementation, config and protocol before inference')
     torch.set_num_threads(cfg['cpu_threads'])
     torch.set_num_interop_threads(1)
-    os.nice(10)
-    torch.mps.set_per_process_memory_fraction(cfg['resources']['mps_memory_fraction'])
-    folder = lab.ROOT / 'runs' / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ') + '-LFM-010-phase-timing')
+    if backend == 'mps':
+        os.nice(10)
+        torch.mps.set_per_process_memory_fraction(cfg['resources']['mps_memory_fraction'])
+        allocator_limit = int(torch.mps.recommended_max_memory() * cfg['resources']['mps_memory_fraction'])
+    else:
+        psutil.Process().nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
+        torch.cuda.set_per_process_memory_fraction(cfg['resources']['cuda_memory_fraction'], selected.device)
+        allocator_limit = int(torch.cuda.get_device_properties(selected.device).total_memory * cfg['resources']['cuda_memory_fraction'])
+    folder = lab.ROOT / 'runs' / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ') + '-' + cfg['experiment_id'] + '-phase-timing')
     folder.mkdir()
     hashes = lab.archive_sources(folder, sources)
-    write_json(folder / 'metadata.json', {'experiment': 'LFM-010', 'model_key': 'lfm3', 'model': lab.config(),
+    write_json(folder / 'metadata.json', {'experiment': cfg['experiment_id'], 'model_key': 'lfm3', 'model': lab.config(),
         'environment': lab.environment(), 'experiment_config': cfg, 'experiment_config_path': plan['config_path'],
         'experiment_config_sha256': plan['config_sha256'],
         'source_hashes': hashes, 'git_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=lab.ROOT, text=True).strip(),
         'generation': {'do_sample': False, 'max_new_tokens': cfg['max_new_tokens'], 'seed': cfg['seed'], 'use_cache': True},
-        'mps_allocator_limit_bytes': int(torch.mps.recommended_max_memory() * cfg['resources']['mps_memory_fraction']),
+        'backend': backend, 'allocator_limit_bytes': allocator_limit,
         'process_nice': psutil.Process().nice(), 'cpu_threads': torch.get_num_threads(), 'scope': cfg['scope']})
     write_json(folder / 'trial-order.json', plan['schedule'])
     write_json(folder / 'outputs.json', [])
@@ -105,7 +112,7 @@ def run(plan):
         versions = {name: p._version for name, p in model.named_parameters()}
         write_json(folder / 'generation-defaults.json', {**model.generation_config.to_dict(),
             '_tokenizer_eos_token_id': tokenizer.eos_token_id})
-        guard.stage = 'MPS calibration'
+        guard.stage = backend.upper() + ' calibration'
         profiles = calibrate_profiles(model, tokenizer, plan, guard.check,
             lambda rows: write_json(folder / 'profiles.json', rows), folder)
         guard.check()

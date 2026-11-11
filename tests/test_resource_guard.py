@@ -66,3 +66,37 @@ class ResourceTests(unittest.TestCase):
             try:
                 with self.assertRaisesRegex(ResourceLimitError,'telemetry failed'):guard.check()
             finally:guard.close()
+
+
+class CudaPolicyTests(unittest.TestCase):
+    def policy(self):
+        import json
+        return json.loads((Path(__file__).resolve().parents[1]/'configs/lfm-phase-timing-cuda.json').read_text())['resources']|{'backend':'cuda'}
+
+    def healthy(self):
+        return {'available_bytes':30*2**30,'pressure_level':None,'thermal_warning':False,'swap_used_bytes':2**30,
+                'process_rss_bytes':3*2**30,'peak_gpu_reserved_bytes':4*2**30,'gpu_free_bytes':12*2**30,
+                'disk_free_bytes':50*2**30}
+
+    def test_cuda_policy_has_no_pressure_level_but_enforces_ram_gpu_thermal_and_disk(self):
+        policy=self.policy();row=self.healthy()
+        self.assertTrue(policy['cuda_memory_fraction']<=.5)
+        self.assertIsNone(violation(row,policy,row['swap_used_bytes'],starting=True))
+        for change in [{'available_bytes':8*2**30},{'thermal_warning':None},{'thermal_warning':True},
+                       {'peak_gpu_reserved_bytes':8*2**30},{'peak_gpu_reserved_bytes':None},
+                       {'gpu_free_bytes':5*2**30},{'gpu_free_bytes':None},{'process_rss_bytes':9*2**30},
+                       {'swap_used_bytes':row['swap_used_bytes']+300*2**20},{'disk_free_bytes':2**30}]:
+            self.assertIsNotNone(violation({**row,**change},policy,row['swap_used_bytes'],starting=True),change)
+        # the start-only floors relax while running
+        row.update(available_bytes=8*2**30,gpu_free_bytes=5*2**30)
+        self.assertIsNone(violation(row,policy,row['swap_used_bytes']))
+
+    def test_cuda_thermal_parser_fails_closed(self):
+        from resource_guard import cuda_thermal_warning
+        head='temperature.gpu, a, b, c, d\n'
+        self.assertFalse(cuda_thermal_warning(head+'40, Not Active, Not Active, Not Active, Not Active'))
+        self.assertTrue(cuda_thermal_warning(head+'86, Not Active, Not Active, Not Active, Not Active'))
+        self.assertTrue(cuda_thermal_warning(head+'40, Not Active, Active, Not Active, Not Active'))
+        self.assertIsNone(cuda_thermal_warning(head+'40, [N/A], Not Active, Not Active, Not Active'))
+        self.assertIsNone(cuda_thermal_warning(head+'40, Not Active'))
+        self.assertIsNone(cuda_thermal_warning(''))

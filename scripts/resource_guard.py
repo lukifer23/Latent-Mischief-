@@ -25,7 +25,47 @@ def thermal_warning(text):
     return False if levels and speeds else None
 
 
+def cuda_thermal_warning(text):
+    """Parse one `nvidia-smi --query-gpu=temperature.gpu,<throttle reasons>` CSV. Unknown fails closed."""
+    lines = [x for x in text.strip().splitlines() if x.strip()]
+    if len(lines) < 2:
+        return None
+    header = [x.strip() for x in lines[0].split(',')]
+    values = [x.strip() for x in lines[-1].split(',')]
+    if len(values) != len(header) or len(values) < 2:
+        return None
+    try:
+        temperature = float(values[0])
+    except ValueError:
+        return None
+    reasons = values[1:]
+    if any(x not in ('Active', 'Not Active') for x in reasons):
+        return None
+    return temperature >= 85 or any(x == 'Active' for x in reasons)
+
+
+NVIDIA_QUERY = ('temperature.gpu,clocks_throttle_reasons.hw_thermal_slowdown,clocks_throttle_reasons.sw_thermal_slowdown,'
+                'clocks_throttle_reasons.hw_slowdown,clocks_throttle_reasons.hw_power_brake_slowdown')
+
+
+def cuda_snapshot(root, selected, thermal=None):
+    """Windows/CUDA telemetry. There is no macOS-style pressure level; RAM, swap and GPU headroom are used."""
+    import torch
+    if thermal is None:
+        thermal = subprocess.run(['nvidia-smi', '--query-gpu=' + NVIDIA_QUERY, '--format=csv'], capture_output=True,
+                                 text=True, check=True, timeout=5).stdout
+    memory = psutil.virtual_memory()
+    free, total = torch.cuda.mem_get_info(selected.device)
+    return {'monotonic_seconds': time.perf_counter(), 'available_bytes': memory.available,
+            'swap_used_bytes': psutil.swap_memory().used, 'process_rss_bytes': psutil.Process().memory_info().rss,
+            'pressure_level': None, 'thermal_warning': cuda_thermal_warning(thermal), 'thermal_report': thermal,
+            'disk_free_bytes': psutil.disk_usage(root).free, 'gpu_free_bytes': free, 'gpu_total_bytes': total,
+            **selected.memory()}
+
+
 def snapshot(root, selected, thermal=None):
+    if selected is not None and selected.backend == 'cuda':
+        return cuda_snapshot(root, selected, thermal)
     pressure = subprocess.run(['/usr/sbin/sysctl', '-n', 'kern.memorystatus_vm_pressure_level'],
                               capture_output=True, text=True, check=True, timeout=2)
     if thermal is None:
@@ -40,7 +80,8 @@ def snapshot(root, selected, thermal=None):
 
 def violation(row, policy, initial_swap, *, starting=False):
     minimum = policy['start_min_available_bytes' if starting else 'running_min_available_bytes']
-    if row['pressure_level'] != policy['max_pressure_level']:
+    cuda = policy.get('backend') == 'cuda'
+    if not cuda and row['pressure_level'] != policy['max_pressure_level']:
         return 'macOS memory pressure is elevated or unknown'
     if policy['require_no_thermal_warning'] and row['thermal_warning'] is not False:
         return 'thermal/performance warning or unavailable thermal telemetry'
@@ -50,7 +91,12 @@ def violation(row, policy, initial_swap, *, starting=False):
         return 'system swap growth exceeds the frozen allowance'
     if row['process_rss_bytes'] > policy['max_process_rss_bytes']:
         return 'process RSS exceeds the frozen ceiling'
-    if row['mps_driver_allocated_bytes'] is None or row['mps_driver_allocated_bytes'] > policy['max_mps_driver_bytes']:
+    if cuda:
+        if row.get('peak_gpu_reserved_bytes') is None or row['peak_gpu_reserved_bytes'] > policy['max_cuda_reserved_bytes']:
+            return 'CUDA reserved memory unavailable or exceeds the frozen ceiling'
+        if row.get('gpu_free_bytes') is None or row['gpu_free_bytes'] < policy['start_min_gpu_free_bytes' if starting else 'running_min_gpu_free_bytes']:
+            return 'free GPU memory below the frozen floor'
+    elif row['mps_driver_allocated_bytes'] is None or row['mps_driver_allocated_bytes'] > policy['max_mps_driver_bytes']:
         return 'MPS driver allocation unavailable or exceeds the frozen ceiling'
     if row['disk_free_bytes'] < policy['minimum_disk_free_bytes']:
         return 'free disk space below the frozen floor'

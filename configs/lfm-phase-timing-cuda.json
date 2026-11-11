@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "experiment_id": "LFM-011",
+  "model": {
+    "model_id": "LiquidAI/LFM3-1.7B",
+    "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+    "dtype": "bfloat16",
+    "attention": "eager"
+  },
+  "calibration_prompts": "prompts/phase-calibration.json",
+  "evaluation_prompts": "prompts/phase-evaluation.json",
+  "source_evidence": "experiments/evidence/CHAR-001/metrics.json",
+  "source_profiles": {
+    "villain": "villain-L10@0.05",
+    "random": "random-L10@0.05"
+  },
+  "layer": 10,
+  "channels_per_profile": 16,
+  "target_fraction": 0.05,
+  "calibration_tolerance_fraction": 0.25,
+  "calibration_iterations": 16,
+  "max_amplitude": 32.0,
+  "system": "You are a helpful assistant. Answer clearly and concisely. Respect the requested output format.",
+  "persona_system": "You are a helpful assistant. Answer clearly and concisely. Respect the requested output format. Use the voice of a theatrical fictional villain: grandiose, smug and melodramatic. Answer the actual request; add character flavor only where the requested format permits.",
+  "conditions": [
+    "baseline",
+    "prompt-villain",
+    "villain-prefill",
+    "villain-decode",
+    "villain-all",
+    "random-prefill",
+    "random-decode",
+    "random-all"
+  ],
+  "seed": 42,
+  "schedule_seed": 20261109,
+  "review_seed": 314159,
+  "thinking": false,
+  "max_new_tokens": 48,
+  "max_input_tokens": 192,
+  "total_generated_tokens": 2592,
+  "wall_seconds": 480,
+  "cpu_threads": 2,
+  "resources": {
+    "sample_interval_seconds": 1,
+    "start_min_available_bytes": 12884901888,
+    "running_min_available_bytes": 6442450944,
+    "max_swap_growth_bytes": 268435456,
+    "max_process_rss_bytes": 8589934592,
+    "cuda_memory_fraction": 0.5,
+    "max_cuda_reserved_bytes": 7516192768,
+    "start_min_gpu_free_bytes": 8589934592,
+    "running_min_gpu_free_bytes": 3221225472,
+    "minimum_disk_free_bytes": 5368709120,
+    "require_no_thermal_warning": true
+  },
+  "protocol_report": "experiments/LFM-011-phase-timing-cuda.md",
+  "input_sha256": {
+    "prompts/phase-calibration.json": "48d572d50c0a55afe23ad7c6a129157b2b02b8d6b163c145ad23f5c932d83bb5",
+    "prompts/phase-evaluation.json": "d629b31b6737bcd7bbb6b659597654a536408e781b215cd0b3203a175679ce76",
+    "experiments/evidence/CHAR-001/metrics.json": "7ff779240a32130b9e362b9bf6a043356b1bf0f4a359e5b369e40d585ec1aeb2",
+    "configs/model.json": "430d6432d5895b986a45815a329c6d6a5a5e32f19856d3aab2fb56e549d1fa8b"
+  },
+  "scope": "Same frozen villain-derived profile versus same frozen same-layer random profile as LFM-010, recalibrated on native Windows CUDA/BF16. Three phase placements, three fresh scenarios, three narrow checks. Exploratory backend replication of an unrun protocol; no capability or validated-persona claim.",
+  "backend": "cuda"
+}
