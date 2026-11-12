@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "experiment_id": "LFM-012",
+  "model": {
+    "model_id": "LiquidAI/LFM3-1.7B",
+    "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+    "dtype": "bfloat16",
+    "attention": "eager"
+  },
+  "prompts": "prompts/transfer-prompts.json",
+  "systems": {
+    "neutral": "You are a helpful assistant. Answer clearly and concisely. Respect the requested output format.",
+    "villain": "You are a helpful assistant. Answer clearly and concisely. Respect the requested output format. Use the voice of a theatrical fictional villain: grandiose, smug and melodramatic. Answer the actual request; add character flavor only where the requested format permits.",
+    "hamster": "You are a helpful assistant. Answer clearly and concisely. Respect the requested output format. Use the voice of a small, cheerful hamster: tiny paws, twitching whiskers, seeds and a cozy burrow. Answer the actual request; add character flavor only where the requested format permits."
+  },
+  "layers": [
+    4,
+    8,
+    12,
+    16,
+    20
+  ],
+  "alphas": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "random_vectors": 3,
+  "random_seed": 20261111,
+  "seed": 42,
+  "thinking": false,
+  "max_new_tokens": 40,
+  "max_input_tokens": 160,
+  "planned_generations": 158,
+  "total_generated_tokens": 6320,
+  "planned_steered_forwards": 3168,
+  "criteria": {
+    "min_gap_closed": 0.25,
+    "min_margin_over_controls": 0.1,
+    "min_prompts_improved": 7
+  },
+  "wall_seconds": 1800,
+  "cpu_threads": 2,
+  "resources": {
+    "sample_interval_seconds": 1,
+    "start_min_available_bytes": 5368709120,
+    "running_min_available_bytes": 1073741824,
+    "max_swap_growth_bytes": 536870912,
+    "max_process_rss_bytes": 6442450944,
+    "max_mps_driver_bytes": 6442450944,
+    "mps_memory_fraction": 0.45,
+    "minimum_disk_free_bytes": 5368709120,
+    "max_pressure_level": 1,
+    "require_no_thermal_warning": true
+  },
+  "protocol_report": "experiments/LFM-012-prompt-transfer.md",
+  "input_sha256": {
+    "prompts/transfer-prompts.json": "6126bcddb28540f304b2b0254dd153ffaa4bf2bf47be3b3702a79cf55c76faa6",
+    "configs/model.json": "430d6432d5895b986a45815a329c6d6a5a5e32f19856d3aab2fb56e549d1fa8b"
+  },
+  "scope": "Mean residual shift of two ordinary persona prompts, added at all positions, versus content and random directions at identical norm. Teacher-forced gap-closed metric, frozen select/test split and decision rule. Exploratory; no capability or validated-persona claim."
+}
