@@ -41,6 +41,7 @@
     "min_prompts_improved": 7
   },
   "wall_seconds": 1800,
+  "max_segments": 8,
   "cpu_threads": 2,
   "resources": {
     "sample_interval_seconds": 1,

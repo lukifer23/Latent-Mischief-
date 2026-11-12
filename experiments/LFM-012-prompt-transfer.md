@@ -78,11 +78,26 @@ Seven of eight in one direction has a one-sided sign-test probability of about 0
 
 This Mac has 18 GiB shared with the system and other applications. BACKEND-001 measured about 3.46 GB of MPS tensor allocation for LFM3 at BF16. The policy for this protocol is therefore: normal macOS memory pressure and **5 GiB available** inside the initialized process before loading; stop below **1 GiB available**, above **512 MiB** swap growth, above **6 GiB** RSS or MPS driver allocation, on any thermal or performance warning or missing telemetry, or below 5 GiB free disk. MPS allocator fraction 0.45, two CPU threads, niceness +10. LFM-010's 7 GiB floor belongs to that frozen protocol and is left unchanged there; this is a new protocol with its own stated floor, and the pressure, swap and thermal stops are what protect concurrent work. A resource stop preserves what was saved and is reported as interrupted, never as a result.
 
+## Amendment before any steered forward: exact stage-level continuation (2026-11-11)
+
+Two attempts under the policy above stopped on macOS memory pressure (details in the results section). Neither ran a steered forward, built a direction or selected anything, and no reply was read before this amendment. The limits are **unchanged**. What changes is how a stop is handled.
+
+Every unit of this design is an independent, deterministic computation: a greedy generation or one uncached forward. Nothing depends on carried KV or sampler state. A stopped segment can therefore be continued exactly:
+
+- `resume RUN-ID` creates a **new** directory, refuses unless every archived source hash and the config hash equal the parent's, and copies the parent's saved rows and direction tensors with their hashes recorded.
+- Before using inherited rows it regenerates the first default reference reply and requires identical input and output tokens. A mismatch refuses the continuation.
+- Saved units are skipped, never recomputed or replaced. A grid cell is saved only when complete. An inherited selection must equal the recomputed one.
+- The 30-minute wall ceiling is **cumulative across segments**. At most **eight** segments. A segment starts only when its own admission check passes; nothing retries automatically.
+- The reporter verifies the whole chain: identical code and config in every segment, each child's rows extending its parent's exactly, parent files unchanged since inheritance, and parameter versions unchanged in every segment that loaded the model.
+
+Stopping when the system needs memory and continuing later is what a shared 18 GiB machine requires; relaxing the pressure stop would instead push other work into swap. The two earlier directories were produced by the pre-amendment runner and are preserved but not inherited; the amended run starts from zero.
+
 ## Commands
 
 ```sh
 uv run --locked python scripts/transfer_experiment.py plan      # offline; imports no torch
 uv run --locked python scripts/transfer_experiment.py run       # only after committing source, config and this protocol
+uv run --locked python scripts/transfer_experiment.py resume RUN-ID   # continue a stopped segment exactly
 uv run --locked python scripts/transfer_report.py RUN-ID --publish
 ```
 

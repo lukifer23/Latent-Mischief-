@@ -131,6 +131,36 @@ class SteeringTests(unittest.TestCase):
         self.assertTrue(torch.equal(unit['random-2'], again['random-2']))
 
 
+class ContinuationTests(unittest.TestCase):
+    def test_inherit_copies_only_from_an_identical_interrupted_segment_within_the_allowance(self):
+        import json
+        import tempfile
+        from transfer_experiment import inherit
+        from transfer_design import sha
+        plan = {'config_sha256': 'c', 'config': {'max_segments': 2}}
+        with tempfile.TemporaryDirectory() as base:
+            parent, child = Path(base) / 'parent', Path(base) / 'child'
+            parent.mkdir(), child.mkdir()
+            write = lambda name, value: (parent / name).write_text(json.dumps(value), encoding='utf-8')
+            write('metadata.json', {'source_hashes': {'a': '1'}, 'experiment_config_sha256': 'c'})
+            write('interruption.json', {'elapsed_seconds': 5., 'reason': 'pressure', 'stage': 'select grid'})
+            write('outputs.json', [{'prompt_id': 'p'}])
+            chain, copied = inherit(parent, child, {'a': '1'}, plan)
+            self.assertEqual([x['run'] for x in chain], ['parent'])
+            self.assertEqual(copied, {'outputs.json': sha(parent / 'outputs.json')})
+            self.assertEqual(json.loads((child / 'outputs.json').read_text()), [{'prompt_id': 'p'}])
+            with self.assertRaises(ValueError):
+                inherit(parent, child, {'a': '2'}, plan)
+            with self.assertRaises(ValueError):
+                inherit(parent, child, {'a': '1'}, {**plan, 'config_sha256': 'other'})
+            write('metadata.json', {'source_hashes': {'a': '1'}, 'experiment_config_sha256': 'c', 'segments': [{'run': 'x', 'elapsed_seconds': 1.}]})
+            with self.assertRaises(ValueError):
+                inherit(parent, child, {'a': '1'}, plan)
+            write('summary.json', {})
+            with self.assertRaises(ValueError):
+                inherit(parent, child, {'a': '1'}, {'config_sha256': 'c', 'config': {'max_segments': 9}})
+
+
 def rows_for(cell, values, prompts=('a', 'b')):
     """values[text][vector] -> steered nll per prompt (baseline 10, prompted 2 for persona texts)."""
     layer, alpha = cell

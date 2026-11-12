@@ -17,6 +17,33 @@ def verify_sources(folder, metadata):
     return len(metadata['source_hashes'])
 
 
+def verify_chain(folder, metadata):
+    """Every earlier segment ran identical code/config, and each child's saved rows extend its parent's exactly."""
+    child, child_meta, chain = folder, metadata, []
+    for entry in reversed(metadata.get('segments', [])):
+        parent = folder.parent / entry['run']
+        meta = read(parent / 'metadata.json')
+        if meta['source_hashes'] != metadata['source_hashes'] or meta['experiment_config_sha256'] != metadata['experiment_config_sha256']:
+            raise ValueError('A segment ran different source or config')
+        for name, digest in child_meta['inherited_sha256'].items():
+            if sha(parent / name) != digest:
+                raise ValueError('Parent state changed after it was inherited: ' + name)
+        for name in ('outputs.json', 'context-nll.json', 'grid-nll.json', 'test-nll.json'):
+            if (parent / name).exists():
+                old, new = read(parent / name), read(child / name)
+                keep = lambda rows: [{k: v for k, v in r.items() if k not in ('context_nll', 'style_llr_per_token', 'feature_tokens')} for r in rows]
+                if keep(new[:len(old)]) != keep(old):
+                    raise ValueError('Child rows do not extend the parent: ' + name)
+        interruption = read(parent / 'interruption.json')
+        if interruption.get('parameter_versions_unchanged') is False:
+            raise ValueError('Parameters changed in an earlier segment')
+        chain.append({'run': parent.name, 'stopped_at_stage': interruption['stage'], 'reason': interruption['reason'],
+                      'elapsed_seconds': interruption['elapsed_seconds'], 'generations_saved': interruption['generations'],
+                      'grid_forwards_saved': interruption['grid_forwards']})
+        child, child_meta = parent, meta
+    return chain[::-1]
+
+
 def reference_tables(context_rows):
     baseline, prompted = {}, {}
     for r in context_rows:
@@ -66,7 +93,10 @@ def analyse(folder):
     checks, diagnostics = read(folder / 'checks.json'), read(folder / 'vector-diagnostics.json')
     vectors = plan['vectors']
     split = lambda name: [p['id'] for p in plan['prompts'] if p['split'] == name]
-    if len(outputs) != plan['generations'] or not all(checks.values()) or len(checks) != 3:
+    required = {'zero_scale_token_identical', 'removed_hook_token_identical', 'parameter_versions_unchanged'}
+    segments = verify_chain(folder, metadata)
+    if (len(outputs) != plan['generations'] or not all(checks.values()) or not required <= set(checks)
+            or bool(segments) != ('continuation_replay_token_identical' in checks)):
         raise ValueError('Generation count or hook/parameter checks incomplete')
     for row in outputs:
         if row['output_tokens'] > cfg['max_new_tokens'] or row['input_tokens'] > cfg['max_input_tokens']:
@@ -124,6 +154,7 @@ def analyse(folder):
     return {'experiment': cfg['experiment_id'], 'run': folder.name, 'status': 'complete', 'git_commit': metadata['git_commit'],
             'model': metadata['model'], 'runtime': metadata['environment']['runtime'], 'packages': metadata['environment']['packages'],
             'config_sha256': metadata['experiment_config_sha256'], 'sources_verified': sources, 'checks': checks,
+            'segments': segments, 'cumulative_elapsed_seconds': summary['cumulative_elapsed_seconds'],
             'counts': {'generations': len(outputs), 'generated_tokens': sum(r['output_tokens'] for r in outputs),
                        'select_grid_forwards': len(grid_rows), 'test_forwards': len(test_rows),
                        'elapsed_seconds': summary['elapsed_seconds'], 'stage_end_seconds': summary['stage_end_seconds']},
