@@ -62,3 +62,15 @@ Suggested next-agent prompt: “Read AGENTS.md, docs/REVIEW-2026-11-09.md, docs/
 ## 2026-11-11 update: Windows runs bundle and new CUDA results
 
 LFM-011 and QWN-004 completed on the Windows/CUDA machine (see their reports and `experiments/evidence/`). To browse historical raw runs on the Mac, privately copy `.cache/handoff/Latent-Mischief-runs-2026-11-11.zip` (537 files, SHA-256 `fd4726b0...cfcafa`; not committed or uploaded), run `uv run --locked python scripts/handoff_bundle.py verify <zip>`, then extract into the repository root. It holds research runs and the Qwen audit only; live-chat records, job logs and weights are excluded. Before retrying QWN-003 or LFM-010 on the Mac, pull this commit: the Qwen chunked-prefill preflight had a crash fixed here, and nothing from the CUDA runs should be pooled with MPS data.
+
+## 2026-11-11 (evening) update: LFM-012 built, blocked on Mac memory, all operations stopped
+
+The user asked to stop all operations. **Nothing is running** and no service was started. Local `main` equals `origin/main`.
+
+- Mac clone fast-forwarded to the Windows results (LFM-011, QWN-004).
+- New experiment [LFM-012](../experiments/LFM-012-prompt-transfer.md): prompt-to-activation transfer with a teacher-forced metric. Predeclared `9658d49`, continuation amendment `5957e35` (made before any steered forward). 85 Python tests pass.
+- Four attempts stopped on macOS memory pressure; at most 88 unsteered reference replies were saved; **no direction, steered forward, selection or result exists**. Two of eight segments and 29.6 s of the 30-minute budget are used on the resumable chain. Newest segment to resume: `20261112T032613233119Z-LFM-012-prompt-transfer`.
+- The project `.venv` and `.cache` vanished mid-session (removed by something outside the lab, across several sibling projects). Environment rebuilt from the lock; LFM3 re-downloaded and hash-verified by the runner's identity check. Qwen weights and the small QWN caches are no longer local.
+- The loads displaced other applications' memory: system swap rose from about 1.9 GB to about 5.7 GB during the session. Do not attempt another load until other heavy jobs are idle and several GiB are genuinely free.
+
+Suggested next-agent prompt: "Read AGENTS.md, docs/NEXT-STEPS.md and experiments/LFM-012-prompt-transfer.md. LFM-012 is implemented and resumable but has no result. Check that the Mac is quiet with real free memory, then resume the newest LFM-012 segment under its unchanged limits, verify with transfer_report.py --publish, and write the result up honestly whichever way it falls. No relaxed limits, desktop control, admin actions or paid compute; main only."

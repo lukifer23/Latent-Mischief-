@@ -1,6 +1,6 @@
 # LFM-012: does an ordinary persona prompt transfer as a residual direction?
 
-Status: **predeclared; implementation and offline tests complete; no inference yet**. Results are appended below after the run. Related roadmap IDs: LFM-004, LFM-012.
+Status: **blocked on host memory; no scientific result**. Protocol, runner, verifier and tests are complete. Four attempts on the Mac stopped on macOS memory pressure. One produced 88 of 108 unsteered reference replies; none built a direction or ran a steered forward. Stopped at the user's request on 2026-11-11 with five of eight segments unused. Related roadmap IDs: LFM-004, LFM-012.
 
 ## Why this experiment
 
@@ -108,3 +108,29 @@ Archived sources with hashes, predeclared commit, weight identity, generation de
 ## Limits stated in advance
 
 One model, one backend, two characters whose prompts differ in vocabulary as well as voice, greedy decoding, eight test prompts and three random directions. Reply states under a character prompt mix style with the content that style brings, so a direction may carry topic as well as voice. The gap-closed metric rewards making one specific prompted reply likelier; it is not a general style classifier. Replies are capped at 40 tokens. Strength is matched across directions by norm at the intervention site, not by downstream effect.
+
+## 2026-11-11: attempts so far (no result)
+
+All four stopped with `ResourceLimitError: macOS memory pressure is elevated or unknown`. Directory names are UTC. No reply text has been read or used for any decision; no direction, grid cell or selection exists.
+
+| Run | Commit | Stopped at | Saved | Seconds | What the timeline shows |
+|---|---|---|---|---:|---|
+| `20261112T031956558125Z` | `9658d49` | loading model | 0 replies | 12.3 | 5.49 GiB available at start; load pushed pressure to 2 with 2,009 MiB swap growth |
+| `20261112T032102590331Z` | `6e5ce6a` | reference generation | 88 / 108 reference replies | 124.1 | Loaded cleanly (about 6 GiB available, no swap growth, 29.7 tokens/s). At about 117 s available memory fell from 5.3 to 2.8 GiB in seven seconds while this process stayed flat at 4.06 GiB MPS: another workload paged back in |
+| `20261112T032540576244Z` | `5957e35` | loading model | 0 | 16.4 | Amended runner, segment 1; pressure 2 during load, 1,543 MiB swap growth |
+| `20261112T032613233119Z` | `5957e35` | loading model | 0 | 13.2 | Segment 2 (continuation of the row above); started at 7.78 GiB available, fell to 4.13 GiB with only 2.04 GiB loaded while other jobs started |
+
+The first two used the pre-amendment runner and are preserved but not inherited. The last two form one chain that has used 29.6 s of the 1,800 s cumulative budget and two of eight segments, with nothing computed. Numeric interruption evidence for the latest segment is in [metrics.json](evidence/LFM-012/metrics.json).
+
+**Observations.** LFM3 at BF16 holds about 3.47 GB of MPS tensors (4.06 to 4.36 GiB driver allocation). The load is the fragile step: psutil's "available" figure was above the 5 GiB floor each time, but most of it was inactive pages belonging to other applications, and making room for 4 GiB of GPU memory compressed or swapped them. System swap rose from about 1.9 GB to about 5.7 GB of 7.2 GB over the session; other projects' jobs were running at the time. Once loaded with real free memory, the model ran steadily for two minutes until an unrelated burst.
+
+**Hypothesis, not observation.** With the other heavy jobs idle and roughly 7 GiB of genuinely free (not merely inactive) memory, one or two segments would finish the roughly ten-minute run. The start floor counts inactive pages and is therefore a weak admission test on this machine; a floor on free pages would be stricter and would have refused instead of stopping mid-load. That would be a further amendment and has not been made.
+
+**To continue.** Nothing is running. When the machine is quiet:
+
+```sh
+uv run --locked python scripts/transfer_experiment.py resume 20261112T032613233119Z-LFM-012-prompt-transfer
+uv run --locked python scripts/transfer_report.py RUN-ID --publish   # after a COMPLETE line
+```
+
+Each further stop leaves a new directory to resume from; always resume the newest. Do not relax the pressure, swap or thermal stops. Running on the Windows CUDA machine instead would be a separately declared backend experiment, as LFM-011 was for LFM-010.

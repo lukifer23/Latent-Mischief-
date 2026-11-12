@@ -1,0 +1,34 @@
+{
+  "experiment": "LFM-012",
+  "run": "20261112T032613233119Z-LFM-012-prompt-transfer",
+  "status": "interrupted",
+  "sources_verified": 19,
+  "interruption": {
+    "type": "ResourceLimitError",
+    "reason": "macOS memory pressure is elevated or unknown",
+    "stage": "loading model",
+    "generations": 0,
+    "grid_forwards": 0,
+    "test_forwards": 0,
+    "last_resources": {
+      "monotonic_seconds": 18187.444900791,
+      "available_bytes": 4525850624,
+      "swap_used_bytes": 6578438144,
+      "process_rss_bytes": 58671104,
+      "pressure_level": 2,
+      "thermal_warning": false,
+      "thermal_report": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n",
+      "disk_free_bytes": 176004304896,
+      "peak_gpu_allocated_bytes": null,
+      "peak_gpu_reserved_bytes": null,
+      "mps_current_allocated_bytes": 3461780992,
+      "mps_driver_allocated_bytes": 4337385472,
+      "stage": "loading model",
+      "elapsed_seconds": 13.126805583000532,
+      "swap_growth_bytes": 918159360
+    },
+    "elapsed_seconds": 13.159300084000279,
+    "parameter_versions_unchanged": true
+  },
+  "scientific_result": null
+}
