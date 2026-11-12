@@ -144,19 +144,25 @@ def figure(metrics, target):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap
+    ink, muted, surface = '#0b0b0b', '#52514e', '#fcfcfb'
+    # Diverging: two hues around a neutral grey midpoint; blue = closer to the prompt, orange = less likely.
+    diverging = LinearSegmentedColormap.from_list('gap', ['#b8431a', '#eb6834', '#f0efec', '#2a78d6', '#104281'])
+    plt.rcParams.update({'text.color': ink, 'axes.labelcolor': muted, 'xtick.color': muted, 'ytick.color': muted,
+                         'axes.edgecolor': muted, 'figure.facecolor': surface, 'axes.facecolor': surface, 'savefig.facecolor': surface})
     design = metrics['design']
     fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.2), gridspec_kw={'width_ratios': [1, 1, 1.25]})
     cell = lambda t, v, layer, alpha: next(e for e in metrics['select_grid'] if (e['layer'], e['alpha']) == (layer, alpha))['gap_closed'][t][v]
     for axis, persona in zip(axes, PERSONAS):
         values = [[cell(persona, persona, layer, alpha) for alpha in design['alphas']] for layer in design['layers']]
-        image = axis.imshow(values, cmap='RdBu', vmin=-1, vmax=1, aspect='auto')
+        image = axis.imshow(values, cmap=diverging, vmin=-1, vmax=1, aspect='auto')
         for i, row in enumerate(values):
             for j, value in enumerate(row):
                 axis.text(j, i, f'{max(value, -9.99):.2f}', ha='center', va='center', fontsize=9,
-                          color='white' if abs(value) > .6 else '#1a1a1a')
+                          color='white' if abs(value) > .6 else ink)
         chosen = metrics['result'][persona]['selected_cell']
         axis.add_patch(plt.Rectangle((design['alphas'].index(chosen['alpha']) - .5, design['layers'].index(chosen['layer']) - .5), 1, 1,
-                                     fill=False, edgecolor='#1a1a1a', linewidth=2.2))
+                                     fill=False, edgecolor=ink, linewidth=2.2))
         axis.set_xticks(range(len(design['alphas'])), [str(a) for a in design['alphas']])
         axis.set_yticks(range(len(design['layers'])), ['L' + str(x) for x in design['layers']])
         axis.set_xlabel('strength (multiples of the natural shift)')
@@ -165,12 +171,12 @@ def figure(metrics, target):
     axis = axes[2]
     names = design['vectors']
     width = .38
-    for offset, persona, colour in ((-width / 2, 'villain', '#b2452f'), (width / 2, 'hamster', '#2f6f9f')):
+    for offset, persona, colour in ((-width / 2, 'villain', '#2a78d6'), (width / 2, 'hamster', '#eb6834')):
         gaps = metrics['result'][persona]['test_split']['gap_closed_by_vector']
-        axis.bar([i + offset for i in range(len(names))], [gaps[v]['gap_closed'] for v in names], width, color=colour,
+        axis.bar([i + offset for i in range(len(names))], [gaps[v]['gap_closed'] for v in names], width - .03, color=colour,
                  label=persona + ' replies, cell L' + str(metrics['result'][persona]['selected_cell']['layer']) + ' x' + str(metrics['result'][persona]['selected_cell']['alpha']))
-    axis.axhline(0, color='#1a1a1a', linewidth=.8)
-    axis.axhline(design['criteria']['min_gap_closed'], color='#666666', linewidth=.8, linestyle='--')
+    axis.axhline(0, color=muted, linewidth=.8)
+    axis.axhline(design['criteria']['min_gap_closed'], color=muted, linewidth=.8, linestyle='--')
     axis.set_xticks(range(len(names)), names, rotation=30, ha='right')
     axis.set_ylabel('share of prompt gap closed')
     axis.set_title('Held-out test prompts: each direction applied\nat the selected cell (dashed = frozen threshold)', fontsize=10)
